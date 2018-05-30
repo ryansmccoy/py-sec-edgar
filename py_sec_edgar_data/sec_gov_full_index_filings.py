@@ -1,9 +1,12 @@
-
+import json
 import os
+import sqlite3
 from urllib.parse import urljoin
+
 import pandas as pd
-from edgar_config import SEC_GOV_TXT_DIR,CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR,SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR,SEC_EDGAR_ARCHIVES_URL
-from py_sec_edgar_data.utilities import gotem
+
+import py_sec_edgar_data.celery_consumer_filings
+from py_sec_edgar_data.settings import SEC_GOV_FULL_INDEX_DIR, SEC_EDGAR_ARCHIVES_URL
 
 full_index_files = ["company.gz",
                     "company.idx",
@@ -39,7 +42,7 @@ def download_latest_quarterly_full_index_files():
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
-        edgar_download.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
+        py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
 
 def load_idx_files_from_sqldb(start_year=None, end_year=None):
     conn = sqlite3.connect(filing_master)

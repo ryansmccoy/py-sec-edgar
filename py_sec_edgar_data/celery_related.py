@@ -2,7 +2,7 @@
 results = []
 celery = Celery()
 celery.config_from_object('celeryconfig')
-broker_url = 'amqp://guest:guest@localhost:5672//'.
+broker_url = 'amqp://guest:guest@localhost:5672//'
 
 CELERY_IMPORTS = ('tasks')
 CELERY_IGNORE_RESULT = False
@@ -13,12 +13,12 @@ CELERY_RESULT_BACKEND = "amqp"
 CELERY_IMPORTS=("tasks",)
 
 import edgar_download.edgars_download_celery_tasks
-
+import edgar_download.edgars_download_celery_tasks
 # print('grabbing html files')
 # url = config['EDGAR_URLS']['edgar_monthly_xml_list']
-from edgar_utilities.flatten_edgar_xbrl_items import flattenDict
-import edgar_download.edgars_download_celery_tasks
-import feedparser
+from edgar_utilities import flattenDict
+
+
 def main(mode=None):
     month = 6
     year = 2017

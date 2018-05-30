@@ -3,11 +3,11 @@ desired_width = 600
 pd.set_option('display.width', desired_width)
 import re
 import requests
-import lxml.html
 
 _CIK_URI = 'http://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={s}&count=10&output=xml'
 yahoo_url = 'http://finance.yahoo.com/lookup?s='
 string_match = 'companyName'
+
 def grab_tickers_from_yahoo_cik():
     df=pd.read_excel(r'B:\_concat.xlsx', index_col=0, header=0)
     df=df[df['edgar_formtype'] == "10-K"]
@@ -30,7 +30,7 @@ def grab_tickers_from_yahoo_cik():
 import numpy as np
 
 def load_ticker_to_cik_files():
-    bb_update = r'B:\bb_eqs_US_EXCHANGE_COMPANIES_big.xlsx'
+    bb_update = r'B:\US_EXCHANGE_COMPANIES_big.xlsx'
     df_bb = pd.read_excel(bb_update,header=0,index_col=0,parse_dates=True)
     cik_ticker_check = r'B:\TICKERCHECK_CIK_COMPANIES_ONLY.xlsx'
     df_cik = pd.read_excel(cik_ticker_check,header=0,index_col=0)
@@ -41,13 +41,12 @@ def load_ticker_to_cik_files():
     df_datacomb.replace('-', np.nan, inplace=True)
     df_datacomb.replace('0', np.nan, inplace=True)
     df_datacomb.replace('#N/A', np.nan, inplace=True)
-
     df_tickercheck.replace('', np.nan, inplace=True)
     df_tickercheck.replace('-', np.nan, inplace=True)
     df_tickercheck.replace('0', np.nan, inplace=True)
     df_tickercheck.replace('#N/A', np.nan, inplace=True)
 
-    df_merged = pd.merge(df_tickercheck,df_datacomb, left_on='BB_TICKER', right_on='BB_TICKER')
+    df_merged = pd.merge(df_tickercheck, df_datacomb, left_on='TICKER', right_on='TICKER')
     df_comb = df_tickercheck.combine_first(df_datacomb)
 
     df_merged.to_csv(r'c:\auto\merged.csv')
@@ -105,7 +104,7 @@ def get_cik_from_ticker(ticker_list):
     return cik_dict
 
 def load_ticker_to_cik_files():
-    bb_update = r'bb_eqs_US_EXCHANGE_COMPANIES_bbig.xlsx'
+    bb_update = r'US_EXCHANGE_COMPANIES_bbig.xlsx'
     bb_update = os.path.join(DATA_DIR,bb_update)
 
     df_bb = pd.read_excel(bb_update,header=0,index_col=0,parse_dates=True)

@@ -7,25 +7,20 @@
 
 import sys
 sys.path.append('..')
-from edgar_config import SEC_GOV_TXT_DIR,CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR,SEC_GOV_OUTPUT_DIR, SEC_GOV_MONTHLY_DIR
+from py_sec_edgar_data.settings import SEC_GOV_MONTHLY_DIR
 
-import pandas as pd
 import glob
-import edgar_config
 import os
 import feedparser
 from datetime import datetime
-from edgar_utilities import gotem
 from dateparser import parse
-from edgar_utilities.flatten_edgar_xbrl_items import flattenDict
+from py_sec_edgar_data.utilities import flattenDict
 
-# input_filepath = r'S:\Archives\edgar\data\2014\QTR3\0001047469-14-006723.txt'
 import pandas as pd
 desired_width = 600
 pd.set_option('display.width', desired_width)
 
-from edgar_utilities.files_and_folders import walk_dir_fullfilename
-
+from py_sec_edgar_data.utilities import walk_dir_fullfilename
 
 def read_xml_feedparser(source_file):
     if source_file[0:4] == 'http':
@@ -35,23 +30,11 @@ def read_xml_feedparser(source_file):
             feedData = f.read()
         feed = feedparser.parse(feedData)
     else:
-        feed = feedparser.parse(filepath)
+        feed = feedparser.parse(source_file)
     return feed
 
-from edgar_config import SEC_GOV_TXT_DIR,CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR,SEC_GOV_OUTPUT_DIR
-#
-# frame = pd.DataFrame()
-# list_ = []
-# for file_ in files_full_master[0:8]:
-#     try:
-#         df = pd.read_csv(file_, skiprows=10,
-#                      names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|',
-#                      engine='python', parse_dates=True)
-#         df['Source_Filename'] = file_
-#         list_.append(df)
-#     except:
-#         print('Error Loading ' + file_)
-#
+
+from py_sec_edgar_data.settings import SEC_GOV_TXT_DIR, SEC_GOV_FULL_INDEX_DIR
 
 
 def parse_master_idx():
@@ -134,7 +117,7 @@ def generate_list_of_local_filings():
     # source_file = files[5]
 
 
-def main(edgare_feed_list="IDX"):
+def main(edgar_feed_list="IDX"):
 
     if edgar_feed_list == "XBRL_XML":
         ext='.xml'

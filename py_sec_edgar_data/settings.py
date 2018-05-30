@@ -51,10 +51,10 @@ if platform.system() == "Linux":
     print("\nRunning on Ubuntu OS")
     ROOT_DIR = os.path.abspath(os.sep)
     SECDATA_DIR_ROOT = os.path.join(ROOT_DIR, '')
-    SEC_MAIN_DIR = os.path.join(ROOT_DIR, 'sec-data-python')
+    SEC_MAIN_DIR = os.path.join(ROOT_DIR, 'py-sec-edgar-data')
     SEC_APP_DIR = os.path.join(SEC_MAIN_DIR, 'sec_data')
 
-    SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "sec_gov")
+    SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "py_sec_edgar_data")
     DATA_DIR = os.path.join(SEC_GOV_DIR, r'DATA')
     OUTPUT_DIR = os.path.join(SEC_GOV_DIR, 'OUTPUT')
     SEC_GOV_EDGAR_DIR =  os.path.join(SEC_GOV_DIR, "Archives","edgar")
