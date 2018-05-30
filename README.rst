@@ -2,8 +2,6 @@
 Python SEC Edgar Data
 =====================
 
-![alt text](https://raw.githubusercontent.com/ryan413/py-sec-edgar-data/master/docs/folder_structure.png)
-
 .. image:: https://img.shields.io/pypi/v/py_sec_edgar_data.svg
         :target: https://pypi.python.org/pypi/py_sec_edgar_data
 
@@ -17,6 +15,7 @@ Python SEC Edgar Data
 
 Python package used to download SEC Edgar filings
 
+.. image:: https://raw.githubusercontent.com/ryan413/py-sec-edgar-data/master/docs/folder_structure.png
 
 * Free software: MIT license
 * Documentation: https://py-sec-edgar-data.readthedocs.io.
