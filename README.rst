@@ -2,6 +2,7 @@
 Python SEC Edgar Data
 =====================
 
+![alt text](https://github.com/ryan413/Flask-DopplerRadar/blob/master/docs/x2scrap.png?raw=true)
 
 .. image:: https://img.shields.io/pypi/v/py_sec_edgar_data.svg
         :target: https://pypi.python.org/pypi/py_sec_edgar_data

@@ -50,8 +50,8 @@ if platform.system() == "Linux":
 
     print("\nRunning on Ubuntu OS")
     ROOT_DIR = os.path.abspath(os.sep)
-    SECDATA_DIR_ROOT = os.path.join(ROOT_DIR, 'home/ryan/SECDATA')
-    SEC_MAIN_DIR = os.path.join(SECDATA_DIR_ROOT, 'sec-data-python')
+    SECDATA_DIR_ROOT = os.path.join(ROOT_DIR, '')
+    SEC_MAIN_DIR = os.path.join(ROOT_DIR, 'sec-data-python')
     SEC_APP_DIR = os.path.join(SEC_MAIN_DIR, 'sec_data')
 
     SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "sec_gov")
