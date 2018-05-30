@@ -2,7 +2,7 @@
 Python SEC Edgar Data
 =====================
 
-![alt text](https://github.com/ryan413/Flask-DopplerRadar/blob/master/docs/x2scrap.png?raw=true)
+![alt text](https://raw.githubusercontent.com/ryan413/py-sec-edgar-data/master/docs/folder_structure.png)
 
 .. image:: https://img.shields.io/pypi/v/py_sec_edgar_data.svg
         :target: https://pypi.python.org/pypi/py_sec_edgar_data
@@ -13,8 +13,6 @@ Python SEC Edgar Data
 .. image:: https://readthedocs.org/projects/py-sec-edgar-data/badge/?version=latest
         :target: https://py-sec-edgar-data.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
-
 
 
 Python package used to download SEC Edgar filings
