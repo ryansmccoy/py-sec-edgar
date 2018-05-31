@@ -34,22 +34,12 @@ or the latest development version from github:
 
 .. code-block:: bash
 
-    $ pip install git+https://github.com/hootnot/oanda-api-v20.git
-
 If you want to run the tests, clone the repository:
 
 .. code-block:: bash
 
-    $ git clone https://github.com/hootnot/oanda-api-v20
-    $ cd oanda-api-v20
 
-    # install necessary packages for testing
-    $ grep "\- pip install" .travis.yml |
-    > while read LNE
-    > do `echo $LNE| cut -c2-` ; done
 
     $ python setup.py test
     $ python setup.py install
 
-Examples are provided in the https://github.com/hootnot/oandapyV20-examples
-repository.
