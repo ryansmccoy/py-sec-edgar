@@ -1,44 +1,39 @@
 import random
 import time
-
+import sys
 import lxml.html
 
-sys.path.append('..')
+import os
+import re
+import shutil
+import zipfile
+from collections import OrderedDict
+
 import requests
 
-sys.path.append('..')
-from py_sec_edgar_data.settings import CONFIG_DIR
 
 import string
 from bs4 import BeautifulSoup
 
 import unicodedata
 
-try:
-    from bs4 import UnicodeDammit  # BeautifulSoup 4
+import binascii
 
+# __all__ = ["Error", "encode", "decode"]
 
-    def decode_html(html_string):
-        converted = UnicodeDammit(html_string)
-        if not converted.unicode_markup:
-            raise UnicodeDecodeError(
-                "Failed to detect encoding, tried [%s]",
-                ', '.join(converted.tried_encodings))
-            # print converted.original_encoding
-        return converted.unicode_markup
+class Error(Exception):
+    pass
 
-except ImportError:
-    from BeautifulSoup import UnicodeDammit  # BeautifulSoup 3
+from bs4 import UnicodeDammit  # BeautifulSoup 4
 
-
-    def decode_html(html_string):
-        converted = UnicodeDammit(html_string, isHTML=True)
-        if not converted.unicode:
-            raise UnicodeDecodeError(
-                "Failed to detect encoding, tried [%s]",
-                ', '.join(converted.triedEncodings))
-            # print converted.originalEncoding
-        return converted.unicode
+def decode_html(html_string):
+    converted = UnicodeDammit(html_string)
+    if not converted.unicode_markup:
+        raise UnicodeDecodeError(
+            "Failed to detect encoding, tried [%s]",
+            ', '.join(converted.tried_encodings))
+        # print converted.original_encoding
+    return converted.unicode_markup
 
 
 class Gotem(object):
@@ -47,7 +42,7 @@ class Gotem(object):
     """
 
     def __init__(self):
-
+        from py_sec_edgar_data.settings import CONFIG_DIR
         self.file_list_user_agents = os.path.join(CONFIG_DIR, 'user_agents.txt')
         self.file_list_nordvpn_ips = os.path.join(CONFIG_DIR, 'vpn.py')
         self.USERNAME = os.getenv('VPN_USERNAME')
@@ -300,25 +295,16 @@ def format_filename(s):
     return filename
 
 
-"""Implementation of the UUencode and UUdecode functions.
-
-encode(in_file, out_file [,name, mode])
-
-decode(in_file [, out_file, mode])
-
-"""
-
-import binascii
-
-__all__ = ["Error", "encode", "decode"]
-
-
-class Error(Exception):
-    pass
-
-
 def uuencode(in_file, out_file, name=None, mode=None):
     """Uuencode file"""
+
+    """Implementation of the UUencode and UUdecode functions.
+
+    encode(in_file, out_file [,name, mode])
+
+    decode(in_file [, out_file, mode])
+
+    """
     #
     # If in_file is a pathname open it and change defaults
     #
@@ -436,7 +422,6 @@ def uudecode(in_file, out_file=None, mode=None, quiet=True):
             f.close()
 
 
-import sys
 
 
 def flattenDict(d, result=None):
@@ -464,15 +449,7 @@ def flattenDict(d, result=None):
             result[key] = value
     return result
 
-
-import os
-import re
-import shutil
-import zipfile
-from collections import OrderedDict
-
-
-def walk_dir_fullfilename(directory, contains=None):
+def walk_dir_fullpath(directory, contains=None):
     all_files = []
     for path, dirnames, files in os.walk(directory):
         for file in files:
@@ -483,25 +460,6 @@ def walk_dir_fullfilename(directory, contains=None):
             else:
                 all_files.append(fullfilepath)
     return all_files
-
-
-# all_files = walk_dir_fullfilename(FOLDER)
-
-def calc_unprocessed(udir, pdir):
-    unproscessed_files = walk_dir_fullfilename(udir)
-    up = [unprocessed.replace(udir, "") for unprocessed in unproscessed_files]
-    len(up)
-
-    processed_files = walk_dir_fullfilename(pdir)
-    pr = [processed.replace(pdir, "") for processed in processed_files]
-    len(pr)
-
-    c1 = Counter(up)
-    c2 = Counter(pr)
-    diff = list((c1 - c2).elements())
-    len(diff)
-    diff = [os.path.join(udir + file) for file in diff]
-    return diff
 
 
 def unzip_excel(fullfilepath):
@@ -528,14 +486,10 @@ def get_list_of_cik_folders(FOLDER):
     return folders
 
 
-# cik_folders = get_list_of_cik_folders(CIK_FOLDER)
-
 def get_fullfilepaths_files_in_folder(folder_to_process):
     files_in_folder = [os.path.join(folder_to_process, x) for x in os.listdir(folder_to_process)]
     return files_in_folder
 
-
-# all_files = get_fullfilepaths_files_in_folder(FOLDER)
 
 
 def get_pattern_for_filename(filename, pattern):
@@ -545,8 +499,6 @@ def get_pattern_for_filename(filename, pattern):
     result = filename[s:e]
     return result
 
-
-# get_pattern_for_filename(filename, pattern)
 
 def get_cik_form_period(filename):
     edgar_items = OrderedDict()
@@ -561,19 +513,11 @@ def get_cik_form_period(filename):
     return edgar_items
 
 
-# edgar_items = get_cik_form_period(filename)
-
-
-# new_file_path = generate_new_filepath_from_dict(edgar_items)
 
 def move_file_to_new_folder(filename, new_file_path):
     basename = os.path.basename(filename)
     shutil.move(filename, new_file_path)
 
-
-# unprocessed_filings = produce(unprocessed_filings[0:5])
-# file = diff[1]
-# filename = r'C:\SEC\IN\2012\12\CIK(0000801898)_FORM(10-K)_PERIOD(20121026).zip'
 
 def convert_bytes(num):
     """

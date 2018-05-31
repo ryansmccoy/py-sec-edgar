@@ -1,4 +1,7 @@
-#https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
+
+
+
+# https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
 #/Archives/edgar/daily-index — daily index files through the current year;
 
 edgar_Archives_url = r'https://www.sec.gov/Archives/'

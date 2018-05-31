@@ -14,7 +14,7 @@ import os
 import feedparser
 from datetime import datetime
 from dateparser import parse
-from py_sec_edgar_data.utilities import flattenDict
+from py_sec_edgar_data.utilities import flattenDict, Gotem
 
 import pandas as pd
 desired_width = 600
@@ -48,7 +48,7 @@ def parse_master_idx():
         with open(old_local_master_idx, 'w') as f:
             f.write(str())
 
-    g = gotem.Gotem()
+    g = Gotem()
     g.GET_FILE(edgar_full_master, local_master_idx)
     g.GET_HTML(edgar_full_master, local_master_idx)
     df = pd.read_csv(local_master_idx, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
@@ -80,14 +80,13 @@ def parse_master_idx():
             consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)
         else:
             print("Filepath Already exists {}".format(filepath_cik))
-
             parse_and_download_quarterly_idx_file(edgar_full_master, local_master_idx)
 
 
 def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
 
     temp_filepath = os.path.join(os.path.dirname(local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
-    g = gotem.Gotem()
+    g = Gotem()
     g.GET_FILE(url, temp_filepath)
 
     temp_size = file_size(temp_filepath)
@@ -113,8 +112,6 @@ def generate_list_of_local_filings():
     files_master = [filepath for filepath in files_master if "edgar" not in os.path.basename(filepath)]
     files_master_basename = [os.path.basename(filepath).split(".")[0] for filepath in files_master if "edgar" not in os.path.basename(filepath)]
     files_master.sort(reverse=True)
-    # source_file = files[0]
-    # source_file = files[5]
 
 
 def main(edgar_feed_list="IDX"):

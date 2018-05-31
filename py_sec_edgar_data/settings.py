@@ -15,13 +15,12 @@ SEC_EDGAR_ARCHIVES_URL = r'https://www.sec.gov/Archives/'
 if platform.system() == "Windows":
     print("\nRunning Windows OS")
     ROOT_DIR = os.path.abspath(os.sep)
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    SECDATA_DIR_ROOT = os.path.dirname(BASE_DIR)
 
-    SECDATA_DIR_ROOT = os.path.join(ROOT_DIR, 'py-sec-edgar-data')
     APP_DIR = os.path.join(SECDATA_DIR_ROOT, 'py_sec_edgar_data')
-    SEC_APP_DIR = os.path.join(APP_DIR, 'sec_data')
-
+    SEC_APP_DIR = os.path.join(APP_DIR, 'py_sec_edgar_data')
     SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "sec_gov")
-
     DATA_DIR = os.path.join(SEC_GOV_DIR, r'DATA')
     SSD_DATA_DIR = os.path.join(r'B:\DATA')
     SEC_GOV_EDGAR_DIR = os.path.join(SEC_GOV_DIR, "Archives\edgar")
@@ -34,7 +33,6 @@ if platform.system() == "Windows":
     SEC_GOV_FULL_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "full-index")
     SEC_GOV_DAILY_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "daily-index")
     SEC_GOV_TXT_LATEST = os.path.join(SEC_GOV_EDGAR_DIR, latest_folder)
-
     SEC_GOV_OUTPUT_DIR = os.path.join(SEC_GOV_DIR, 'OUTPUT')
 
     if not os.path.exists(SEC_GOV_OUTPUT_DIR):
@@ -44,15 +42,16 @@ if platform.system() == "Windows":
     else:
         print("\t SEC Filing Output Directory: \t{}".format(SEC_GOV_OUTPUT_DIR))
 
-    CONFIG_DIR = os.path.join(SEC_APP_DIR, "edgar_config")
+    CONFIG_DIR = os.path.join(SECDATA_DIR_ROOT, "config")
 
 if platform.system() == "Linux":
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
     print("\nRunning on Ubuntu OS")
     ROOT_DIR = os.path.abspath(os.sep)
-    SECDATA_DIR_ROOT = os.path.join(ROOT_DIR, '')
+    SECDATA_DIR_ROOT = os.path.dirname(BASE_DIR)
     SEC_MAIN_DIR = os.path.join(ROOT_DIR, 'py-sec-edgar-data')
-    SEC_APP_DIR = os.path.join(SEC_MAIN_DIR, 'sec_data')
+    SEC_APP_DIR = os.path.join(SEC_MAIN_DIR, 'py_sec_edgar_data')
 
     SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "py_sec_edgar_data")
     DATA_DIR = os.path.join(SEC_GOV_DIR, r'DATA')
@@ -78,4 +77,4 @@ if platform.system() == "Linux":
         print("\t SEC Filing Output Directory: \t{}".format(SEC_GOV_OUTPUT_DIR))
 
     ELASTIC = "localhost:5601"
-    CONFIG_DIR = os.path.join(SEC_APP_DIR, "edgar_config")
+    CONFIG_DIR = os.path.join(SECDATA_DIR_ROOT, "config")

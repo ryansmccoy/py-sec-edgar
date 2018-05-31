@@ -103,3 +103,4 @@ ENV/
 .env
 .github
 .idea
+config

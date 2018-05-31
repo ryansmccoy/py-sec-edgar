@@ -3,7 +3,6 @@ import sys
 sys.path.append('..')
 
 from datetime import datetime
-# input_filepath = r'S:\Archives\edgar\data\2014\QTR3\0001047469-14-006723.txt'
 import pandas as pd
 
 desired_width = 400
@@ -13,22 +12,7 @@ import lxml.html
 
 import os, datetime
 
-try:
-    from edgar_filing.process_complete_submission_filing import parse_filing_header
-except:
-    from process_complete_submission_filing import parse_filing_header
-
-
-# ticker_check = r'E:\DATA\tickercheck.xlsx'
-# df_ticker_check = pd.read_excel(ticker_check,header=0,index_col=0,parse_dates=True)
-#
-# ticker_check_final = r'E:\DATA\tickers_cik.xlsx'
-# df_cik_final = pd.read_excel(ticker_check_final,header=0,index_col=0,parse_dates=True)
-# filePath = r'S:\Archives\edgar\data\2017\QTR3\0000950123-17-006152.txt'
-# filePath = r'S:\OUTPUT\0001140536-17-000008\wltw-20161231.xml'
-# input_filepath = r'S:\Archives\edgar\data\2014\QTR3\0000910406-14-000035.txt'
-# filePath = r'S:\OUTPUT\0001567619-17-000284\0021-(EX-101.INS)_XBRL_INSTANCE_FILE_lll-20161231.xml'
-# parse_xbrl_data(filePath)
+from py_sec_edgar_data.process_complete_submission_filing import parse_filing_header
 
 
 def extract_header_from_filing(input_filepath=None, header_output_filepath=None, df_bb=None, df_cik=None, ticker="--"):

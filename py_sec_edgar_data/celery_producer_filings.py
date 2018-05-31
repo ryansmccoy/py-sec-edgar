@@ -1,10 +1,9 @@
 import os.path
-from edgar_utilities.files_and_folders import walk_dir_fullfilename
 from urllib import parse
-import edgar_download.celery_consumer_filings
+import py_sec_edgar_data.celery_consumer_filings
 from dateutil.parser import parse
 from dateparser import parse
-from edgar_config import SEC_GOV_TXT_DIR,CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR,SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SSD_DATA_DIR
+from py_sec_edgar_data.settings import SEC_GOV_TXT_DIR,CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR,SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SSD_DATA_DIR
 import bisect
 from datetime import datetime, date
 from datetime import timedelta
@@ -20,6 +19,8 @@ import os
 import pandas as pd
 desired_width = 600
 pd.set_option('display.width', desired_width)
+from py_sec_edgar_data.filings_database import query_db_for_filings_data
+from py_sec_edgar_data.utilities import walk_dir_fullpath
 
 edgar_Archives_url = r'https://www.sec.gov/Archives/'
 edgar_full_index = urljoin(edgar_Archives_url,'edgar/full-index/')
@@ -78,13 +79,10 @@ def generate_folder_names_years_quarters(end_date,start_date):
     return dates_quarters
 
 def scan_all_local_filings(main_dir=SEC_GOV_EDGAR_FILINGS_DIR, year=None):
-    files = walk_dir_fullfilename(os.path.join(main_dir,"{}".format(year)))
+    files = walk_dir_fullpath(os.path.join(main_dir,"{}".format(year)))
     return files
 
-file = df_all_filings.itertuples()
-celery_enabled=False
 def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
-    # ii, file = list(enumerate(df_all_filings.itertuples()))[0]
     all_items = []
     for ii, file in enumerate(df_all_filings.itertuples()):
 
@@ -93,8 +91,6 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
 
         for k, v in dict(file._asdict()).items():
             item[k] = str(v)
-
-        # df_tick.T[item['CIK']].append(pd.DataFrame.from_dict({'FILING_{}_{}_{}'.format(item['FORM_TYPE'], item['YEAR'], item['QUARTER']): item['LOCAL']}, orient='index'))
 
         item['YEAR'] = '{}'.format(quarter[0])
         item['QUARTER']="{}".format(quarter[1])
@@ -115,7 +111,7 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
         if not os.path.exists(item['windows_output_filepath']):
             print("downloading {}".format(item['windows_output_filepath']))
             if celery_enabled == True:
-                edgar_download.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
+                py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
             else:
                 import requests
                 r = requests.get(item['URL'])
@@ -131,8 +127,6 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
 def filter_form(df_filings, form_filter):
     df_frame = df_filings[df_filings['FORM_TYPE'].isin(form_filter)]
     return df_frame
-
-from edgar_database.query_sqlite_filing_master import query_db_for_filings_data
 
 
 def main():

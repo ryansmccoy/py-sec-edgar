@@ -8,7 +8,7 @@ import pytest
 from click.testing import CliRunner
 
 from py_sec_edgar_data import py_sec_edgar_data
-from py_sec_edgar_data import cli
+from py_sec_edgar_data import main
 
 
 @pytest.fixture
@@ -30,9 +30,9 @@ def test_content(response):
 def test_command_line_interface():
     """Test the CLI."""
     runner = CliRunner()
-    result = runner.invoke(cli.main)
+    result = runner.invoke(main.main)
     assert result.exit_code == 0
     assert 'py_sec_edgar_data.cli.main' in result.output
-    help_result = runner.invoke(cli.main, ['--help'])
+    help_result = runner.invoke(main.main, ['--help'])
     assert help_result.exit_code == 0
     assert '--help  Show this message and exit.' in help_result.output
