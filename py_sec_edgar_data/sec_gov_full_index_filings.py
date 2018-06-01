@@ -2,6 +2,7 @@ import json
 import os
 import sqlite3
 from urllib.parse import urljoin
+from py_sec_edgar_data.utilities import walk_dir_fullpath, Gotem
 
 import pandas as pd
 

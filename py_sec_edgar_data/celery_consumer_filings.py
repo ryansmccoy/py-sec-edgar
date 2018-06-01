@@ -9,7 +9,7 @@ import os.path
 import pandas as pd
 import os
 from time import sleep
-from py_sec_edgar_data.settings import SEC_GOV_EDGAR_FILINGS_DIR, SEC_GOV_FULL_INDEX_DIR, SSD_DATA_DIR, OUTPUT_DIR
+from py_sec_edgar_data.settings import SEC_GOV_EDGAR_FILINGS_DIR, SEC_GOV_FULL_INDEX_DIR, OUTPUT_DIR
 from py_sec_edgar_data.utilities import Gotem
 from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename
 from py_sec_edgar_data.cik_ticker_loader import cik2ticker, get_cik_from_ticker

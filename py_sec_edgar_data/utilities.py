@@ -57,7 +57,7 @@ class Gotem(object):
                          'User-Agent': self.user_agent}
         self.response = ""
         self.datastoragetype = None
-        self.connect_timeout, self.read_timeout = 5.0, 30.0
+        self.connect_timeout, self.read_timeout = 10.0, 30.0
         self.retry_counter = 3
         self.url = "No Url"
 
@@ -76,7 +76,7 @@ class Gotem(object):
         self.host = self._generate_random_nordvpn_ip()
         self.proxies = {
             'http': 'http://' + self.USERNAME + ':' + self.PASSWORD + '@' + self.host + ":" + '80',
-            'https': 'https://' + self.USERNAME + ':' + self.PASSWORD + '@' + self.host + ":" + '80'
+        'https': 'http://' + self.USERNAME + ':' + self.PASSWORD + '@' + self.host + ":" + '80'
         }
 
     def _generate_random_user_agent(self):
@@ -96,7 +96,6 @@ class Gotem(object):
         try:
             self.r = requests.get(url, stream=True, headers=self._headers, proxies=self.proxies, timeout=(self.connect_timeout, self.read_timeout))
             print('HTML Downloaded: {}'.format(url))
-            return
         except:
             print("Retrying:", retry_counter)
             retry_counter -= 1
@@ -136,8 +135,7 @@ class Gotem(object):
         retry_counter = self.retry_counter
         while retry_counter > 0:
             try:
-                self.r = requests.get(url, stream=True, headers=self._headers, proxies=self.proxies,
-                                      timeout=(self.connect_timeout, self.read_timeout))
+                self.r = requests.get(url, stream=True, headers=self._headers, proxies=self.proxies, timeout=(self.connect_timeout, self.read_timeout))
                 print('request made', self.proxies)
                 with open(filepath, 'wb') as f:
                     for chunk in self.r.iter_content(chunk_size=1024):
@@ -145,8 +143,9 @@ class Gotem(object):
                             f.write(chunk)
                 status = "success"
                 return status
-            except:
-                print("Retrying:", retry_counter)
+            except Exception as e:
+
+                print("{} \n\n\t Retrying:".format(e), retry_counter)
                 self._generate_random_nordvpn_ip()
                 self._generate_random_proxy_hosts()
                 time.sleep(1)
@@ -169,16 +168,16 @@ class Gotem(object):
     def GET_URLS(self, url):
         self.url = url
         try:
-            html = self.GET_HTML(self.url)
-            html = lxml.html.fromstring(html.text)
+            self.GET_HTML(url)
+            html = lxml.html.fromstring(self.r.text)
             html.make_links_absolute(url)
             html = lxml.html.tostring(html)
             soup = BeautifulSoup(html, 'lxml')
             urls = []
             [urls.append(link['href']) for link in soup.find_all('a', href=True)]
             self.list_urls = urls
-        except:
-            print("error w/ GET_URLS")
+        except Exception as e:
+            print(e)
 
     def __repr__(self):
         return "URL: {}".format(self.url)

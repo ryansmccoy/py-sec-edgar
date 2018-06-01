@@ -2,7 +2,7 @@ import os
 import glob
 from datetime import datetime
 from urllib.parse import urljoin
-from py_sec_edgar_data.settings import SEC_GOV_TXT_DIR, CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR, SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SEC_EDGAR_ARCHIVES_URL,SEC_GOV_MONTHLY_DIR,SEC_GOV_TXT_LATEST, BASE_DIR
+from py_sec_edgar_data.settings import SEC_GOV_TXT_DIR, CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR, SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SEC_EDGAR_ARCHIVES_URL,SEC_GOV_MONTHLY_DIR,SEC_GOV_TXT_LATEST, BASE_DIR, DATA_DIR,SEC_GOV_DAILY_INDEX_DIR
 from py_sec_edgar_data.utilities import walk_dir_fullpath, Gotem
 from datetime import datetime, date
 from datetime import timedelta
@@ -20,27 +20,80 @@ sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekda
 
 idx_files = glob.glob(os.path.join(SEC_GOV_MONTHLY_DIR,"*.xlsx"))
 idx_files.sort(reverse=True)
+g = Gotem()
+
 
 def download_recent_edgar_filings_xbrl_rss_feed():
-    basename = 'xbrlrss-' + str(datetime.now().year) + '-' + str(datetime.now().month).zfill(2) + ".xml"
-    filepath = os.path.join(SEC_GOV_TXT_LATEST, basename)
-    edgarFilingsFeed = parse.urljoin('http://www.sec.gov/Archives/edgar/monthly/', basename)
-    g = Gotem()
-    g.GET_FILE(edgarFilingsFeed, filepath)
-    return filepath
+    for _ in range(1,2):
+        print(_)
+        try:
+            basename = 'xbrlrss-' + str(datetime.now().year) + '-' + str(datetime.now().month - _).zfill(2) + ".xml"
+            filepath = os.path.join(SEC_GOV_MONTHLY_DIR, basename)
+            edgarFilingsFeed = parse.urljoin('https://www.sec.gov/Archives/edgar/monthly/', basename)
+            g.GET_FILE(edgarFilingsFeed, filepath)
+        except Exception as e:
+            print(e)
+
+def edgar_filings_feed(year, month):
+    basename = 'xbrlrss-' + str(year) + '-' + str(month).zfill(2)
+    print(basename)
+    localfilename = os.path.join(X, basename + ".xml")
+    if os.path.exists(localfilename):
+        edgarFilingsFeed = localfilename
+        print("found local xbrl file")
+    else:
+        print("Did not find local xbrl file...Downloading")
+        edgarFilingsFeed = parse.urljoin('http://www.sec.gov/Archives/edgar/monthly/', basename + ".xml")
+        g.GET_FILE(edgarFilingsFeed, localfilename)
+    return basename, localfilename
 
 def generate_monthly_index_url_and_filepaths(day):
     basename = 'xbrlrss-' + str(day.year) + '-' + str(day.month).zfill(2)
     monthly_local_filepath = os.path.join(SEC_GOV_MONTHLY_DIR, basename + ".xml")
-    monthly_url = urljoin('http://www.sec.gov/Archives/edgar/monthly/', basename + ".xml")
+    monthly_url = urljoin('https://www.sec.gov/Archives/edgar/monthly/', basename + ".xml")
     return monthly_url, monthly_local_filepath
+# https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
+#/Archives/edgar/daily-index — daily index files through the current year;
 
+edgar_Archives_url = r'https://www.sec.gov/Archives/'
+
+edgar_daily_index = urljoin(edgar_Archives_url,'edgar/daily-index/')
+
+def generate_daily_index_urls_and_filepaths(day):
+    edgar_url = r'https://www.sec.gov/Archives/edgar/'
+    daily_files_templates = ["master", "form", "company", "crawler", "sitemap"]
+    date_formated = datetime.strftime(day, "%Y%m%d")
+    daily_files = []
+    for template in daily_files_templates:
+        download_url = urljoin(edgar_url, "daily-index/{}/QTR{}/{}.{}.idx".format(day.year, day.quarter, template, date_formated))
+        local_filepath = os.path.join(SEC_GOV_DAILY_INDEX_DIR, "{}".format(day.year), "QTR{}".format(day.quarter), "{}.{}.idx".format(template, date_formated))
+        daily_files.append((download_url, local_filepath))
+    daily_files[-1] = (daily_files[-1][0].replace("idx", "xml"), daily_files[-1][1].replace("idx", "xml"))
+    return daily_files
+
+
+def update_daily_files():
+    for i, day in enumerate(sec_dates_weekdays):
+        daily_files = generate_daily_index_urls_and_filepaths(day)
+        # url, local = daily_files[0]
+        for daily_url, daily_local_filepath in daily_files:
+            if consecutive_days_same < 5 and os.path.exists(daily_local_filepath):
+                status = determine_if_sec_edgar_feed_and_local_files_differ(daily_url, daily_local_filepath)
+                consecutive_days_same = 0
+            elif consecutive_days_same > 5 and os.path.exists(daily_local_filepath):
+                pass
+            else:
+                g = gotem.Gotem()
+                g.GET_FILE(daily_url,daily_local_filepath)
+
+
+edgar_monthly_url = r"https://www.sec.gov/Archives/edgar/monthly/"
 def get_sec_monthly_listings():
     g = Gotem()
-    g.GET_URLS(edgar_monthly_url)
+    g.GET_HTML(edgar_monthly_url)
     urls = [i for i in g.list_urls if "xml" in i]
     urls.sort(reverse=True)
-    print("Downloading Edgar Monthly XML Files to :" + SEC_XBRL_MONTHLY_DIR)
+    print("Downloading Edgar Monthly XML Files to :" + SEC_GOV_MONTHLY_DIR)
     df = pd.DataFrame(urls, columns=['URLS'])
     df.to_excel(secfiles_urls)
     for url in urls:
@@ -52,12 +105,14 @@ def get_sec_monthly_listings():
 
 def parse_monthly():
     tickercheck_cik = os.path.join(DATA_DIR, 'TICKERCHECK_CIK_COMPANIES_ONLY.xlsx')
-    cik_ticker = os.path.join(DATA_DIR, 'cik_ticker.xlsx')
+    cik_ticker = os.path.join(DATA_DIR, 'cik_ticker_name_exchange_sic_business_incorporated_irs.xlsx')
     df_tickercheck = pd.read_excel(tickercheck_cik, index_col=0, header=0)
     df_cik_ticker = pd.read_excel(cik_ticker, index_col=0, header=0)
     df_cik_ticker = df_cik_ticker.reset_index()
     # i, day = list(enumerate(sec_dates_months))[0]
+    prev_val = datetime.today()
     for i, day in enumerate(sec_dates_months):
+
         if day.month != prev_val.month:
             monthly_url, monthly_local_filepath= generate_monthly_index_url_and_filepaths(day)
             status = determine_if_sec_edgar_feed_and_local_files_differ(monthly_url, monthly_local_filepath)
@@ -94,3 +149,7 @@ def parse_monthly():
         #
         # if day.year != prev_val.year:
         #     pass
+
+if __name__ == "__main__":
+    g = Gotem()
+    g.GET_URLS(edgar_monthly_url)
