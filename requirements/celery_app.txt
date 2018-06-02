@@ -1,0 +1,12 @@
+amqp==2.2.2
+attrs==17.4.0
+billiard==3.5.0.3
+celery==4.1.0
+kombu==4.1.0
+pluggy==0.6.0
+py==1.5.2
+pytest==3.4.1
+pytz==2018.3
+six==1.11.0
+vine==1.1.4
+psycopg2==2.7.4

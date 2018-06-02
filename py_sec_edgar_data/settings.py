@@ -16,78 +16,87 @@ load_dotenv(find_dotenv())
 
 # print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-if platform.system() == "Windows":
-    print("\nRunning Windows OS")
-    ROOT_DIR = os.path.abspath(os.sep)
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    SECDATA_DIR_ROOT = os.path.dirname(BASE_DIR)
+class Config(object):
 
-    APP_DIR = os.path.join(SECDATA_DIR_ROOT, 'py_sec_edgar_data')
-    SEC_APP_DIR = os.path.join(APP_DIR)
-    SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "sec_gov")
 
-    DATA_DIR = os.path.join(SECDATA_DIR_ROOT, r'data')
 
-    SEC_GOV_EDGAR_DIR = os.path.join(SEC_GOV_DIR, "Archives\edgar")
+    if platform.system() == "Windows":
+        print("\nRunning Windows OS")
+        ROOT_DIR = os.path.abspath(os.sep)
+        BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+        SECDATA_DIR_ROOT = os.path.dirname(BASE_DIR)
 
-    OUTPUT_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "data")
+        APP_DIR = os.path.join(SECDATA_DIR_ROOT, 'py_sec_edgar_data')
+        SEC_APP_DIR = os.path.join(APP_DIR)
+        SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT, "sec_gov")
 
-    SEC_GOV_EDGAR_FILINGS_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "filings")
+        DATA_DIR = os.path.join(SECDATA_DIR_ROOT, r'data')
 
-    SEC_GOV_TXT_DIR =  os.path.join(SEC_GOV_EDGAR_DIR, "filings")
-    SEC_GOV_MONTHLY_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "monthly")
-    SEC_GOV_FULL_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "full-index")
-    SEC_GOV_DAILY_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "daily-index")
-    SEC_GOV_TXT_LATEST = os.path.join(SEC_GOV_EDGAR_DIR, latest_folder)
-    SEC_GOV_OUTPUT_DIR = os.path.join(SEC_GOV_DIR, 'OUTPUT')
+        SEC_GOV_EDGAR_DIR = os.path.join(SEC_GOV_DIR, "Archives\edgar")
 
-    dirs_all = [SEC_GOV_EDGAR_DIR,OUTPUT_DIR,SEC_GOV_EDGAR_FILINGS_DIR,SEC_GOV_TXT_DIR,SEC_GOV_MONTHLY_DIR,SEC_GOV_FULL_INDEX_DIR,SEC_GOV_DAILY_INDEX_DIR,SEC_GOV_TXT_LATEST,SEC_GOV_OUTPUT_DIR]
+        OUTPUT_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "data")
 
-    for _ in dirs_all:
+        SEC_GOV_EDGAR_FILINGS_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "filings")
 
-        if not os.path.exists(_):
-            print("{} Doesn't Exists".format(_))
-            print("Creating Directory")
-            os.makedirs(_)
-        else:
-            print("\t SEC Filing Output Directory: \t{}".format(_))
+        SEC_GOV_TXT_DIR =  os.path.join(SEC_GOV_EDGAR_DIR, "filings")
+        SEC_GOV_MONTHLY_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "monthly")
+        SEC_GOV_FULL_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "full-index")
+        SEC_GOV_DAILY_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "daily-index")
+        SEC_GOV_TXT_LATEST = os.path.join(SEC_GOV_EDGAR_DIR, latest_folder)
+        SEC_GOV_XBRL_ZIP_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "xbrl-zip")
+        SEC_GOV_XBRL_TXT_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "xbrl")
 
-    CONFIG_DIR = os.path.join(SECDATA_DIR_ROOT, "config")
+        dirs_all = [SEC_GOV_EDGAR_DIR,OUTPUT_DIR,SEC_GOV_EDGAR_FILINGS_DIR,SEC_GOV_TXT_DIR,SEC_GOV_MONTHLY_DIR,SEC_GOV_FULL_INDEX_DIR,SEC_GOV_DAILY_INDEX_DIR,SEC_GOV_TXT_LATEST,SEC_GOV_XBRL_TXT_DIR]
 
-if platform.system() == "Linux":
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+        for _ in dirs_all:
 
-    print("\nRunning on Ubuntu OS")
-    ROOT_DIR = os.path.abspath(os.sep)
-    SECDATA_DIR_ROOT = os.path.dirname(BASE_DIR)
-    SEC_MAIN_DIR = os.path.join(ROOT_DIR, 'py-sec-edgar-data')
-    SEC_APP_DIR = os.path.join(SEC_MAIN_DIR, 'py_sec_edgar_data')
+            if not os.path.exists(_):
+                print("{} Doesn't Exists".format(_))
+                print("Creating Directory")
+                os.makedirs(_)
+            else:
+                print("\t SEC Filing Output Directory: \t{}".format(_))
 
-    SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT)
-    DATA_DIR = os.path.join(SECDATA_DIR_ROOT, r'data')
-    SEC_GOV_EDGAR_DIR =  os.path.join(SEC_GOV_DIR, "Archives","edgar")
-    OUTPUT_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "data")
-    SEC_GOV_EDGAR_FILINGS_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "filings")
+        CONFIG_DIR = os.path.join(SECDATA_DIR_ROOT, "config")
 
-    SEC_GOV_TXT_DIR =  os.path.join(SEC_GOV_EDGAR_DIR, "filings")
-    SEC_GOV_MONTHLY_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "monthly")
-    SEC_GOV_FULL_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "full-index")
-    SEC_GOV_DAILY_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "daily-index")
-    SEC_GOV_TXT_LATEST = os.path.join(SEC_GOV_EDGAR_DIR, latest_folder)
-    SSD_DATA_DIR = os.path.join(SECDATA_DIR_ROOT,'data')
+    elif platform.system() == "Linux":
+        BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-    SEC_GOV_OUTPUT_DIR = os.path.join(SEC_GOV_DIR, 'OUTPUT')
+        print("\nRunning on Ubuntu OS")
+        ROOT_DIR = os.path.abspath(os.sep)
+        SECDATA_DIR_ROOT = os.path.dirname(BASE_DIR)
+        SEC_MAIN_DIR = os.path.join(ROOT_DIR, 'py-sec-edgar-data')
+        SEC_APP_DIR = os.path.join(SEC_MAIN_DIR, 'py_sec_edgar_data')
 
-    dirs_all = [SEC_GOV_EDGAR_DIR, OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SEC_GOV_TXT_DIR, SEC_GOV_MONTHLY_DIR, SEC_GOV_FULL_INDEX_DIR, SEC_GOV_DAILY_INDEX_DIR, SEC_GOV_TXT_LATEST, SEC_GOV_OUTPUT_DIR]
+        SEC_GOV_DIR = os.path.join(SECDATA_DIR_ROOT)
+        DATA_DIR = os.path.join(SECDATA_DIR_ROOT, r'data')
+        SEC_GOV_EDGAR_DIR =  os.path.join(SEC_GOV_DIR, "Archives","edgar")
+        OUTPUT_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "data")
+        SEC_GOV_EDGAR_FILINGS_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "filings")
 
-    for _ in dirs_all:
+        SEC_GOV_TXT_DIR =  os.path.join(SEC_GOV_EDGAR_DIR, "filings")
+        SEC_GOV_MONTHLY_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "monthly")
+        SEC_GOV_FULL_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "full-index")
+        SEC_GOV_DAILY_INDEX_DIR = os.path.join(SEC_GOV_EDGAR_DIR, "daily-index")
+        SEC_GOV_TXT_LATEST = os.path.join(SEC_GOV_EDGAR_DIR, latest_folder)
+        SSD_DATA_DIR = os.path.join(SECDATA_DIR_ROOT,'data')
 
-        if not os.path.exists(_):
-            print("{} Doesn't Exists".format(_))
-            print("Creating Directory")
-            os.makedirs(_)
-        else:
-            print("\t SEC Filing Output Directory: \t{}".format(_))
+        SEC_GOV_OUTPUT_DIR = os.path.join(SEC_GOV_DIR, 'OUTPUT')
 
-    ELASTIC = "localhost:5601"
-    CONFIG_DIR = os.path.join(SECDATA_DIR_ROOT, "config")
+        dirs_all = [SEC_GOV_EDGAR_DIR, OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SEC_GOV_TXT_DIR, SEC_GOV_MONTHLY_DIR, SEC_GOV_FULL_INDEX_DIR, SEC_GOV_DAILY_INDEX_DIR, SEC_GOV_TXT_LATEST, SEC_GOV_OUTPUT_DIR]
+
+        for _ in dirs_all:
+
+            if not os.path.exists(_):
+                print("{} Doesn't Exists".format(_))
+                print("Creating Directory")
+                os.makedirs(_)
+            else:
+                print("\t SEC Filing Output Directory: \t{}".format(_))
+
+        ELASTIC = "localhost:5601"
+        CONFIG_DIR = os.path.join(SECDATA_DIR_ROOT, "config")
+
+    tickercheck = os.path.join(DATA_DIR, "TICKERCHECK_CIK_COMPANIES_ONLY.xlsx")
+    monthly_urls = os.path.join(DATA_DIR, "sec_gov_archives_edgar_monthly_xbrl_urls.xlsx.xlsx")
+

@@ -3,16 +3,13 @@ from urllib import parse
 import py_sec_edgar_data.celery_consumer_filings
 from dateutil.parser import parse
 from dateparser import parse
-from py_sec_edgar_data.settings import SEC_GOV_TXT_DIR,CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR,SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SSD_DATA_DIR
 import bisect
 from datetime import datetime, date
 from datetime import timedelta
 import sqlite3
-from py_sec_edgar_data.settings import DATA_DIR
 import os
 from urllib.parse import urljoin
 import pandas as pd
-from py_sec_edgar_data.settings import SEC_GOV_TXT_DIR, CONFIG_DIR, SEC_GOV_FULL_INDEX_DIR, SEC_GOV_OUTPUT_DIR, SEC_GOV_EDGAR_FILINGS_DIR, SEC_EDGAR_ARCHIVES_URL
 import json
 import glob
 import os
@@ -30,23 +27,12 @@ sec_dates = pd.date_range(datetime.today() - timedelta(days=365*22), datetime.to
 sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
 sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
 sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
-
-import platform
-if platform.system() == "WINDOWS":
-    filing_master = r'E:\DATA\FILINGS_MASTER.db'
-    conn_filing_master = sqlite3.connect(filing_master)
+from py_sec_edgar_data.settings import Config
+CONFIG = Config()
 
 # form_filter = ['8-K','424','424']
 # form_filter = ['10-K']
-
-    form_list = r'C:\SECDATA\sec-data-python\sec_data\edgar_config\filing+types.xlsx'
-    df_forms = pd.read_excel(form_list,header=0)
-    df_cik = pd.read_excel(r'I:\excel\CIK_BANKS_HEALTHCARE.xlsx')
-    df_cik = df_cik[df_cik>0].dropna()
-    tickercheck = r'U:\tickercheck.xlsx'
-
 #conn_local = sqlite3.connect(os.path.join(DATA_DIR, "LOCAL_FILEPATHS.DB"))
-
 
 def get_quarter_begin(date_value):
     qbegins = [date(date_value.year, month, 1) for month in (1, 4, 7, 10)]
@@ -61,7 +47,8 @@ def edgar_filing_idx_create_filename(item):
     return edgfilepath
 
 def cik_ticker_lookup():
-    df_tickcheck = pd.read_excel(tickercheck, index_col=0, header=0)
+
+    df_tickcheck = pd.read_excel(CONFIG.tickercheck, index_col=0, header=0)
     df_tickcheck['CIK'] = df_tickcheck['CIK'].fillna("-1").astype(int).astype(str)
     df_tick = df_tickcheck.set_index('CIK')
     df_tick = df_tick[df_tick.index != "-1"]
@@ -78,7 +65,7 @@ def generate_folder_names_years_quarters(end_date,start_date):
     dates_quarters.sort(reverse=True)
     return dates_quarters
 
-def scan_all_local_filings(main_dir=SEC_GOV_EDGAR_FILINGS_DIR, year=None):
+def scan_all_local_filings(main_dir=CONFIG.SEC_GOV_EDGAR_FILINGS_DIR, year=None):
     files = walk_dir_fullpath(os.path.join(main_dir,"{}".format(year)))
     return files
 
@@ -101,8 +88,8 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
         item['OUTPUT_FOLDER'] = 'filings'
         item['OVERWRITE_FILE'] = False
 
-        item['windows_output_folder'] = os.path.join(SEC_GOV_EDGAR_FILINGS_DIR,os.path.dirname(item['LOCAL']))
-        item['windows_output_filepath'] = os.path.join(SEC_GOV_EDGAR_FILINGS_DIR,item['LOCAL'])
+        item['windows_output_folder'] = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR,os.path.dirname(item['LOCAL']))
+        item['windows_output_filepath'] = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR,item['LOCAL'])
         all_items.append(item)
 
         if not os.path.exists(item['windows_output_folder']):
@@ -122,6 +109,24 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
 
     return all_items
     #df.to_sql("LOCAL_FILEPATHS",conn_local, if_exists='append',index=False)
+
+
+def download_latest_quarterly_full_index_files():
+    # i, file = list(enumerate(full_index_files))[0]
+
+    for i, file in enumerate(full_index_files):
+        item = {}
+        item['OUTPUT_FOLDER'] = 'full-index'
+        item['RELATIVE_FILEPATH'] = '{}'.format(file)
+        item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_GOV_FULL_INDEX_DIR
+        item['URL'] = urljoin(CONFIG.SEC_EDGAR_ARCHIVES_URL, 'edgar/full-index/{}'.format(file))
+        item['OVERWRITE_FILE'] = True
+        dir_name = os.path.dirname(os.path.join(CONFIG.SEC_GOV_FULL_INDEX_DIR, item['RELATIVE_FILEPATH']))
+
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+
+        py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
 
 
 def filter_form(df_filings, form_filter):
@@ -150,7 +155,7 @@ def main():
 
     all_items = celery_feed_all_filings_for_download(df_frame.iloc[0:5000,:])
     df_all_items = pd.DataFrame(all_items)
-    df_all_items.to_csv(os.path.join(DATA_DIR,"N-Q_filings.csv"))
+    df_all_items.to_csv(os.path.join(CONFIG.DATA_DIR,"N-Q_filings.csv"))
     for year, quarter in dates_quarters:
         years_all.append(year)
 
@@ -170,9 +175,9 @@ def main():
     df_all_filings['SHORT'] = df_all_filings['FILENAME'].apply(lambda x: x.split("/")[-1])
 
     df_l  = pd.DataFrame(uni,columns=['FILENAME'])
-    df_l.to_excel(os.path.join(SSD_DATA_DIR,"all_filings_local.xlsx"))
+    df_l.to_excel(os.path.join(CONFIG.DATA_DIR,"all_filings_local.xlsx"))
     df_all_downloaded = df_all_filings[df_all_filings['SHORT'].isin(uni)]
-    df_all_downloaded.to_excel(os.path.join(SSD_DATA_DIR,"all_fili2ngs.xlsx"))
+    df_all_downloaded.to_excel(os.path.join(CONFIG.DATA_DIR,"all_fili2ngs.xlsx"))
 
 
 

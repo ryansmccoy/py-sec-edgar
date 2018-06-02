@@ -544,3 +544,146 @@ def edgar_filing_idx_create_filename(item):
         item['edgar_formtype'], str(item['edgar_period']))
     edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\", "_").replace("__", "_").replace("_txt", "")
     return edgfilepath
+
+
+import os
+import time
+from datetime import date
+from time import mktime
+from urllib.parse import urljoin,urldefrag
+from dateutil.parser import parse
+from time import mktime
+from datetime import datetime
+
+def create_edgarfilename(basename, item):
+    try:
+        edgfilepath = str(basename + "#2_" + item['edgar_filenumber'] + "_#3_" + date.fromtimestamp(
+            mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
+                              'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
+                              'edgar_formtype'] + "_#7_" + item['edgar_period'])
+    except:
+        edgfilepath = str(basename + "#2_" + item['edgar_filenumber'] + "_#3_" + date.fromtimestamp(
+            mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
+                              'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
+                              'edgar_formtype'] + "_#7_" + "NOPERIOD")
+
+
+    return edgfilepath
+
+
+def remove_bad_char(strng):
+    try:
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        edgar_filename_create = ''.join(c for c in strng if c in valid_chars)
+    except:
+        print(edgar_filename_create)
+    return edgar_filename_create
+
+
+def create_edgarfilename_one(item):
+    try:
+        # if ("10-K" in item["edgar_formtype"]) or ("S-1" in item["edgar_formtype"]) or ("20-F" in item["edgar_formtype"]) or ("8-K" in item["edgar_formtype"]):
+        edgfilename = str("#2_" + item['edgar_filenumber'] + "_#3_" + datetime.fromtimestamp(
+            mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
+                              'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
+                              'edgar_formtype'] + "_#7_" + item['edgar_period'])
+    except:
+        print("exception: Trying without Period")
+        edgfilename = str("#2_" + item['edgar_filenumber'] + "_#3_" + datetime.fromtimestamp(
+            mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
+                              'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
+                              'edgar_formtype'] + "_#7_" + "NOPERIOD")
+
+    edgfilename.replace(" ", "_").replace(".", "_").replace(
+        ",", "_").replace("/", "_").replace("__", "_").replace("/", "_")
+    print(edgfilename)
+    return edgfilename
+
+
+def edgar_filing_idx_create_filename(item):
+    date_string = str(parse(item['published']).strftime("%Y-%m-%dTZ%H-%M-%S"))
+    edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}.txt'.format(
+        str(item['edgar_filingdate'][0:6]), os.path.dirname(item['link'].replace(r'http://www.sec.gov/Archives/',"")).replace("/","_"), date_string, item['edgar_ciknumber'], "TICKER", item['edgar_companyname'],item['edgar_formtype'], str(item['edgar_period']))
+    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\","_").replace("__", "_").replace("_txt", "")
+    return edgfilepath
+
+def split_edgarfilename(filepath):
+    filepath_stats = {}
+
+    name_list = ['SEC_SOURCE', 'SEC_UID', 'SEC_DATETIME', 'SEC_CIK', 'TICKER_NAME', 'SEC_FORM', 'SEC_PERIOD']
+
+    # split basename of edgar filing by # then if 2nd character is _ then start from 2 and upper else upper
+    value_list = [value[2:].upper() if value[1] == "_" else value.upper() for value in os.path.basename(filepath).split("_#")]
+
+    filepath_stats.update(dict(list(zip(name_list, value_list))))
+
+    filepath_stats['SEC_DATE'] = filepath_stats['SEC_DATETIME'].split("TZ")[0]
+    filepath_stats['SEC_PERIOD'] = filepath_stats['SEC_PERIOD'].split(".")[0].replace(".txt","")
+    filepath_stats['SEC_YEAR'] = int(filepath_stats['SEC_PERIOD'][0:4])
+    filepath_stats["TICKER"] = filepath_stats["TICKER_NAME"].split(")")[0][1:]
+    filepath_stats["NAME"] = filepath_stats["TICKER_NAME"].split(")")[1][1:]
+    filepath_stats['FILEPATH'] = filepath.upper()
+    filepath_stats['DIRECTORY'] = os.path.dirname(filepath.upper())
+    filepath_stats['BASENAME'] = os.path.basename(filepath.upper())
+    filepath_stats['SEC_ARCHIVES_INDEX_URL'] = urljoin("https://www.sec.gov/Archives/", filepath_stats['SEC_UID'].replace("_","/").lower() + "-index.htm")
+    filepath_stats['SEC_ARCHIVES_COMPLETE_FILING_URL'] = urljoin("https://www.sec.gov/Archives/",
+                                                                 filepath_stats['SEC_UID'].replace("_","/").lower().replace("-","") + "/" +
+                                                                 filepath_stats['SEC_UID'].split("_")[-1] + ".txt")
+    try:
+        filepath_stats['DATE_MODIFIED'] = time.strftime("%Y%m%dT%H%M%S", time.localtime(os.path.getmtime(filepath)))
+        filepath_stats['DATE_CREATED'] = time.strftime("%Y%m%dT%H%M%S", time.localtime(os.path.getctime(filepath)))
+    except:
+        filepath_stats['DATE_MODIFIED'] = "#N/A"
+        filepath_stats['DATE_CREATED'] = "#N/A"
+
+    return filepath_stats
+
+
+def create_edgarfilename(basename, item, flat_item):
+    try:
+        # if ("10-K" in item["edgar_formtype"]) or ("S-1" in item["edgar_formtype"]) or ("20-F" in item["edgar_formtype"]) or ("8-K" in item["edgar_formtype"]):
+        edgfilename = str(basename + "_#2_" + item['edgar_filenumber'] + "_#3_" + date.fromtimestamp(
+            mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
+                              'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
+                              'edgar_formtype'] + "_#7_" + item['edgar_period'])
+    except:
+        edgfilename = str(basename + "#2_" + item['edgar_filenumber'] + "_#3_" + date.fromtimestamp(
+            mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
+                              'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
+                              'edgar_formtype'] + "_#7_" + "NOPERIOD")
+
+    edgfilename = edgfilename.replace(" ", "_")
+    edgfilename = edgfilename.replace(",", "_")
+    edgfilename = edgfilename.replace(".", "_")
+    edgfilename = edgfilename.replace("/", "_")
+    edgfilename = edgfilename.replace("\\", "_")
+    edgfilename = edgfilename.replace("__", "_")
+    return edgfilename
+
+def edgar_filing_idx_create_filename(item):
+    date_string = str(parse(item['published']).strftime("%Y-%m-%dTZ%H-%M-%S"))
+    edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}.txt'.format(
+        item['edgar_filingdate'][0:6], os.path.dirname(item['link'].replace(r'http://www.sec.gov/Archives/',"")).replace("/","_"), date_string, item['edgar_ciknumber'], "TICKER", item['edgar_companyname'],item['edgar_formtype'], item['edgar_period'])
+    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\","_").replace("__", "_")
+    return edgfilepath
+
+
+def edgar_filing_idx_create_filename(basename, item, ticker):
+    date_string = datetime.strftime(parse(str(item['published'])), "%Y-%m-%dTZ%H-%M-%S")
+    try:
+        edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/',"").replace(".txt","").replace("/","_").replace("-index.htm",""), date_string, item['edgar_ciknumber'],ticker , item['edgar_companyname'],item['edgar_formtype'], item['edgar_period'])
+    except:
+        edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'],item['edgar_formtype'], "NOPERIOD")
+
+    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\","_").replace("__", "_")
+    return edgfilepath + ".txt"
+
+def edgar_filing_txt_create_filename(basename, item, ticker):
+    date_string = datetime.strftime(parse(str(item['published'])), "%Y-%m-%dTZ%H-%M-%S")
+    try:
+        edgfilepath = 'edgaridx-{}_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/',"").replace(".txt","").replace("/","_").replace("-index.htm",""), date_string, item['edgar_ciknumber'],ticker , item['edgar_companyname'],item['edgar_formtype'], item['edgar_period'])
+    except:
+        edgfilepath = 'edgaridx-{}_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'],item['edgar_formtype'], "NOPERIOD")
+
+    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\","_").replace("__", "_")
+    return edgfilepath + ".txt"

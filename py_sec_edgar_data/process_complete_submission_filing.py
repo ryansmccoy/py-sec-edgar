@@ -18,11 +18,11 @@ from html import unescape
 from pprint import pprint
 import lxml.html
 from bs4 import BeautifulSoup
+from py_sec_edgar_data.settings import Config
+CONFIG = Config()
 
-try:
-    import edgar_utilities.edgar_filename
-except:
-    import edgar_filename
+from py_sec_edgar_data.utilities import split_edgarfilename
+
 
 from py_sec_edgar_data.utilities import file_size
 
@@ -40,8 +40,6 @@ import os
 # input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000065984-17-000098.txt'
 from py_sec_edgar_data.utilities import format_filename
 from py_sec_edgar_data.utilities import uudecode
-from py_sec_edgar_data.settings import OUTPUT_DIR
-
 
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
@@ -427,3 +425,21 @@ header = {
         "FORMER CONFORMED NAME": "",
         "DATE OF NAME CHANGE": ""}
 }
+
+
+# https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
+#/Archives/edgar/daily-index — daily index files through the current year;
+
+
+if __name__ == '__main__':
+
+    import argparse
+    parser = argparse.ArgumentParser(description='SEC DATA Extract Header from Filing')
+    parser.add_argument('--input_filepath', help='Input the Year(s) or ALL', action='append', nargs='*')
+    parser.add_argument('--ticker', help='Input the Ticker(s) or ALL keyword', action='append', nargs='*')
+
+    if len(sys.argv[1:]) >= 1:
+        args = parser.parse_args()
+        extract_header_from_filing(input_filepath=args.input_filepath[0], ticker=args.ticker[0])
+    else:
+        sys.exit(parser.print_help())

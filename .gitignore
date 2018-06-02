@@ -103,5 +103,6 @@ ENV/
 .env
 .github
 .idea
-config
+config/user_agents.txt
+config/vpn.py
 sec_gov

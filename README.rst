@@ -19,15 +19,14 @@ Python package used to download SEC Edgar filings
 
 * Documentation: https://py-sec-edgar-data.readthedocs.io.
 
-
-Install
+Run
 -------
 
 .. code-block:: bash
 
     $  docker run -d -p 5672:5672 -p 15672:15672 --name sec-rabbit rabbitmq:management
     $  celery -A edgar_download.celery_download_complete_submission_filing worker --loglevel=info
-    $  python -A edgar_download.celery_download_complete_submission_filing worker --loglevel=info
+    $  python
 
 
 or the latest development version from github:

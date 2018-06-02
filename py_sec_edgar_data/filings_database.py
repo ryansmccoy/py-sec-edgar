@@ -38,3 +38,32 @@ def query_db_for_filings_data(date_qtr, form_filter=None, cik=None, LATEST_VAR=F
     df_all = df_frame.drop_duplicates(subset=['FILENAME'])
 
     return df_all
+
+def load_idx_files_from_sqldb(start_year=None, end_year=None):
+    conn = sqlite3.connect(filing_master)
+    filepath = os.path.join(DATA_DIR, 'FILINGS_MASTER.db')
+    years = [year for year in range(2012, 2018)]
+    years.sort(reverse=True)
+    master_files = walk_dir_fullfilename(SEC_GOV_FULL_INDEX_DIR, contains="master.idx")
+    master_files.sort(reverse=True)
+    files = [file for file in master_files if "old" not in file]
+    # years = [year for year in range(1994, 2018)]
+    frame = pd.DataFrame()
+    year = years[0]
+    for year in years:
+        # years_files = [filepath for filepath in master_files if str(year) in filepath]
+        # years_files = [file for file in years_files if "old" not in file]
+
+        for year_file in years_files:
+            print(year_file)
+            table_name = year_file.split("full-index\\")[1].replace("\\", "_").upper().split(".")[0]
+            df_frame = pd.read_sql("SELECT * FROM TABLE_{}".format(table_name), conn)
+            frame = frame.append(df_frame)
+
+    frame = frame.drop_duplicates(subset=['FILENAME'])
+    frame = frame[frame['FORM_TYPE']=="10-K"]
+    frame["BASENAME"] = frame["FILENAME"].apply(lambda x: os.path.basename(x).split(".")[0])
+    df_matches = frame[frame["BASENAME"].isin(files_master_basename)]
+    df_matches_not = frame[~frame["BASENAME"].isin(files_master_basename)]
+    df_matched = pd.merge(frame, df_files_master, how='left')
+    return frame

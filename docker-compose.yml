@@ -1,0 +1,17 @@
+version: '2'
+services:
+    rabbitmq-celery:
+        hostname: sec_data_rabbitmq
+        image: continuumio:miniconda3
+        build:
+            context: .
+            dockerfile: dockerfile
+        environment:
+            - RABBITMQ_DEFAULT_USER=sec
+            - RABBITMQ_DEFAULT_PASS=data
+        volumes:
+            - E:/sec_gov:/sec_gov
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+            - "4369:4369"
