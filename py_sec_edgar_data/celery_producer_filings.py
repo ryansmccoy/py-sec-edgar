@@ -16,12 +16,8 @@ import os
 import pandas as pd
 desired_width = 600
 pd.set_option('display.width', desired_width)
-from py_sec_edgar_data.filings_database import query_db_for_filings_data
+from py_sec_edgar_data.database import query_db_for_filings_data
 from py_sec_edgar_data.utilities import walk_dir_fullpath
-
-edgar_Archives_url = r'https://www.sec.gov/Archives/'
-edgar_full_index = urljoin(edgar_Archives_url,'edgar/full-index/')
-edgar_full_master = urljoin(edgar_full_index,'master.idx')
 
 sec_dates = pd.date_range(datetime.today() - timedelta(days=365*22), datetime.today())
 sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
@@ -47,7 +43,6 @@ def edgar_filing_idx_create_filename(item):
     return edgfilepath
 
 def cik_ticker_lookup():
-
     df_tickcheck = pd.read_excel(CONFIG.tickercheck, index_col=0, header=0)
     df_tickcheck['CIK'] = df_tickcheck['CIK'].fillna("-1").astype(int).astype(str)
     df_tick = df_tickcheck.set_index('CIK')
@@ -65,7 +60,7 @@ def generate_folder_names_years_quarters(end_date,start_date):
     dates_quarters.sort(reverse=True)
     return dates_quarters
 
-def scan_all_local_filings(main_dir=CONFIG.SEC_GOV_EDGAR_FILINGS_DIR, year=None):
+def scan_all_local_filings(main_dir=CONFIG.SEC_EDGAR_FILINGS_DIR, year=None):
     files = walk_dir_fullpath(os.path.join(main_dir,"{}".format(year)))
     return files
 
@@ -88,8 +83,8 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
         item['OUTPUT_FOLDER'] = 'filings'
         item['OVERWRITE_FILE'] = False
 
-        item['windows_output_folder'] = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR,os.path.dirname(item['LOCAL']))
-        item['windows_output_filepath'] = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR,item['LOCAL'])
+        item['windows_output_folder'] = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR,os.path.dirname(item['LOCAL']))
+        item['windows_output_filepath'] = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR,item['LOCAL'])
         all_items.append(item)
 
         if not os.path.exists(item['windows_output_folder']):
@@ -118,10 +113,10 @@ def download_latest_quarterly_full_index_files():
         item = {}
         item['OUTPUT_FOLDER'] = 'full-index'
         item['RELATIVE_FILEPATH'] = '{}'.format(file)
-        item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_GOV_FULL_INDEX_DIR
+        item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_FULL_INDEX_DIR
         item['URL'] = urljoin(CONFIG.SEC_EDGAR_ARCHIVES_URL, 'edgar/full-index/{}'.format(file))
         item['OVERWRITE_FILE'] = True
-        dir_name = os.path.dirname(os.path.join(CONFIG.SEC_GOV_FULL_INDEX_DIR, item['RELATIVE_FILEPATH']))
+        dir_name = os.path.dirname(os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH']))
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)

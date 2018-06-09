@@ -3,7 +3,8 @@
 """Console script for py_sec_edgar_data."""
 import sys
 import click
-
+from py_sec_edgar_data.settings import Config
+CONFIG = Config()
 
 @click.command()
 def main(args=None):

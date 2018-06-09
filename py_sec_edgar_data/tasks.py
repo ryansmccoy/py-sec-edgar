@@ -9,10 +9,10 @@ import os
 from time import sleep
 from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename, Gotem
 from py_sec_edgar_data.cik_ticker_loader import cik2ticker, get_cik_from_ticker
-import py_sec_edgar_data.process_complete_submission_filing
+import py_sec_edgar_data.filing
 from py_sec_edgar_data.settings import Config
 import json
-import py_sec_edgar_data.download_listing_of_filings
+import py_sec_edgar_data.filings_index
 
 CONFIG = Config()
 
@@ -33,12 +33,12 @@ def celery_extract_content_from_complete_submission_txt_filing(self, item):
     item = json.loads(item)
 
     if item['OUTPUT_FOLDER'] == "full-index":
-        filepath = os.path.join(CONFIG.SEC_GOV_FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
+        filepath = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
     elif item['OUTPUT_FOLDER'] == 'filings':
-        filepath = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
+        filepath = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
     output_filepath = os.path.join(CONFIG.OUTPUT_DIR,item['CIK'],item['FILE'].replace('-',"").replace(".txt",""))
     print(output_filepath)
-    py_sec_edgar_data.process_complete_submission_filing.extract_documents_from_complete_submission_txt_filing(input_filepath=filepath, output_filepath=output_filepath,extract_items=['HEADER_AND_DOCUMENTS'])
+    py_sec_edgar_data.filing.extract_documents_from_complete_submission_txt_filing(input_filepath=filepath, output_filepath=output_filepath, extract_items=['HEADER_AND_DOCUMENTS'])
 
 
 @app.task(bind=True, max_retries=3)
@@ -46,9 +46,9 @@ def consume_sec_filing_txt(self, item):
     item = json.loads(item)
 
     if item['OUTPUT_FOLDER'] == "full-index":
-        filepath = os.path.join(CONFIG.SEC_GOV_FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
+        filepath = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
     elif item['OUTPUT_FOLDER'] == 'filings':
-        filepath = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
+        filepath = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
 
     if not os.path.exists(filepath) or item["OVERWRITE_FILE"] == True:
         try:
@@ -70,11 +70,10 @@ def consume_sec_filing_txt(self, item):
 @app.task(bind=True, max_retries=3)
 def download_recent_edgar_filings_xbrl_rss_feed(self, url, filename):
     try:
-
         print(' [ X ] Requesting URL')
         print(" [ X ] ", filename)
         # html = requests.get(url)
-        py_sec_edgar_data.download_listing_of_filings.download_recent_edgar_filings_xbrl_rss_feed()
+        py_sec_edgar_data.filings_index.download_recent_edgar_filings_xbrl_rss_feed()
         print(" [ X ] Saved 2 Disk")
     except:
         print(" [   ] trying again")
@@ -99,7 +98,7 @@ def consume_complete_submission_filing(self, basename, item, ticker):
                 ticker = get_cik_from_ticker([item['edgar_ciknumber']])
                 print(ticker)
 
-    folder_path = os.path.join(CONFIG.SEC_GOV_EDGAR_FILINGS_DIR, basename.replace("xbrlrss-","").replace("-","/"))
+    folder_path = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR, basename.replace("xbrlrss-","").replace("-","/"))
     edgfilename = edgar_filing_idx_create_filename(basename, item, ticker)
     url = item['link'].replace("-index.htm", ".txt")
     filepath = os.path.join(folder_path, edgfilename)

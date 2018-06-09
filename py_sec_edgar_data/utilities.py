@@ -42,9 +42,10 @@ class Gotem(object):
     """
 
     def __init__(self):
-        from py_sec_edgar_data.settings import CONFIG_DIR
-        self.file_list_user_agents = os.path.join(CONFIG_DIR, 'user_agents.txt')
-        self.file_list_nordvpn_ips = os.path.join(CONFIG_DIR, 'vpn.py')
+        from py_sec_edgar_data.settings import Config
+        CONFIG = Config()
+        self.file_list_user_agents = os.path.join(CONFIG.CONFIG_DIR, 'user_agents.txt')
+        self.file_list_nordvpn_ips = os.path.join(CONFIG.CONFIG_DIR, 'vpn.py')
         self.USERNAME = os.getenv('VPN_USERNAME')
         self.PASSWORD = os.getenv('VPN_PASSWORD')
         self._generate_random_proxy_hosts()
