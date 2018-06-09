@@ -30,12 +30,10 @@ import pandas as pd
 from urllib import parse
 
 from urllib import parse
-import datetime
-import os
 import glob
 
 import subprocess
-
+from pprint import pprint
 import json
 import os
 import sqlite3
@@ -128,6 +126,7 @@ def download_recent_edgar_filings_xbrl_rss_feed():
 ####################### MONTHLY
 
 def download_monthly_xbrl_filings_list():
+
     g = Gotem()
     g.GET_HTML(CONFIG.edgar_monthly_index)
     html = lxml.html.fromstring(g.r.text)
@@ -147,47 +146,57 @@ def download_monthly_xbrl_filings_list():
 
     for url in urls:
         filename = url.split('/')[-1:][0]
+
         fullfilepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)
+
         OUTPUT_FILENAME = os.path.join(os.path.dirname(fullfilepath), os.path.basename(fullfilepath.replace('.xml', ".xlsx")))
 
-        if not os.path.isfile(os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)) or url == urls[0]:
-            print("Downloading " + fullfilepath)
-            g.GET_FILE(url, fullfilepath)
-        else:
-            print("Found XML File " + fullfilepath)
-        if not os.path.isfile(OUTPUT_FILENAME):
-            print("Parsing XML File and Exporting to XLSX")
+        try:
 
-            feeds = read_xml_feedparser(fullfilepath)
+            if not os.path.isfile(os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)) or url == urls[0]:
+                print("Downloading " + fullfilepath)
+                g.GET_FILE(url, fullfilepath)
+            else:
+                print("Found XML File " + fullfilepath)
 
-            list_ = []
+            if not os.path.isfile(OUTPUT_FILENAME):
+                print("Parsing XML File and Exporting to XLSX")
 
-            # item = feeds.entries[0]
-            for item in feeds.entries:
-                feed_dict = flattenDict(item)
-                df_ = pd.DataFrame.from_dict(feed_dict, orient='index')
-                df_.columns = ['VALUES']
-                df_.index = [ind.replace(".","_").replace(":","_").upper() for ind in df_.index.tolist()]
-                df_ = df_.T
+                feeds = read_xml_feedparser(fullfilepath)
 
-                match = df_['EDGAR_XBRLFILE_FILE'].str.replace("-.+","").str.upper().tolist()[0]
+                list_ = []
 
-                if "." in match or len(match) > 13:
-                    df_['TICKER'] = "--"
-                else:
-                    df_['TICKER'] = match
+                # item = feeds.entries[0]
+                for item in feeds.entries:
 
-                list_.append(df_)
+                    feed_dict = flattenDict(item)
+                    df_ = pd.DataFrame.from_dict(feed_dict, orient='index')
+                    df_.columns = ['VALUES']
+                    df_.index = [ind.replace(".","_").replace(":","_").upper() for ind in df_.index.tolist()]
+                    df_ = df_.T
 
-            df = pd.concat(list_)
-            new_columns_names = [column_name.replace(".","_").replace(":","_").lower() for column_name in df.columns.tolist()]
-            df.columns = new_columns_names
-            df['SOURCE_FILENAME'] = os.path.basename(fullfilepath)
-            df['SOURCE_IMPORT_TIMESTAMP'] = datetime.now()
-            df.index = [icount for icount in range(0, len(df.index.tolist()))]
-            df.index.name = '_id'
-            print("exporting to excel {}".format(OUTPUT_FILENAME))
-            df.to_excel(OUTPUT_FILENAME)
+                    match = df_['EDGAR_XBRLFILE_FILE'].str.replace("-.+","").str.upper().tolist()[0]
+
+                    if "." in match or len(match) > 13:
+                        df_['TICKER'] = "--"
+                    else:
+                        df_['TICKER'] = match
+
+                    list_.append(df_)
+
+                df = pd.concat(list_)
+                new_columns_names = [column_name.replace(".","_").replace(":","_").lower() for column_name in df.columns.tolist()]
+                df.columns = new_columns_names
+                df['SOURCE_FILENAME'] = os.path.basename(fullfilepath)
+                df['SOURCE_IMPORT_TIMESTAMP'] = datetime.now()
+                df.index = [icount for icount in range(0, len(df.index.tolist()))]
+                df.index.name = '_id'
+                print("exporting to excel {}".format(OUTPUT_FILENAME))
+                df.to_excel(OUTPUT_FILENAME)
+                print("")
+                print("")
+        except:
+            print('Something Wrong')
 
 def generate_monthly_index_url_and_filepaths(day):
     basename = 'xbrlrss-' + str(day.year) + '-' + str(day.month).zfill(2)
@@ -215,9 +224,13 @@ def parse_monthly():
             print(len(feed.entries))
             # i, feed_item = list(enumerate(feed.entries))[2]
             for i, feed_item in list(enumerate(feed.entries)):
+
                 if ("10-K" in feed_item["edgar_formtype"]):
+
                     # or ("S-1" in item["edgar_formtype"]) or ("20-F" in item["edgar_formtype"]):
+
                     item = flattenDict(feed_item)
+                    pprint(item)
 
                     try:
                         ticker = df_tickercheck[df_tickercheck['CIK'].isin([item['edgar_ciknumber'].lstrip("0")])]['SYMBOL'].tolist()[0]

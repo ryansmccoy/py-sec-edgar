@@ -1,5 +1,5 @@
 =====================
-Python SEC Edgar Data
+Python SEC Edgar Data (Currently Under Developement)
 =====================
 
 .. image:: https://img.shields.io/pypi/v/py_sec_edgar_data.svg
@@ -22,23 +22,11 @@ Python package used to download SEC Edgar filings
 Run
 -------
 
-.. code-block:: bash
+.. code-block:: Bash (Work in Progress)
 
     $  docker run -d -p 5672:5672 -p 15672:15672 --name sec-rabbit rabbitmq:management
     $  celery -A edgar_download.celery_download_complete_submission_filing worker --loglevel=info
-    $  python
 
 
-or the latest development version from github:
-
-.. code-block:: bash
-
-If you want to run the tests, clone the repository:
-
-.. code-block:: bash
-
-
-
-    $ python setup.py test
-    $ python setup.py install
+.. code-block:: Docker (Work in Progress)
 
