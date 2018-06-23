@@ -1,13 +1,66 @@
+# view-source:https://www.sec.gov/Archives/edgar/xbrl-rr.rss.xml
+# https://www.sec.gov/Archives/edgar/usgaap.rss.xml
+# https://www.sec.gov/Archives/edgar/xbrl-inline.rss.xml
+# https://www.sec.gov/Archives/edgar/usgaap.rss.xml
+# http://www.sec.gov/Archives/edgar/xbrlrss.all.xml
+# https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&CIK=&type=10-K&company=&dateb=&owner=include&start=0&count=100&output=atom
+
+from py_sec_edgar_data.utilities import flattenDict, file_size
+import pandas as pd
+desired_width = 600
+pd.set_option('display.width', desired_width)
+
+import subprocess
+
+from py_sec_edgar_data.settings import Config
+
+CONFIG = Config()
+
+def read_xml_feedparser(source_file):
+    if source_file[0:4] == 'http':
+        feed = feedparser.parse(source_file)
+    elif source_file.endswith(".xml"):
+        with open(source_file) as f:
+            feedData = f.read()
+        feed = feedparser.parse(feedData)
+    else:
+        feed = feedparser.parse(source_file)
+    return feed
+
+def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
+
+    temp_filepath = os.path.join(os.path.dirname(local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
+    g = Gotem()
+    g.GET_FILE(url, temp_filepath)
+    temp_size = file_size(temp_filepath)
+    local_size = file_size(local_filepath)
+
+    if local_size == temp_size:
+        print("local_size {} == temp_size {}".format(local_size, temp_size))
+        os.remove(temp_filepath)
+        return False
+    else:
+        print("local_size {} != temp_size {}".format(local_size, temp_size))
+        if os.path.exists(local_filepath):
+            os.remove(local_filepath)
+        os.rename(temp_filepath, temp_filepath.replace("temp_", ""))
+        return True
+
+def generate_list_of_local_filings():
+    files_master = walk_dir_fullpath(CONFIG.SEC_TXT_DIR, contains='.txt')
+    files_master = [filepath for filepath in files_master if "edgar" not in os.path.basename(filepath)]
+    files_master_basename = [os.path.basename(filepath).split(".")[0] for filepath in files_master if "edgar" not in os.path.basename(filepath)]
+    files_master.sort(reverse=True)
+
+####################### FULL-INDEX
+
 import feedparser
 import os
 import glob
-from datetime import datetime
-from urllib.parse import urljoin
 from py_sec_edgar_data.settings import Config
-from py_sec_edgar_data.utilities import walk_dir_fullpath, Gotem
-from datetime import datetime, date
-from datetime import timedelta
-import sqlite3
+from py_sec_edgar_data.gotem import Gotem
+from datetime import datetime
+
 CONFIG = Config()
 import pandas as pd
 
@@ -106,3 +159,36 @@ def convert_list_of_filings_to_excel(edgar_feed_list="IDX"):
         df.to_excel(OUTPUT_FILENAME)
         print("inserting into SQL DB")
         # df.to_sql(tablename, engine,index_label="_id", if_exists='append')
+
+# https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
+#/Archives/edgar/daily-index — daily index files through the current year;
+
+def main():
+    from_year = 2016
+    to_year = 2017
+    XBRLLocation = "local"
+    UpdateXBRLurls = False
+
+    if XBRLLocation == "local":
+        print("Globbing XBRL files in folder: " + CONFIG.XBRLfolder)
+        xbrlfiles = glob.glob(os.path.join(CONFIG.SEC_XBRL_DIR,"*"))
+        xbrlfiles.sort(reverse=True)
+
+    if UpdateXBRLurls == True:
+        # source_file = r'https://www.sec.gov/xbrlrss-2017-03.xml'
+        secfiles_urls = r'C:\Users\ryan\PycharmProjects\sec_data\sec_data\data\secfiles_urls.xlsx'
+        df = pd.read_excel(secfles_urls)
+        mode = "red"
+        df = df[df['URLS'].str.contains('201')]
+        urls = list(df['URLS'])
+
+    for year in range(from_year, to_year + 1):
+        for month in range(1, 12 + 1):
+            try:
+                subprocess.Popen([pythonfile, pypath, '--date', str(month), str(year)])
+            except:
+                print("problem getting sec filings urls from feed {} {}".format(str(month), str(year)))
+
+if __name__ == "__main__":
+    g = Gotem()
+    g.GET_URLS(edgar_monthly_url)

@@ -1,4 +1,3 @@
-import sys
 #####################
 import os.path
 
@@ -7,12 +6,13 @@ import os.path
 import pandas as pd
 import os
 from time import sleep
-from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename, Gotem
+from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename
+from py_sec_edgar_data.gotem import Gotem
 from py_sec_edgar_data.cik_ticker_loader import cik2ticker, get_cik_from_ticker
 import py_sec_edgar_data.filing
 from py_sec_edgar_data.settings import Config
 import json
-import py_sec_edgar_data.filings_index
+import py_sec_edgar_data.edgar_feeds.edgar_feeds
 
 CONFIG = Config()
 
@@ -73,7 +73,7 @@ def download_recent_edgar_filings_xbrl_rss_feed(self, url, filename):
         print(' [ X ] Requesting URL')
         print(" [ X ] ", filename)
         # html = requests.get(url)
-        py_sec_edgar_data.filings_index.download_recent_edgar_filings_xbrl_rss_feed()
+        py_sec_edgar_data.edgar_feeds.edgar_feeds.download_recent_edgar_filings_xbrl_rss_feed()
         print(" [ X ] Saved 2 Disk")
     except:
         print(" [   ] trying again")

@@ -122,18 +122,6 @@ def parse_filing_header(raw_html):
     header_dict = header_dict.dropna()
     header_dict.columns = ['GROUP', 'KEY', 'VALUE']
     return header_dict
-# import sys
-# from datetime import datetime
-# import pandas as pd
-#
-# desired_width = 400
-# pd.set_option('display.width', desired_width)
-# import io
-# import lxml.html
-#
-# import os, datetime
-#
-# from py_sec_edgar_data.process_complete_submission_filing import parse_filing_header
 
 def extract_header_from_filing(input_filepath=None, header_output_filepath=None, df_bb=None, df_cik=None, ticker="--"):
     with io.open(input_filepath, "rb") as f:
