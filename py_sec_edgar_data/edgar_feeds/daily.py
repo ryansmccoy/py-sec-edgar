@@ -8,11 +8,8 @@ from urllib.parse import urljoin
 
 from py_sec_edgar_data.edgar_feeds.edgar_feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
 from py_sec_edgar_data.gotem import Gotem
-
-sec_dates = pd.date_range(datetime.today() - timedelta(days=365*22), datetime.today())
-sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
-sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
-sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
+from datetime import timedelta
+import pandas as pd
 
 def generate_daily_index_urls_and_filepaths(day):
     edgar_url = r'https://www.sec.gov/Archives/edgar/'
@@ -28,11 +25,16 @@ def generate_daily_index_urls_and_filepaths(day):
 
 
 def update_daily_files():
+    sec_dates = pd.date_range(datetime.today() - timedelta(days=365 * 22), datetime.today())
+    sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
+    sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
+    sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
 
     for i, day in enumerate(sec_dates_weekdays):
         daily_files = generate_daily_index_urls_and_filepaths(day)
         # url, local = daily_files[0]
         for daily_url, daily_local_filepath in daily_files:
+
             if consecutive_days_same < 5 and os.path.exists(daily_local_filepath):
                 status = determine_if_sec_edgar_feed_and_local_files_differ(daily_url, daily_local_filepath)
                 consecutive_days_same = 0

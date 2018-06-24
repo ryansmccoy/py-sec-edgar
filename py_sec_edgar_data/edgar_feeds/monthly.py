@@ -11,22 +11,26 @@ from urllib.parse import urljoin
 import lxml.html
 import pandas as pd
 from bs4 import BeautifulSoup
-from dateparser import parse
-
-from py_sec_edgar_data.edgar_feeds.edgar_feeds import CONFIG, g, read_xml_feedparser, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar_data.edgar_feeds.edgar_feeds import CONFIG, read_xml_feedparser, determine_if_sec_edgar_feed_and_local_files_differ
 from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename
 from py_sec_edgar_data.gotem import Gotem
-
+from urllib import parse
+from datetime import datetime
 
 def download_recent_edgar_filings_xbrl_rss_feed():
-    for _ in range(1,2):
-        print(_)
+    # first xbrl file availible
+    start_date = datetime.strptime("4/1/2005", "%m/%d/%Y")
+    end_date = datetime.now()
+    dates = [x for x in pd.date_range(start_date, end_date, freq='MS')]
+    dates.reverse()
+    for date in dates:
         try:
             g = Gotem()
-            basename = 'xbrlrss-' + str(datetime.now().year) + '-' + str(datetime.now().month - _).zfill(2) + ".xml"
+            basename = 'xbrlrss-' + str(date.year) + '-' + str(date.month).zfill(2) + ".xml"
             filepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, basename)
             edgarFilingsFeed = parse.urljoin('https://www.sec.gov/Archives/edgar/monthly/', basename)
-            g.GET_FILE(edgarFilingsFeed, filepath)
+            if not os.path.exists(edgarFilingsFeed):
+                g.GET_FILE(edgarFilingsFeed, filepath)
         except Exception as e:
             print(e)
 
@@ -42,7 +46,6 @@ def edgar_monthly_xbrl_filings_feed(year, month):
 
 
 def download_monthly_xbrl_filings_list():
-
     g = Gotem()
     g.GET_HTML(CONFIG.edgar_monthly_index)
     html = lxml.html.fromstring(g.r.text)
@@ -62,11 +65,8 @@ def download_monthly_xbrl_filings_list():
 
     for url in urls:
         filename = url.split('/')[-1:][0]
-
         fullfilepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)
-
         OUTPUT_FILENAME = os.path.join(os.path.dirname(fullfilepath), os.path.basename(fullfilepath.replace('.xml', ".xlsx")))
-
         try:
 
             if not os.path.isfile(os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)) or url == urls[0]:

@@ -106,24 +106,6 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
     #df.to_sql("LOCAL_FILEPATHS",conn_local, if_exists='append',index=False)
 
 
-def download_latest_quarterly_full_index_files():
-    # i, file = list(enumerate(full_index_files))[0]
-
-    for i, file in enumerate(full_index_files):
-        item = {}
-        item['OUTPUT_FOLDER'] = 'full-index'
-        item['RELATIVE_FILEPATH'] = '{}'.format(file)
-        item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_FULL_INDEX_DIR
-        item['URL'] = urljoin(CONFIG.SEC_EDGAR_ARCHIVES_URL, 'edgar/full-index/{}'.format(file))
-        item['OVERWRITE_FILE'] = True
-        dir_name = os.path.dirname(os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH']))
-
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-
-        py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
-
-
 def filter_form(df_filings, form_filter):
     df_frame = df_filings[df_filings['FORM_TYPE'].isin(form_filter)]
     return df_frame

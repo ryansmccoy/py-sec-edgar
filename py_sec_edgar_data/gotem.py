@@ -6,11 +6,6 @@ import lxml.html
 import requests
 from bs4 import BeautifulSoup
 
-from py_sec_edgar_data.settings import Config
-
-CONFIG = Config()
-
-
 class Gotem(object):
     """
     Used to Downlod things throughs VPN
