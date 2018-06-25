@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 from urllib.parse import urljoin
 
-from py_sec_edgar_data.edgar_feeds.edgar_feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar_data.feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
 from py_sec_edgar_data.gotem import Gotem
 from datetime import timedelta
 import pandas as pd

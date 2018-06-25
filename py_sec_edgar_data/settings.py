@@ -31,16 +31,15 @@ class Config(object):
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
     DATA_DIR = os.path.join(SEC_DIR, r'data')
     SEC_EDGAR_DIR = os.path.join(SEC_DIR, "Archives\edgar")
-    SEC_EDGAR_FILINGS_DIR = os.path.join(SEC_EDGAR_DIR, "filings")
-    SEC_TXT_DIR =  os.path.join(SEC_EDGAR_DIR, "filings")
     SEC_MONTHLY_DIR = os.path.join(SEC_EDGAR_DIR, "monthly")
     SEC_FULL_INDEX_DIR = os.path.join(SEC_EDGAR_DIR, "full-index")
     SEC_DAILY_INDEX_DIR = os.path.join(SEC_EDGAR_DIR, "daily-index")
     SEC_TXT_LATEST = os.path.join(SEC_EDGAR_DIR, latest_folder)
+    SEC_TXT_FILING_DIR =  os.path.join(SEC_EDGAR_DIR, "data", "CIK", "FOLDER")
     SEC_XBRL_ZIP_DIR = os.path.join(SEC_EDGAR_DIR, "xbrl-zip")
     SEC_XBRL_TXT_DIR = os.path.join(SEC_EDGAR_DIR, "xbrl")
 
-    dirs_all = [SEC_DIR, DATA_DIR, SEC_EDGAR_DIR,SEC_EDGAR_FILINGS_DIR,SEC_TXT_DIR,SEC_MONTHLY_DIR,SEC_FULL_INDEX_DIR,SEC_DAILY_INDEX_DIR,SEC_TXT_LATEST,SEC_XBRL_TXT_DIR]
+    dirs_all = [SEC_DIR, DATA_DIR, SEC_EDGAR_DIR, SEC_TXT_FILING_DIR, SEC_MONTHLY_DIR, SEC_FULL_INDEX_DIR, SEC_DAILY_INDEX_DIR, SEC_TXT_LATEST, SEC_XBRL_TXT_DIR]
 
     for _ in dirs_all:
 

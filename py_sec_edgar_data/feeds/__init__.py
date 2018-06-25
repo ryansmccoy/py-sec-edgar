@@ -26,18 +26,6 @@ from py_sec_edgar_data.utilities import walk_dir_fullpath
 
 from py_sec_edgar_data.settings import Config
 
-CONFIG = Config()
-
-def read_xml_feedparser(source_file):
-    if source_file[0:4] == 'http':
-        feed = feedparser.parse(source_file)
-    elif source_file.endswith(".xml"):
-        with open(source_file) as f:
-            feedData = f.read()
-        feed = feedparser.parse(feedData)
-    else:
-        feed = feedparser.parse(source_file)
-    return feed
 
 def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
 
@@ -59,7 +47,7 @@ def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
         return True
 
 def generate_list_of_local_filings():
-    files_master = walk_dir_fullpath(CONFIG.SEC_TXT_DIR, contains='.txt')
+    files_master = walk_dir_fullpath(CONFIG.SEC_TXT_FILING_DIR, contains='.txt')
     files_master = [filepath for filepath in files_master if "edgar" not in os.path.basename(filepath)]
     files_master_basename = [os.path.basename(filepath).split(".")[0] for filepath in files_master if "edgar" not in os.path.basename(filepath)]
     files_master.sort(reverse=True)
@@ -88,7 +76,7 @@ def convert_list_of_filings_to_excel(edgar_feed_list="IDX"):
         #files = glob.glob(os.path.join(SEC_FULL_INDEX_DIR,"*{}".format('.idx')))
         # df["BASENAME"] = df["FILENAME"].apply(lambda x: os.path.basename(x).split(".")[0])
 
-        master_files = walk_dir_fullfilename(CONFIG.SEC_FULL_INDEX_DIR,contains="master.idx")
+        master_files = walk_dir_fullpath(CONFIG.SEC_FULL_INDEX_DIR,contains="master.idx")
         files.sort(reverse=True)
         files = [file for file in files if "old" not in file]
         # years = [year for year in range(1994, 2018)]

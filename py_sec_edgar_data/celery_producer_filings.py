@@ -1,6 +1,6 @@
 import os.path
 from urllib import parse
-import py_sec_edgar_data.celery_consumer_filings
+import py_sec_edgar_data
 from dateutil.parser import parse
 from dateparser import parse
 import bisect
@@ -60,7 +60,7 @@ def generate_folder_names_years_quarters(end_date,start_date):
     dates_quarters.sort(reverse=True)
     return dates_quarters
 
-def scan_all_local_filings(main_dir=CONFIG.SEC_EDGAR_FILINGS_DIR, year=None):
+def scan_all_local_filings(main_dir=None, year=None):
     files = walk_dir_fullpath(os.path.join(main_dir,"{}".format(year)))
     return files
 

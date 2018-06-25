@@ -1,7 +1,8 @@
 
 #######################
-# MONTHLY FILINGS FEEDS
+# MONTHLY FILINGS FEEDS (XBRL)
 # http://www.sec.gov/Archives/edgar/monthly/
+# "./xbrlrss-{YEAR}-{MONTH}.xml"
 
 import os
 from datetime import datetime
@@ -11,14 +12,15 @@ from urllib.parse import urljoin
 import lxml.html
 import pandas as pd
 from bs4 import BeautifulSoup
-from py_sec_edgar_data.edgar_feeds.edgar_feeds import CONFIG, read_xml_feedparser, determine_if_sec_edgar_feed_and_local_files_differ
-from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename
+from py_sec_edgar_data.feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser
 from py_sec_edgar_data.gotem import Gotem
 from urllib import parse
 from datetime import datetime
 
-def download_recent_edgar_filings_xbrl_rss_feed():
-    # first xbrl file availible
+def download_edgar_filings_xbrl_rss_files():
+    # download first xbrl file availible
+
     start_date = datetime.strptime("4/1/2005", "%m/%d/%Y")
     end_date = datetime.now()
     dates = [x for x in pd.date_range(start_date, end_date, freq='MS')]
@@ -37,15 +39,23 @@ def download_recent_edgar_filings_xbrl_rss_feed():
 def edgar_monthly_xbrl_filings_feed(year, month):
     basename = 'xbrlrss-' + str(year) + '-' + str(month).zfill(2)
     print(basename)
+
     edgarFilingsFeed = os.path.join(CONFIG.SEC_MONTHLY_DIR, basename + ".xml")
+
     if not os.path.exists(edgarFilingsFeed):
         print("Did not find local xbrl file...Downloading")
         edgarFilingsFeed = parse.urljoin('http://www.sec.gov/Archives/edgar/monthly/', basename + ".xml")
         g.GET_FILE(edgarFilingsFeed, localfilename)
     return basename, localfilename
 
+def generate_monthly_index_url_and_filepaths(day):
+    basename = 'xbrlrss-' + str(day.year) + '-' + str(day.month).zfill(2)
+    monthly_local_filepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, basename + ".xml")
+    monthly_url = urljoin(CONFIG.edgar_monthly_index, basename + ".xml")
+    return monthly_url, monthly_local_filepath
 
-def download_monthly_xbrl_filings_list():
+def download_and_flatten_monthly_xbrl_filings_list():
+
     g = Gotem()
     g.GET_HTML(CONFIG.edgar_monthly_index)
     html = lxml.html.fromstring(g.r.text)
@@ -114,14 +124,6 @@ def download_monthly_xbrl_filings_list():
         except:
             print('Something Wrong')
 
-
-def generate_monthly_index_url_and_filepaths(day):
-    basename = 'xbrlrss-' + str(day.year) + '-' + str(day.month).zfill(2)
-    monthly_local_filepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, basename + ".xml")
-    monthly_url = urljoin(CONFIG.edgar_monthly_index, basename + ".xml")
-    return monthly_url, monthly_local_filepath
-
-
 def parse_monthly():
 
     df_tickercheck = pd.read_excel(CONFIG.tickercheck, index_col=0, header=0)
@@ -133,7 +135,7 @@ def parse_monthly():
 
         if day.month != prev_val.month:
 
-            monthly_url, monthly_local_filepath= generate_monthly_index_url_and_filepaths(day)
+            monthly_url, monthly_local_filepath = generate_monthly_index_url_and_filepaths(day)
 
             status = determine_if_sec_edgar_feed_and_local_files_differ(monthly_url, monthly_local_filepath)
 
@@ -172,7 +174,3 @@ def parse_monthly():
                             print('found file {}'.format(filepath))
                     else:
                         consume_complete_submission_filing.delay(basename, item, ticker)
-            # if day.quarter != prev_val.quarter:
-        #
-        # if day.year != prev_val.year:
-        #     pass
