@@ -57,7 +57,7 @@ def generate_list_of_local_filings():
 def convert_list_of_filings_to_excel(edgar_feed_list="IDX"):
 
     if edgar_feed_list == "XBRL_XML":
-        ext='.xml'
+        ext = '.xml'
         files = glob.glob(os.path.join(CONFIG.SEC_MONTHLY_DIR,"*{}".format('.xml')))
         tablename = 'EDGAR_XBRLRSS_XML_ENTRIES'
         #OUTPUT_FILENAME = os.path.join(SEC_MONTHLY_DIR,os.path.basename(source_file.replace(ext, ".xlsx")))

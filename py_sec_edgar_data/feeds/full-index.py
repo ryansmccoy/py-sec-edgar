@@ -7,7 +7,7 @@
 import os
 import os.path
 from urllib.parse import urljoin
-
+import time
 import pandas as pd
 from py_sec_edgar_data.utilities import format_filename
 from py_sec_edgar_data.celery_producer_filings import CONFIG
@@ -52,7 +52,7 @@ def download_latest_quarterly_full_index_files():
         g.GET_FILE(item['URL'], os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH']))
 
 
-def download_latest_master_idx():
+def download_latest_idx():
     # load lookup column
     df_tickers_cik = pd.read_excel(CONFIG.tickercheck)
     df_tickers_cik = df_tickers_cik.assign(EDGAR_CIKNUMBER=df_tickers_cik['EDGAR_CIKNUMBER'].astype(str))
@@ -85,6 +85,8 @@ def download_latest_master_idx():
 
     df_with_tickers.to_csv(local_idx.replace(".idx", ".csv"))
 
+
+
 def download_filings_from_idx():
     # todo: allow for ability to filter forms dynamically
 
@@ -98,7 +100,7 @@ def download_filings_from_idx():
 
     df_with_tickers = df_with_tickers.assign(published=pd.to_datetime(df_with_tickers['published']))
 
-    # i, feed_item = list(df_with_tickers.to_dict(orient='index').items())[0]
+    # i, feed_item = list(df_with_tickers.to_dict(orient='index').items())[23]
     for i, feed_item in df_with_tickers.to_dict(orient='index').items():
 
         # 'C:\\sec_gov\\Archives\\edgar\\filings\\2018\\QTR2'
@@ -107,18 +109,23 @@ def download_filings_from_idx():
         # 'C:\\sec_gov\\Archives\\edgar\\filings\\cik\\1050825'
         # folder_path_cik_other = os.path.join(CONFIG.SEC_TXT_DIR, 'cik', feed_item['edgar_ciknumber'])
 
-        if not os.path.exists(folder_path_cik):
-            os.makedirs(folder_path_cik)
-
         filepath_feed_item = os.path.join(folder_path_cik, os.path.basename(feed_item['Filename']))
 
         if not os.path.exists(filepath_feed_item):
+
+            if not os.path.exists(folder_path_cik):
+                os.makedirs(folder_path_cik)
+
             g = Gotem()
 
             g.GET_FILE(feed_item['link'], filepath_feed_item)
+            time.sleep(3)
             # todo: celery version of download full
             # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)
         else:
             print("Filepath Already exists\n\t {}".format(filepath_feed_item))
             # parse_and_download_quarterly_idx_file(CONFIG.edgar_full_master, local_master_idx)
 
+if __name__ == "__main__":
+    download_latest_idx()
+    download_filings_from_idx()
