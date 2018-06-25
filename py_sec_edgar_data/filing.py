@@ -3,9 +3,7 @@
 """
 
 Todo:
-    * Add Check to distinguish between html and txt filings (aka 1995-2003ish and 2003ish-2017+)
-    * add document metadata to sec-header csv file
-
+    * refactor into class
 
 """
 import sys
@@ -20,9 +18,7 @@ import lxml.html
 from bs4 import BeautifulSoup
 from py_sec_edgar_data.settings import Config
 CONFIG = Config()
-
-from py_sec_edgar_data.utilities import split_edgarfilename
-
+from datetime import datetime
 
 from py_sec_edgar_data.utilities import file_size
 
@@ -33,7 +29,7 @@ regex_no_rfiles = re.compile(r'R.+\.htm')
 from collections import defaultdict
 import chardet
 import os
-# input_filepath = r'S:\Archives\edgar\xbrl\edgaridx-2015-02_txt_#2_edgar_data_72971_0000072971-15-000449_#3_2015-02-25TZ00-00-00_#4_72971_#5_(WFC)_WELLS_FARGO_&_COMPANY_MN_#6_10-K_#7_2015-02-25.txt'
+# input_filepath = r'C:\sec_gov\Archives\edgar\data\913778\000114420418035277\0001144204-18-035277.txt'
 # input_filepath = r'\\HV-WS1202\sec_gov\Archives\edgar\data\2017\QTR3\0001564590-17-017693.txt'
 # input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000034088-17-000017.txt'
 # input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000039263-17-000017.txt'
@@ -82,6 +78,15 @@ header = {
         "DATE OF NAME CHANGE": ""}
 }
 
+def write_filing_header_to_file(SEC_FILING_HEADER_FILEPATH, sec_filing_documents):
+    with open(SEC_FILING_HEADER_FILEPATH, "w", newline='') as fp:
+        wr = csv.writer(fp, dialect='excel')
+        wr.writerow(["ITEM", "KEY", "VALUE"])
+        for i, (colname, value) in enumerate(sec_filing_documents.items()):
+            if isinstance(value, list):
+                value = ", ".join(value)
+            wr.writerow([i, colname, value])
+
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
 
@@ -123,20 +128,22 @@ def parse_filing_header(raw_html):
     header_dict.columns = ['GROUP', 'KEY', 'VALUE']
     return header_dict
 
-def extract_header_from_filing(input_filepath=None, header_output_filepath=None, df_bb=None, df_cik=None, ticker="--"):
+def extract_header_from_filing(input_filepath=None, header_output_filepath=None, ticker="--"):
+
     with io.open(input_filepath, "rb") as f:
         raw_html = f.read()
 
     # lxml is a fast html file parser c++
-    lxml_html = lxml.html.fromstring(raw_html)
+    # lxml_html = lxml.html.fromstring(raw_html)
 
-    root = lxml_html.getroottree()
+    # root = lxml_html.getroottree()
 
     if header_output_filepath is None:
-        header_output_filepath = r'S:\OUTPUT\HEADERS'
+        header_output_filepath = os.path.dirname(input_filepath.replace(".txt", "-header.csv"))
 
     try:
-        df_header = parse_filing_header(root)
+        df_header = parse_filing_header(raw_html)
+
         df_header = df_header[['KEY', 'VALUE']].set_index('KEY')
         filename_items = ['FILED AS OF DATE', 'ACCESSION NUMBER', '<acceptance-datetime>', 'CENTRAL INDEX KEY', 'COMPANY CONFORMED NAME', 'CONFORMED SUBMISSION TYPE', 'CONFORMED PERIOD OF REPORT']
         header_dict = df_header[df_header.index.isin(filename_items)].reindex(filename_items).to_dict()['VALUE']
@@ -151,6 +158,7 @@ def extract_header_from_filing(input_filepath=None, header_output_filepath=None,
 
         edgfilename = edgfilename.replace(" ", "_").replace(".", "_").replace(
             ",", "_").replace("/", "_").replace("__", "_").replace("/", "_").replace(" ", "_")
+
         sec_filing_output_directory = os.path.join(header_output_filepath, '{}.csv'.format(edgfilename))
         df_final = df_header.T
         df_final.index = [edgfilename]
@@ -172,157 +180,6 @@ def extract_header_from_filing(input_filepath=None, header_output_filepath=None,
 #         extract_header_from_filing(input_filepath=args.input_filepath[0][0], ticker=args.ticker[0][0])
 #     else:
 #         sys.exit(parser.print_help())
-
-
-def extract_documents_from_complete_submission_txt_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
-    FOLDER_PATH = True
-    elements_list = [('FILENAME', './/filename'), ('TYPE', './/type'), ('SEQUENCE', './/sequence'), ('DESCRIPTION', './/description')]
-    #
-    # if "#5" in input_filepath:
-    #     folder_path = input_filepath.split("#5")[1][1:].lower().replace(".txt", "").replace("_txt", "").upper()
-    # else:
-    #     FOLDER_PATH = False
-    try:
-        cik_folder_path = os.path.dirname(output_directory)
-
-        if not os.path.exists(output_directory):
-            folder_exists = False
-        else:
-            folder_exists = True
-
-    except:
-        # db = sqlite3.connect(os.path.join(SSD_DATA_DIR, "FILINGS_MASTER.db"))
-        # c = db.cursor()
-        # {}//QTR {} ".format(YEAR, QTR), basename)
-        # c.execute('SELECT  portfolio (symbol text, shares integer, price real)')
-        FOLDER_PATH = False
-        folder_exists = False
-        print("failed")
-
-    if folder_exists == False or extraction_override == True:
-        # print(output_directory)
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-        print("extracting documents from {}".format(input_filepath))
-        try:
-            file_ext
-        except:
-            file_ext = ['.']
-
-        xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
-        xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
-
-        try:
-            # or codecs.open on Python 2
-            raw_text = open(input_filepath, "rb").read()
-            result = chardet.detect(raw_text)
-            charenc = result['encoding']
-            with io.open(input_filepath, "r", encoding=charenc) as f:
-                raw_text = f.read()
-        except:
-            with io.open(input_filepath, "rb") as f:
-                raw_text = f.read()
-
-        sec_filing_header = parse_filing_header(raw_text)
-
-        if FOLDER_PATH == False:
-            CIK_KEY = sec_filing_header[sec_filing_header['KEY'].isin(['CENTRAL INDEX KEY'])]['VALUE']
-            cik_folder_path = os.path.join(OUTPUT_DIR, CIK_KEY.tolist()[0].lstrip("0"))
-            output_directory = os.path.join(cik_folder_path, os.path.basename(input_filepath.replace(".txt", "").replace("-", "")))
-
-        headers_path = os.path.join(cik_folder_path, "_HEADERS")
-
-        if not os.path.exists(headers_path):
-            os.makedirs(headers_path)
-
-        header_filepath = os.path.join(headers_path, "{}_{}_FILING_HEADER_CONTENTS.csv".format(os.path.basename(cik_folder_path), os.path.basename(output_directory)))
-        sec_filing_header.to_csv(header_filepath)
-
-        documents = xbrl_doc.findall(raw_text)
-
-        sec_filing_documents = {}
-        debug_sec_filing_documents = {}
-
-        # i, document = list(enumerate(documents, start=1))[1]
-        for i, document in enumerate(documents, start=1):
-            uue_file = False
-            file_metadata = {}
-
-            lxml_html = lxml.html.fromstring(document)
-            root = lxml_html.getroottree()
-
-            # (key, value) = elements_list[0]
-            for (key, value) in elements_list:
-                try:
-                    file_metadata["{}".format(key)] = root.xpath("{}".format(value))[0].text.strip()
-                except:
-                    file_metadata["{}".format(key)] = ""
-
-            debug_sec_filing_documents[i] = file_metadata
-
-            raw_text = xbrl_text.findall(document)
-            raw_text = raw_text[0][1].replace("<XBRL>", "").replace("</XBRL>", "").strip()
-            raw_text = raw_text.replace("<XML>", "").replace("</XML>", "").strip()
-
-            if raw_text.lower().startswith("begin"):
-                # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
-                output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
-                with open(output_document, 'w', encoding=charenc) as f:
-                    f.write(raw_text)
-                uudecode(output_document, out_file=output_document.replace(".uue", ""))
-                uue_file = True
-            elif document.lower().startswith("begin"):
-                # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
-                output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
-                with open(output_document, 'w', encoding=charenc) as f:
-                    f.write(raw_text)
-                uudecode(output_document, out_file=output_document.replace(".uue", ""))
-                os.remove(output_document)
-                uue_file = True
-
-            else:
-                # print(file_metadata)
-                # print(output_directory)
-                output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']), file_metadata['TYPE'], file_metadata['DESCRIPTION'], file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace(
-                    "__", "_")
-
-                output_filepath = format_filename(output_filepath)
-                # print(output_filepath)
-                output_document = os.path.join(output_directory, output_filepath)
-
-                with open(output_document, 'w', encoding=charenc) as f:
-                    f.write(raw_text)
-
-            debug_sec_filing_documents[i]['OUTPUT_FILEPATH'] = output_document
-
-            file_metadata['RELATIVE_FILEPATH'] = os.path.join(os.path.basename(output_directory), 'FILES', output_filepath)
-            file_metadata['DESCRIPTIVE_FILEPATH'] = output_filepath
-
-            file_metadata['FILE_SIZE'] = file_size(output_document)
-            file_metadata['FILE_SIZE_BYTES'] = os.stat(output_document).st_size
-
-            sec_filing_documents[i] = file_metadata
-            if uue_file == True:
-                os.remove(output_document)
-
-        df_sec_filing_contents = pd.DataFrame.from_dict(sec_filing_documents, orient='index')
-        df_sec_filing_contents.to_csv(os.path.join(output_directory, "{}_FILING_CONTENTS.csv".format(os.path.basename(output_directory))))
-
-        return df_sec_filing_contents
-    else:
-        print("already extracted")
-        return output_directory
-
-
-def write_filing_header_to_file(SEC_FILING_HEADER_FILEPATH, sec_filing_documents):
-    with open(SEC_FILING_HEADER_FILEPATH, "w", newline='') as fp:
-        wr = csv.writer(fp, dialect='excel')
-        wr.writerow(["ITEM", "KEY", "VALUE"])
-        for i, (colname, value) in enumerate(sec_filing_documents.items()):
-            if isinstance(value, list):
-                value = ", ".join(value)
-            wr.writerow([i, colname, value])
-
 
 def _parse_single_document(sec_doc_element):
     """extracts the meta-data from an individual document inside an SEC Edgar Filing"""
@@ -401,11 +258,8 @@ def identify_10_K_filing(sec_filing_documents, override=None):
     print("Parsing DOC {}".format(i))
     return i, document
 
-
 def parse_10k_html_document(input_filepath):
-    sec_filing_documents_temp = {}
     lxml_dict = {}
-    sec_filing_export_directory = os.path.dirname(input_filepath)
     #
     # rawdata = open(filepath, "rb").read()
     #
@@ -447,13 +301,12 @@ def parse_10k_html_document(input_filepath):
 
     return file_metadata
 
-
 def create_header_file_from_complete_submission_filing(root=None, input_filepath=None, output_directory=None):
     print("\nSplitting the Complete Submission Filing\n")
     filing_header = defaultdict(dict)
     if root.xpath("//*/sec-header"):
         filing_header['SEC-HEADER'] = parse_filing_header(root)
-        filepath_dict = edgar_utilities.edgar_filename.split_edgarfilename(input_filepath)
+        filepath_dict = edgar_filename.split_edgarfilename(input_filepath)
         incremented_values = [{i: (key, val)} for i, (key, val) in enumerate(filepath_dict.items(), start=len(filing_header) + 1)]
         for item in incremented_values:
             filing_header['SEC-HEADER'].update(item)
@@ -476,6 +329,141 @@ def create_header_file_from_complete_submission_filing(root=None, input_filepath
     return filing_header, SEC_FILING_HEADER_FILEPATH
 
 
+def extract_documents_from_complete_submission_txt_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
+
+    FOLDER_PATH = True
+    elements_list = [('FILENAME', './/filename'), ('TYPE', './/type'), ('SEQUENCE', './/sequence'), ('DESCRIPTION', './/description')]
+
+    try:
+        if not os.path.exists(output_directory):
+            folder_exists = False
+        else:
+            folder_exists = True
+
+    except:
+        FOLDER_PATH = False
+        folder_exists = False
+        print("failed")
+
+    if folder_exists == False or extraction_override == True:
+        # print(output_directory)
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        print("extracting documents from {}".format(input_filepath))
+
+        try:
+            file_ext
+        except:
+            file_ext = ['.']
+
+        xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
+        xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
+
+        try:
+            # or codecs.open on Python 2
+            raw_text = open(input_filepath, "rb").read()
+            result = chardet.detect(raw_text)
+            charenc = result['encoding']
+
+            with io.open(input_filepath, "r", encoding=charenc) as f:
+                raw_text = f.read()
+
+        except:
+            with io.open(input_filepath, "rb") as f:
+                raw_text = f.read()
+
+        sec_filing_header = parse_filing_header(raw_text)
+
+        if FOLDER_PATH == False:
+            CIK_KEY = sec_filing_header[sec_filing_header['KEY'].isin(['CENTRAL INDEX KEY'])]['VALUE']
+            cik_folder_path = os.path.join(output_directory, CIK_KEY.tolist()[0].lstrip("0"))
+            output_directory = os.path.join(cik_folder_path, os.path.basename(input_filepath.replace(".txt", "").replace("-", "")))
+
+        headers_path = os.path.dirname(input_filepath)
+
+        if not os.path.exists(headers_path):
+            os.makedirs(headers_path)
+
+        header_filepath = os.path.join(headers_path, "{}_FILING_HEADER.csv".format(os.path.basename(output_directory)))
+
+        sec_filing_header.to_csv(header_filepath)
+
+        documents = xbrl_doc.findall(raw_text)
+
+        sec_filing_documents = {}
+        debug_sec_filing_documents = {}
+
+        # i, document = list(enumerate(documents, start=1))[1]
+        for i, document in enumerate(documents, start=1):
+            uue_file = False
+            file_metadata = {}
+
+            lxml_html = lxml.html.fromstring(document)
+            root = lxml_html.getroottree()
+
+            # (key, value) = elements_list[0]
+            for (key, value) in elements_list:
+                try:
+                    file_metadata["{}".format(key)] = root.xpath("{}".format(value))[0].text.strip()
+                except:
+                    file_metadata["{}".format(key)] = ""
+
+            debug_sec_filing_documents[i] = file_metadata
+
+            raw_text = xbrl_text.findall(document)
+            raw_text = raw_text[0][1].replace("<XBRL>", "").replace("</XBRL>", "").strip()
+            raw_text = raw_text.replace("<XML>", "").replace("</XML>", "").strip()
+
+            if raw_text.lower().startswith("begin"):
+                # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
+                output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
+                with open(output_document, 'w', encoding=charenc) as f:
+                    f.write(raw_text)
+                uudecode(output_document, out_file=output_document.replace(".uue", ""))
+                uue_file = True
+            elif document.lower().startswith("begin"):
+                # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
+                output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
+                with open(output_document, 'w', encoding=charenc) as f:
+                    f.write(raw_text)
+                uudecode(output_document, out_file=output_document.replace(".uue", ""))
+                os.remove(output_document)
+                uue_file = True
+
+            else:
+                # print(file_metadata)
+                # print(output_directory)
+                output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']), file_metadata['TYPE'], file_metadata['DESCRIPTION'], file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace(
+                    "__", "_")
+
+                output_filepath = format_filename(output_filepath)
+                # print(output_filepath)
+                output_document = os.path.join(output_directory, output_filepath)
+
+                with open(output_document, 'w', encoding=charenc) as f:
+                    f.write(raw_text)
+
+            debug_sec_filing_documents[i]['OUTPUT_FILEPATH'] = output_document
+
+            file_metadata['RELATIVE_FILEPATH'] = os.path.join(os.path.basename(output_directory), 'FILES', output_filepath)
+            file_metadata['DESCRIPTIVE_FILEPATH'] = output_filepath
+
+            file_metadata['FILE_SIZE'] = file_size(output_document)
+            file_metadata['FILE_SIZE_BYTES'] = os.stat(output_document).st_size
+
+            sec_filing_documents[i] = file_metadata
+
+            if uue_file == True:
+                os.remove(output_document)
+
+        df_sec_filing_contents = pd.DataFrame.from_dict(sec_filing_documents, orient='index')
+        df_sec_filing_contents.to_csv(os.path.join(output_directory, "{}_FILING_CONTENTS.csv".format(os.path.basename(output_directory))))
+        return df_sec_filing_contents
+    else:
+        print("already extracted")
+        return output_directory
+
 
 # https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
 #/Archives/edgar/daily-index — daily index files through the current year;
@@ -490,6 +478,6 @@ if __name__ == '__main__':
 
     if len(sys.argv[1:]) >= 1:
         args = parser.parse_args()
-        extract_header_from_filing(input_filepath=args.input_filepath[0], ticker=args.ticker[0])
+        extract_header_from_filing(input_filepath=args.input_filepath[0])
     else:
         sys.exit(parser.print_help())
