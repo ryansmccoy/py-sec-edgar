@@ -62,7 +62,7 @@ def download_latest_idx():
 
     df_tickers_cik = df_tickers_cik.assign(EDGAR_CIKNUMBER=df_tickers_cik['EDGAR_CIKNUMBER'].astype(str))
 
-    local_idx = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, "master.idx")
+    local_idx = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
 
     if os.path.exists(local_idx):
         os.remove(local_idx)
@@ -105,7 +105,7 @@ def download_filings_from_idx():
     for i, feed_item in df_with_tickers.to_dict(orient='index').items():
 
         folder_dir = os.path.basename(feed_item['Filename']).split('.')[0].replace("-","")
-        folder_path_cik = CONFIG.SEC_TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", folder_dir)
+        folder_path_cik = CONFIG.TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", folder_dir)
 
         filepath_feed_item = os.path.join(folder_path_cik, os.path.basename(feed_item['Filename']))
 

@@ -1,6 +1,4 @@
 import os
-import platform
-import sys
 from datetime import datetime
 from urllib.parse import urljoin
 from datetime import timedelta
