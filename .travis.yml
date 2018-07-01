@@ -25,5 +25,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: ryan413/py_sec_edgar_data
+    repo: ryan413/py_sec_edgar
     python: 3.6

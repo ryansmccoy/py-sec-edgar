@@ -102,14 +102,3 @@ def get_cik_from_ticker(ticker_list):
         except:
             print('problem')
     return cik_dict
-
-def load_ticker_to_cik_files():
-    bb_update = r'US_EXCHANGE_COMPANIES_bbig.xlsx'
-    bb_update = os.path.join(DATA_DIR,bb_update)
-
-    df_bb = pd.read_excel(bb_update,header=0,index_col=0,parse_dates=True)
-
-    cik_ticker_check = os.path.join(DATA_DIR,'TICKERCHECK_CIK_COMPANIES_ONLY.xlsx')
-    df_cik = pd.read_excel(cik_ticker_check,header=0,index_col=0)
-
-    return df_bb, df_cik

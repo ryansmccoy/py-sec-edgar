@@ -6,8 +6,8 @@ import os
 from datetime import datetime
 from urllib.parse import urljoin
 
-from py_sec_edgar_data.utilities import determine_if_sec_edgar_feed_and_local_files_differ
-from py_sec_edgar_data.proxy_request import ProxyRequest
+from py_sec_edgar.utilities import determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar.proxy_request import ProxyRequest
 from datetime import timedelta
 import pandas as pd
 

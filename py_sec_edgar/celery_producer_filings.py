@@ -1,6 +1,6 @@
 import os.path
 from urllib import parse
-import py_sec_edgar_data
+import py_sec_edgar
 from dateutil.parser import parse
 from dateparser import parse
 import bisect
@@ -16,14 +16,14 @@ import os
 import pandas as pd
 desired_width = 600
 pd.set_option('display.width', desired_width)
-from py_sec_edgar_data.database import query_db_for_filings_data
-from py_sec_edgar_data.utilities import walk_dir_fullpath
+from py_sec_edgar.database import query_db_for_filings_data
+from py_sec_edgar.utilities import walk_dir_fullpath
 
 sec_dates = pd.date_range(datetime.today() - timedelta(days=365*22), datetime.today())
 sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
 sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
 sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
-from py_sec_edgar_data.settings import Config
+from py_sec_edgar.settings import Config
 CONFIG = Config()
 
 # form_filter = ['8-K','424','424']
@@ -93,7 +93,7 @@ def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
         if not os.path.exists(item['windows_output_filepath']):
             print("downloading {}".format(item['windows_output_filepath']))
             if celery_enabled == True:
-                py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
+                py_sec_edgar.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
             else:
                 import requests
                 r = requests.get(item['URL'])

@@ -16,11 +16,11 @@ from html import unescape
 from pprint import pprint
 import lxml.html
 from bs4 import BeautifulSoup
-from py_sec_edgar_data.settings import Config
+from py_sec_edgar.settings import Config
 CONFIG = Config()
 from datetime import datetime
 
-from py_sec_edgar_data.utilities import file_size
+from py_sec_edgar.utilities import file_size
 
 re10k = re.compile('10-K')
 import pandas as pd
@@ -34,8 +34,8 @@ import os
 # input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000034088-17-000017.txt'
 # input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000039263-17-000017.txt'
 # input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000065984-17-000098.txt'
-from py_sec_edgar_data.utilities import format_filename
-from py_sec_edgar_data.utilities import uudecode
+from py_sec_edgar.utilities import format_filename
+from py_sec_edgar.utilities import uudecode
 
 # from celery import Celery
 # # subprocess.call(['chmod', '-R', '+w', some_folder])
@@ -167,21 +167,7 @@ def extract_header_from_filing(input_filepath=None, header_output_filepath=None,
     except:
         print("error {}".format(input_filepath))
 
-# if __name__ == '__main__':
-#
-#     import argparse
-#
-#     parser = argparse.ArgumentParser(description='SEC data Extract Header from Filing')
-#     parser.add_argument('--input_filepath', help='Input the Year(s) or ALL', action='append', nargs='*')
-#     parser.add_argument('--ticker', help='Input the Ticker(s) or ALL keyword', action='append', nargs='*')
-#
-#     if len(sys.argv[1:]) >= 1:
-#         args = parser.parse_args()
-#         extract_header_from_filing(input_filepath=args.input_filepath[0][0], ticker=args.ticker[0][0])
-#     else:
-#         sys.exit(parser.print_help())
-
-def _parse_single_document(sec_doc_element):
+def _parse_single_document():
     """extracts the meta-data from an individual document inside an SEC Edgar Filing"""
     root = lxml.html.fromstring(r.text)
     root = root.getroottree()

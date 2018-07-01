@@ -12,8 +12,8 @@ from urllib.parse import urljoin
 import lxml.html
 import pandas as pd
 from bs4 import BeautifulSoup
-from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
-from py_sec_edgar_data.proxy_request import ProxyRequest
+from py_sec_edgar.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar.proxy_request import ProxyRequest
 from urllib import parse
 from datetime import datetime
 import requests

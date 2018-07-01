@@ -31,7 +31,7 @@ import binascii
 import feedparser
 
 try:
-    from py_sec_edgar_data.proxy_request import ProxyRequest
+    from py_sec_edgar.proxy_request import ProxyRequest
 except:
     import proxy_request as full_index
 

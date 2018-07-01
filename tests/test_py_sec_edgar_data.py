@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `py_sec_edgar_data` package."""
+"""Tests for `py_sec_edgar` package."""
 
 import pytest
 
 from click.testing import CliRunner
 
-from py_sec_edgar_data import py_sec_edgar_data
-from py_sec_edgar_data import cli_full_index
+from py_sec_edgar import py_sec_edgar_data
+from py_sec_edgar import cli_full_index
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def test_command_line_interface():
     runner = CliRunner()
     result = runner.invoke(cli_full_index.main)
     assert result.exit_code == 0
-    assert 'py_sec_edgar_data.cli.main' in result.output
+    assert 'py_sec_edgar.cli.main' in result.output
     help_result = runner.invoke(cli_full_index.main, ['--help'])
     assert help_result.exit_code == 0
     assert '--help  Show this message and exit.' in help_result.output

@@ -20,9 +20,9 @@ class Config(object):
 
     ROOT_DIR = os.path.abspath(os.sep)
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    # BASE_DIR = r'C:\@CODE\py-sec-edgar-data'
+    # BASE_DIR = r'C:\@CODE\py-sec-edgar'
     APP_DIR = os.path.abspath(os.path.dirname(__file__))
-    # APP_DIR = r'C:\@CODE\py-sec-edgar-data\py_sec_edgar_data'
+    # APP_DIR = r'C:\@CODE\py-sec-edgar\py_sec_edgar'
     CONFIG_DIR = os.path.join(BASE_DIR, "config")
     # todo: need to reorganize get rid of irrelavent
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")

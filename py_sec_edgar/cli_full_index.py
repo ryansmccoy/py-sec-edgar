@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""Console script for py_sec_edgar_data."""
+"""Console script for py_sec_edgar."""
 import sys
 import click
 
 try:
-    from py_sec_edgar_data.feeds import full_index
+    from py_sec_edgar.feeds import full_index
 except:
     import feeds.full_index as full_index
 

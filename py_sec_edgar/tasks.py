@@ -6,17 +6,17 @@ import os.path
 import pandas as pd
 import os
 from time import sleep
-from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename
-from py_sec_edgar_data.proxy_request import ProxyRequest
-from py_sec_edgar_data.cik_ticker_loader import cik2ticker, get_cik_from_ticker
-import py_sec_edgar_data.filing
-from py_sec_edgar_data.settings import Config
+from py_sec_edgar.utilities import edgar_filing_idx_create_filename
+from py_sec_edgar.proxy_request import ProxyRequest
+from py_sec_edgar.cik_ticker_loader import cik2ticker, get_cik_from_ticker
+import py_sec_edgar.filing
+from py_sec_edgar.settings import Config
 import json
-import py_sec_edgar_data.feeds
+import py_sec_edgar.feeds
 
 CONFIG = Config()
 
-from py_sec_edgar_data.celery import app
+from py_sec_edgar.celery import app
 
 @app.task(bind=True, max_retries=3)
 def celery_consume_rss_feed(self, item):
@@ -38,7 +38,7 @@ def celery_extract_content_from_complete_submission_txt_filing(self, item):
         filepath = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
     output_filepath = os.path.join(CONFIG.OUTPUT_DIR,item['CIK'],item['FILE'].replace('-',"").replace(".txt",""))
     print(output_filepath)
-    py_sec_edgar_data.filing.extract_documents_from_complete_submission_txt_filing(input_filepath=filepath, output_filepath=output_filepath, extract_items=['HEADER_AND_DOCUMENTS'])
+    py_sec_edgar.filing.extract_documents_from_complete_submission_txt_filing(input_filepath=filepath, output_filepath=output_filepath, extract_items=['HEADER_AND_DOCUMENTS'])
 
 
 @app.task(bind=True, max_retries=3)
@@ -73,7 +73,7 @@ def download_recent_edgar_filings_xbrl_rss_feed(self, url, filename):
         print(' [ X ] Requesting URL')
         print(" [ X ] ", filename)
         # html = requests.get(url)
-        py_sec_edgar_data.feeds.download_recent_edgar_filings_xbrl_rss_feed()
+        py_sec_edgar.feeds.download_recent_edgar_filings_xbrl_rss_feed()
         print(" [ X ] Saved 2 Disk")
     except:
         print(" [   ] trying again")

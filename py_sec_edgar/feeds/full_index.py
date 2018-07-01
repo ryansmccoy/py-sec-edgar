@@ -10,9 +10,9 @@ from urllib.parse import urljoin
 import pandas as pd
 
 try:
-    from py_sec_edgar_data.utilities import format_filename
-    from py_sec_edgar_data.proxy_request import ProxyRequest
-    from py_sec_edgar_data.settings import Config
+    from py_sec_edgar.utilities import format_filename
+    from py_sec_edgar.proxy_request import ProxyRequest
+    from py_sec_edgar.settings import Config
 except:
     from proxy_request import ProxyRequest
     from settings import Config
@@ -53,7 +53,7 @@ def download_latest_quarterly_full_index_files():
         # item['URL'] = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
         # item['OVERWRITE_FILE'] = True
         # fullfilepath = os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH'])
-        # py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
+        # py_sec_edgar.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
 
         url = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
 
