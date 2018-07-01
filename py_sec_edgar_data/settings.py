@@ -20,8 +20,6 @@ load_dotenv(find_dotenv())
 
 class Config(object):
 
-
-
     ROOT_DIR = os.path.abspath(os.sep)
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     # BASE_DIR = r'C:\@CODE\py-sec-edgar-data'

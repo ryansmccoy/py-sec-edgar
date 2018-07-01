@@ -31,8 +31,6 @@ import binascii
 import feedparser
 
 from py_sec_edgar_data.proxy_request import ProxyRequest
-from py_sec_edgar_data.settings import Config
-
 
 class Error(Exception):
     pass
@@ -510,8 +508,6 @@ def read_xml_feedparser(source_file):
 
 
 desired_width = 600
-CONFIG = Config()
-
 
 def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
 

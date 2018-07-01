@@ -7,12 +7,12 @@
 import os
 import os.path
 from urllib.parse import urljoin
-import time
 import pandas as pd
-from py_sec_edgar_data.utilities import format_filename, CONFIG
-from py_sec_edgar_data.celery_producer_filings import CONFIG
+from py_sec_edgar_data.utilities import format_filename
+# from py_sec_edgar_data.celery_producer_filings import CONFIG
 from py_sec_edgar_data.proxy_request import ProxyRequest
-import requests
+from py_sec_edgar_data.settings import Config
+CONFIG = Config()
 
 full_index_files = ["company.gz",
                     "company.idx",
