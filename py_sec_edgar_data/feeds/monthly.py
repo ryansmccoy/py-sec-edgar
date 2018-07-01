@@ -14,9 +14,10 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from py_sec_edgar_data.feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
 from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser
-from py_sec_edgar_data.gotem import Gotem
+from py_sec_edgar_data.proxy_request import VPNagent
 from urllib import parse
 from datetime import datetime
+import requests
 
 def download_edgar_filings_xbrl_rss_files():
     # download first xbrl file availible
@@ -27,26 +28,18 @@ def download_edgar_filings_xbrl_rss_files():
     dates.reverse()
     for date in dates:
         try:
-            g = Gotem()
+            vpn_agent = VPNagent()
+            vpn_agent.generate_random_header_and_proxy_host()
+
             basename = 'xbrlrss-' + str(date.year) + '-' + str(date.month).zfill(2) + ".xml"
             filepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, basename)
             edgarFilingsFeed = parse.urljoin('https://www.sec.gov/Archives/edgar/monthly/', basename)
             if not os.path.exists(edgarFilingsFeed):
-                g.GET_FILE(edgarFilingsFeed, filepath)
+                r = requests.get(CONFIG.edgar_monthly_index, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
+
+                # g.GET_FILE(edgarFilingsFeed, filepath)
         except Exception as e:
             print(e)
-
-def edgar_monthly_xbrl_filings_feed(year, month):
-    basename = 'xbrlrss-' + str(year) + '-' + str(month).zfill(2)
-    print(basename)
-
-    edgarFilingsFeed = os.path.join(CONFIG.SEC_MONTHLY_DIR, basename + ".xml")
-
-    if not os.path.exists(edgarFilingsFeed):
-        print("Did not find local xbrl file...Downloading")
-        edgarFilingsFeed = parse.urljoin('http://www.sec.gov/Archives/edgar/monthly/', basename + ".xml")
-        g.GET_FILE(edgarFilingsFeed, localfilename)
-    return basename, localfilename
 
 def generate_monthly_index_url_and_filepaths(day):
     basename = 'xbrlrss-' + str(day.year) + '-' + str(day.month).zfill(2)
@@ -56,9 +49,12 @@ def generate_monthly_index_url_and_filepaths(day):
 
 def download_and_flatten_monthly_xbrl_filings_list():
 
-    g = Gotem()
-    g.GET_HTML(CONFIG.edgar_monthly_index)
-    html = lxml.html.fromstring(g.r.text)
+    vpn_agent = VPNagent()
+    vpn_agent.generate_random_header_and_proxy_host()
+
+    r = requests.get(CONFIG.edgar_monthly_index, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
+
+    html = lxml.html.fromstring(r.text)
     html.make_links_absolute(CONFIG.edgar_monthly_index)
     html = lxml.html.tostring(html)
     soup = BeautifulSoup(html, 'lxml')
@@ -75,13 +71,25 @@ def download_and_flatten_monthly_xbrl_filings_list():
 
     for url in urls:
         filename = url.split('/')[-1:][0]
+
         fullfilepath = os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)
+
         OUTPUT_FILENAME = os.path.join(os.path.dirname(fullfilepath), os.path.basename(fullfilepath.replace('.xml', ".xlsx")))
+
         try:
 
             if not os.path.isfile(os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)) or url == urls[0]:
                 print("Downloading " + fullfilepath)
-                g.GET_FILE(url, fullfilepath)
+                vpn_agent.generate_random_header_and_proxy_host()
+
+                r = requests.get(url, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
+
+                with open(fullfilepath, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=1024):
+                        if chunk:  # filter out keep-alive new chunks
+                            f.write(chunk)
+
+                # g.GET_FILE(url, fullfilepath)
             else:
                 print("Found XML File " + fullfilepath)
 
@@ -150,27 +158,39 @@ def parse_monthly():
                     # or ("S-1" in item["edgar_formtype"]) or ("20-F" in item["edgar_formtype"]):
 
                     item = flattenDict(feed_item)
+
                     pprint(item)
 
                     try:
-                        ticker = df_tickercheck[df_tickercheck['CIK'].isin([item['edgar_ciknumber'].lstrip("0")])]['SYMBOL'].tolist()[0]
+                        ticker = df_tickercheck[df_tickercheck['EDGAR_CIKNUMBER'].isin([item['edgar_ciknumber'].lstrip("0")])]
+                        symbol = ticker['SYMBOL'].tolist()[0]
                     except:
                         try:
                             print('searching backup')
                             ticker = df_cik_ticker[df_cik_ticker['CIK'].isin([item['edgar_ciknumber'].lstrip("0")])]['Ticker'].tolist()[0]
                         except:
                             ticker = "TICKER"
+
                     pprint(item)
                     basename = os.path.basename(monthly_local_filepath).replace(".xml", "")
+
                     month_dir = os.path.join(CONFIG.SEC_TXT_DIR, str(day.year), '{:02d}'.format(day.month))
 
                     if not os.path.exists(month_dir):
                         os.makedirs(month_dir)
                     if ticker != "TICKER":
+
                         filepath = edgar_filing_idx_create_filename(basename, item,ticker)
+
                         if not os.path.exists(filepath):
-                            consume_complete_submission_filing.delay(basename, item, ticker)
+
+                            vpn_agent = VPNagent()
+                            vpn_agent.generate_random_header_and_proxy_host()
+
+                            r = requests.get(CONFIG.edgar_monthly_index, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
+
+                            # consume_complete_submission_filing.delay(basename, item, ticker)
                         else:
                             print('found file {}'.format(filepath))
                     else:
-                        consume_complete_submission_filing.delay(basename, item, ticker)
+                        # consume_complete_submission_filing.delay(basename, item, ticker)

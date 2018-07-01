@@ -56,10 +56,10 @@ def load_ticker_to_cik_files():
 
     return df_bb, df_cik
 #
-# ticker_check = r'E:\DATA\tickercheck.xlsx'
+# ticker_check = r'E:\data\tickercheck.xlsx'
 # df_ticker_check = pd.read_excel(ticker_check,header=0,index_col=0,parse_dates=True)
 #
-# ticker_check_final = r'E:\DATA\tickers_cik.xlsx'
+# ticker_check_final = r'E:\data\tickers_cik.xlsx'
 # df_cik_final = pd.read_excel(ticker_check_final,header=0,index_col=0,parse_dates=True)
 
 def get_cik(symbol):

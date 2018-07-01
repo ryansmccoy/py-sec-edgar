@@ -7,7 +7,7 @@ import pandas as pd
 import os
 from time import sleep
 from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename
-from py_sec_edgar_data.gotem import Gotem
+from py_sec_edgar_data.proxy_request import Gotem
 from py_sec_edgar_data.cik_ticker_loader import cik2ticker, get_cik_from_ticker
 import py_sec_edgar_data.filing
 from py_sec_edgar_data.settings import Config

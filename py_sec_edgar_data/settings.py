@@ -20,8 +20,9 @@ load_dotenv(find_dotenv())
 
 class Config(object):
 
-    ROOT_DIR = os.path.abspath(os.sep)
 
+
+    ROOT_DIR = os.path.abspath(os.sep)
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     # BASE_DIR = r'C:\@CODE\py-sec-edgar-data'
     APP_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -50,9 +51,9 @@ class Config(object):
         else:
             print("\t SEC Filing Output Directory: \t{}".format(_))
 
-    tickercheck = os.path.join(CONFIG_DIR, "TICKERCHECK_CIK_COMPANIES_ONLY.xlsx")
-    cik_ticker = os.path.join(CONFIG_DIR, "cik_ticker_name_exchange_sic_business_incorporated_irs.xlsx")
-    monthly_urls = os.path.join(CONFIG_DIR, "sec_gov_archives_edgar_monthly_xbrl_urls")
+    tickercheck = os.path.join(DATA_DIR, "cik_tickers.xlsx")
+    cik_ticker = os.path.join(DATA_DIR, "cik_ticker_name_exchange_sic_business_incorporated_irs.xlsx")
+    monthly_urls = os.path.join(DATA_DIR, "sec_gov_archives_edgar_monthly_xbrl_urls.xlsx")
 
     edgar_Archives_url = r'https://www.sec.gov/Archives/'
     edgar_full_index = urljoin(edgar_Archives_url,'edgar/full-index/')
@@ -63,3 +64,5 @@ class Config(object):
     sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
     sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
     sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
+
+    VPN_PROVIDER = "PP"

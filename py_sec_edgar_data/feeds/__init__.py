@@ -16,7 +16,7 @@ import feedparser
 import os
 import glob
 from py_sec_edgar_data.settings import Config
-from py_sec_edgar_data.gotem import Gotem
+from py_sec_edgar_data.proxy_request import ProxyRequest
 from datetime import datetime
 
 CONFIG = Config()
@@ -25,13 +25,22 @@ import pandas as pd
 from py_sec_edgar_data.utilities import walk_dir_fullpath
 
 from py_sec_edgar_data.settings import Config
-
+import requests
 
 def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
 
     temp_filepath = os.path.join(os.path.dirname(local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
-    g = Gotem()
-    g.GET_FILE(url, temp_filepath)
+
+    vpn_agent = VPNagent()
+    vpn_agent.generate_random_header_and_proxy_host()
+
+    r = requests.get(url, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
+
+    with open(temp_filepath, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+
     temp_size = file_size(temp_filepath)
     local_size = file_size(local_filepath)
 

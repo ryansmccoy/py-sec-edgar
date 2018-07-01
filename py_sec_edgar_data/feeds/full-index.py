@@ -12,7 +12,8 @@ import pandas as pd
 from py_sec_edgar_data.utilities import format_filename
 from py_sec_edgar_data.celery_producer_filings import CONFIG
 from py_sec_edgar_data.feeds import CONFIG
-from py_sec_edgar_data.gotem import Gotem
+from py_sec_edgar_data.proxy_request import ProxyRequest
+import requests
 
 full_index_files = ["company.gz",
                     "company.idx",
@@ -34,7 +35,8 @@ full_index_files = ["company.gz",
                     "xbrl.zip"]
 
 def download_latest_quarterly_full_index_files():
-    g = Gotem()
+    g = ProxyRequest()
+
     for i, file in enumerate(full_index_files):
         item = {}
         item['OUTPUT_FOLDER'] = 'full-index'
@@ -42,15 +44,20 @@ def download_latest_quarterly_full_index_files():
         item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_FULL_INDEX_DIR
         item['URL'] = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
         item['OVERWRITE_FILE'] = True
+
         dir_name = os.path.dirname(os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH']))
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
+        fullfilepath = os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH'])
+
         # celery version of download
         # py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
-        g.GET_FILE(item['URL'], os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH']))
 
+        g.GET_FILE(item['URL'], fullfilepath)
+
+        print('saved {}'.format(fullfilepath))
 
 def download_latest_idx():
     # load lookup column
@@ -59,14 +66,10 @@ def download_latest_idx():
 
     local_idx = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, "master.idx")
     url = CONFIG.edgar_full_master
-    # local_idx = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, "xbrl.idx")
-    # url = CONFIG.edgar_full_master.replace("master.idx", "xbrl.idx")
-    # for time being just delete most recent and download newest
 
     if os.path.exists(local_idx):
         os.remove(local_idx)
 
-    g = Gotem()
     print("Downloading Latest {}".format(CONFIG.edgar_full_master))
     g.GET_FILE(url, local_idx)
 
@@ -85,10 +88,9 @@ def download_latest_idx():
 
     df_with_tickers.to_csv(local_idx.replace(".idx", ".csv"))
 
-
-
 def download_filings_from_idx():
     # todo: allow for ability to filter forms dynamically
+    g = ProxyRequest()
 
     forms_list = ['10-K']
 
@@ -116,10 +118,8 @@ def download_filings_from_idx():
             if not os.path.exists(folder_path_cik):
                 os.makedirs(folder_path_cik)
 
-            g = Gotem()
-
             g.GET_FILE(feed_item['link'], filepath_feed_item)
-            time.sleep(3)
+
             # todo: celery version of download full
             # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)
         else:
@@ -127,5 +127,4 @@ def download_filings_from_idx():
             # parse_and_download_quarterly_idx_file(CONFIG.edgar_full_master, local_master_idx)
 
 if __name__ == "__main__":
-    download_latest_idx()
     download_filings_from_idx()

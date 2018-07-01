@@ -40,7 +40,7 @@ from py_sec_edgar_data.utilities import uudecode
 # from celery import Celery
 # # subprocess.call(['chmod', '-R', '+w', some_folder])
 header_list = ["ACCESSION NUMBER", "CONFORMED SUBMISSION TYPE", "PUBLIC DOCUMENT COUNT",
-               "CONFORMED PERIOD OF REPORT", "FILED AS OF DATE", "DATE AS OF CHANGE", "FILER", "COMPANY DATA",
+               "CONFORMED PERIOD OF REPORT", "FILED AS OF DATE", "DATE AS OF CHANGE", "FILER", "COMPANY data",
                "COMPANY CONFORMED NAME", "CENTRAL INDEX KEY", "STANDARD INDUSTRIAL CLASSIFICATION", "IRS NUMBER",
                "STATE OF INCORPORATION", "FISCAL YEAR END", "FILING VALUES", "FORM TYPE", "SEC ACT",
                "SEC FILE NUMBER", "FILM NUMBER", "BUSINESS ADDRESS", "STREET 1", "STREET 2", "CITY", "STATE", "ZIP",
@@ -48,7 +48,7 @@ header_list = ["ACCESSION NUMBER", "CONFORMED SUBMISSION TYPE", "PUBLIC DOCUMENT
                "FORMER CONFORMED NAME", "DATE OF NAME CHANGE"]
 
 header = {
-    "COMPANY DATA": {
+    "COMPANY data": {
         "COMPANY CONFORMED NAME": "",
         "CENTRAL INDEX KEY": "",
         "STANDARD INDUSTRIAL CLASSIFICATION": "",
@@ -171,7 +171,7 @@ def extract_header_from_filing(input_filepath=None, header_output_filepath=None,
 #
 #     import argparse
 #
-#     parser = argparse.ArgumentParser(description='SEC DATA Extract Header from Filing')
+#     parser = argparse.ArgumentParser(description='SEC data Extract Header from Filing')
 #     parser.add_argument('--input_filepath', help='Input the Year(s) or ALL', action='append', nargs='*')
 #     parser.add_argument('--ticker', help='Input the Ticker(s) or ALL keyword', action='append', nargs='*')
 #
@@ -472,7 +472,7 @@ def extract_documents_from_complete_submission_txt_filing(input_filepath=None, o
 if __name__ == '__main__':
 
     import argparse
-    parser = argparse.ArgumentParser(description='SEC DATA Extract Header from Filing')
+    parser = argparse.ArgumentParser(description='SEC data Extract Header from Filing')
     parser.add_argument('--input_filepath', help='Input the Year(s) or ALL', action='append', nargs='*')
     parser.add_argument('--ticker', help='Input the Ticker(s) or ALL keyword', action='append', nargs='*')
 
