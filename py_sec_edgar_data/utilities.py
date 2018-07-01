@@ -1,3 +1,9 @@
+# view-source:https://www.sec.gov/Archives/edgar/xbrl-rr.rss.xml
+# https://www.sec.gov/Archives/edgar/usgaap.rss.xml
+# https://www.sec.gov/Archives/edgar/xbrl-inline.rss.xml
+# https://www.sec.gov/Archives/edgar/usgaap.rss.xml
+# http://www.sec.gov/Archives/edgar/xbrlrss.all.xml
+# https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&CIK=&type=10-K&company=&dateb=&owner=include&start=0&count=100&output=atom
 import sys
 
 import re
@@ -13,6 +19,8 @@ import os
 import time
 from datetime import date
 from urllib.parse import urljoin
+
+import requests
 from dateutil.parser import parse
 from time import mktime
 from datetime import datetime
@@ -21,6 +29,9 @@ import binascii
 
 # __all__ = ["Error", "encode", "decode"]
 import feedparser
+
+from py_sec_edgar_data.proxy_request import ProxyRequest
+from py_sec_edgar_data.settings import Config
 
 
 class Error(Exception):
@@ -496,3 +507,36 @@ def read_xml_feedparser(source_file):
     else:
         feed = feedparser.parse(source_file)
     return feed
+
+
+desired_width = 600
+CONFIG = Config()
+
+
+def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
+
+    temp_filepath = os.path.join(os.path.dirname(local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
+
+    vpn_agent = ProxyRequest()
+    vpn_agent.generate_random_header_and_proxy_host()
+
+    r = requests.get(url, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
+
+    with open(temp_filepath, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:  # filter out keep-alive new chunks
+                f.write(chunk)
+
+    temp_size = file_size(temp_filepath)
+    local_size = file_size(local_filepath)
+
+    if local_size == temp_size:
+        print("local_size {} == temp_size {}".format(local_size, temp_size))
+        os.remove(temp_filepath)
+        return False
+    else:
+        print("local_size {} != temp_size {}".format(local_size, temp_size))
+        if os.path.exists(local_filepath):
+            os.remove(local_filepath)
+        os.rename(temp_filepath, temp_filepath.replace("temp_", ""))
+        return True

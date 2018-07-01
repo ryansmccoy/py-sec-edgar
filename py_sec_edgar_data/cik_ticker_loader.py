@@ -18,7 +18,7 @@ def grab_tickers_from_yahoo_cik():
     for CIK in list_of_missing_cik:
         print(CIK)
         url =r'http://yahoo.brand.edgar-online.com/default.aspx?cik={}'.format(CIK)
-        g = gotem.Gotem()
+        g = ProxyRequest.ProxyRequest()
         g.GET_HTML(url)
         try:
             re_string = re.search(r"t=[A-Z].+", g.r.text)
@@ -93,7 +93,7 @@ def get_cik_from_ticker(ticker_list):
     # ticker = DEFAULT_TICKERS[0]
     for ticker in ticker_list:
         try:
-            g = gotem.Gotem()
+            g = ProxyRequest.ProxyRequest()
             g.GET_HTML(URL.format(ticker))
             text = g.r.content.decode()
             results = CIK_RE.findall(text)

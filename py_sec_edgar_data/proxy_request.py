@@ -115,7 +115,7 @@ class ProxyRequest(object):
         return "URL: {}".format(self.url)
 
 if __name__ == "__main__":
-    from py_sec_edgar_data.feeds import CONFIG
+    from py_sec_edgar_data.utilities import CONFIG
     import os
     url = r'https://www.sec.gov/Archives/edgar/data/897078/0001493152-18-009029.txt'
     g = ProxyRequest()

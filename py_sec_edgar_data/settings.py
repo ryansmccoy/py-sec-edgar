@@ -31,16 +31,16 @@ class Config(object):
     # todo: need to reorganize get rid of irrelavent
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
     DATA_DIR = os.path.join(SEC_DIR, r'data')
-    SEC_EDGAR_DIR = os.path.join(SEC_DIR, "Archives\edgar")
-    SEC_MONTHLY_DIR = os.path.join(SEC_EDGAR_DIR, "monthly")
-    SEC_FULL_INDEX_DIR = os.path.join(SEC_EDGAR_DIR, "full-index")
-    SEC_DAILY_INDEX_DIR = os.path.join(SEC_EDGAR_DIR, "daily-index")
-    SEC_TXT_LATEST = os.path.join(SEC_EDGAR_DIR, latest_folder)
-    SEC_TXT_FILING_DIR =  os.path.join(SEC_EDGAR_DIR, "data", "CIK", "FOLDER")
-    SEC_XBRL_ZIP_DIR = os.path.join(SEC_EDGAR_DIR, "xbrl-zip")
-    SEC_XBRL_TXT_DIR = os.path.join(SEC_EDGAR_DIR, "xbrl")
+    EDGAR_DIR = os.path.join(SEC_DIR, "Archives\edgar")
+    MONTHLY_DIR = os.path.join(EDGAR_DIR, "monthly")
+    FULL_INDEX_DIR = os.path.join(EDGAR_DIR, "full-index")
+    DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
+    SEC_TXT_LATEST = os.path.join(EDGAR_DIR, latest_folder)
+    SEC_TXT_FILING_DIR =  os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
+    SEC_XBRL_ZIP_DIR = os.path.join(EDGAR_DIR, "xbrl-zip")
+    SEC_XBRL_TXT_DIR = os.path.join(EDGAR_DIR, "xbrl")
 
-    dirs_all = [SEC_DIR, DATA_DIR, SEC_EDGAR_DIR, SEC_TXT_FILING_DIR, SEC_MONTHLY_DIR, SEC_FULL_INDEX_DIR, SEC_DAILY_INDEX_DIR, SEC_TXT_LATEST, SEC_XBRL_TXT_DIR]
+    dirs_all = [SEC_DIR, DATA_DIR, EDGAR_DIR, SEC_TXT_FILING_DIR, MONTHLY_DIR, FULL_INDEX_DIR, DAILY_INDEX_DIR, SEC_TXT_LATEST, SEC_XBRL_TXT_DIR]
 
     for _ in dirs_all:
 
@@ -57,7 +57,7 @@ class Config(object):
 
     edgar_Archives_url = r'https://www.sec.gov/Archives/'
     edgar_full_index = urljoin(edgar_Archives_url,'edgar/full-index/')
-    edgar_full_master = urljoin(edgar_full_index,'master.idx')
+    edgar_full_master_url = urljoin(edgar_full_index, 'master.idx')
     edgar_monthly_index = urljoin(edgar_Archives_url, 'edgar/monthly/')
 
     sec_dates = pd.date_range(datetime.now() - timedelta(days=365 * 22), datetime.now())

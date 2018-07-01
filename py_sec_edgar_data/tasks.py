@@ -7,7 +7,7 @@ import pandas as pd
 import os
 from time import sleep
 from py_sec_edgar_data.utilities import edgar_filing_idx_create_filename
-from py_sec_edgar_data.proxy_request import Gotem
+from py_sec_edgar_data.proxy_request import ProxyRequest
 from py_sec_edgar_data.cik_ticker_loader import cik2ticker, get_cik_from_ticker
 import py_sec_edgar_data.filing
 from py_sec_edgar_data.settings import Config
@@ -33,7 +33,7 @@ def celery_extract_content_from_complete_submission_txt_filing(self, item):
     item = json.loads(item)
 
     if item['OUTPUT_FOLDER'] == "full-index":
-        filepath = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
+        filepath = os.path.join(CONFIG.FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
     elif item['OUTPUT_FOLDER'] == 'filings':
         filepath = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
     output_filepath = os.path.join(CONFIG.OUTPUT_DIR,item['CIK'],item['FILE'].replace('-',"").replace(".txt",""))
@@ -46,13 +46,13 @@ def consume_sec_filing_txt(self, item):
     item = json.loads(item)
 
     if item['OUTPUT_FOLDER'] == "full-index":
-        filepath = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
+        filepath = os.path.join(CONFIG.FULL_INDEX_DIR, item['RELATIVE_FILEPATH'])
     elif item['OUTPUT_FOLDER'] == 'filings':
         filepath = os.path.join(CONFIG.SEC_EDGAR_FILINGS_DIR, item['YEAR'], item['QUARTER'],item['FILE'])
 
     if not os.path.exists(filepath) or item["OVERWRITE_FILE"] == True:
         try:
-            g = Gotem()
+            g = ProxyRequest()
             print(' [ X ] Requesting URL')
             g.GET_FILE(item['URL'], filepath)
             print(" [ X ] ", filepath)
@@ -105,7 +105,7 @@ def consume_complete_submission_filing(self, basename, item, ticker):
 
     if not os.path.exists(filepath):
         try:
-            g = Gotem()
+            g = ProxyRequest()
             print(' [ X ] Requesting URL')
             g.GET_FILE(url, filepath)
             print(" [ X ] ", filepath)
@@ -123,7 +123,7 @@ def consume_complete_submission_filing_txt(self, item, filepath):
     main_url = r'https://www.sec.gov'
     if not os.path.exists(filepath):
         try:
-            g = Gotem()
+            g = ProxyRequest()
             print(' [ X ] Requesting URL')
             g.GET_FILE_CELERY(item['link'], filepath)
             print(" [ X ] ", filepath)

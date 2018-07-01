@@ -9,9 +9,8 @@ import os.path
 from urllib.parse import urljoin
 import time
 import pandas as pd
-from py_sec_edgar_data.utilities import format_filename
+from py_sec_edgar_data.utilities import format_filename, CONFIG
 from py_sec_edgar_data.celery_producer_filings import CONFIG
-from py_sec_edgar_data.feeds import CONFIG
 from py_sec_edgar_data.proxy_request import ProxyRequest
 import requests
 
@@ -35,43 +34,42 @@ full_index_files = ["company.gz",
                     "xbrl.zip"]
 
 def download_latest_quarterly_full_index_files():
+
     g = ProxyRequest()
 
     for i, file in enumerate(full_index_files):
-        item = {}
-        item['OUTPUT_FOLDER'] = 'full-index'
-        item['RELATIVE_FILEPATH'] = '{}'.format(file)
-        item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_FULL_INDEX_DIR
-        item['URL'] = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
-        item['OVERWRITE_FILE'] = True
 
-        dir_name = os.path.dirname(os.path.join(CONFIG.SEC_FULL_INDEX_DIR, item['RELATIVE_FILEPATH']))
-
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-
-        fullfilepath = os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH'])
-
-        # celery version of download
+        # comments below for celery version
+        # item = {}
+        # item['OUTPUT_FOLDER'] = 'full-index'
+        # item['RELATIVE_FILEPATH'] = '{}'.format(file)
+        # item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_FULL_INDEX_DIR
+        # item['URL'] = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
+        # item['OVERWRITE_FILE'] = True
+        # fullfilepath = os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH'])
         # py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
 
-        g.GET_FILE(item['URL'], fullfilepath)
+        url = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
+        filepath = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, file)
 
-        print('saved {}'.format(fullfilepath))
+        g.GET_FILE(url, filepath)
+
+        print('saved {}'.format(filepath))
 
 def download_latest_idx():
     # load lookup column
     df_tickers_cik = pd.read_excel(CONFIG.tickercheck)
+
     df_tickers_cik = df_tickers_cik.assign(EDGAR_CIKNUMBER=df_tickers_cik['EDGAR_CIKNUMBER'].astype(str))
 
     local_idx = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, "master.idx")
-    url = CONFIG.edgar_full_master
 
     if os.path.exists(local_idx):
         os.remove(local_idx)
 
     print("Downloading Latest {}".format(CONFIG.edgar_full_master))
-    g.GET_FILE(url, local_idx)
+
+    g.GET_FILE(CONFIG.edgar_full_master_url, local_idx)
 
     df = pd.read_csv(local_idx, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
 
@@ -106,11 +104,8 @@ def download_filings_from_idx():
     # i, feed_item = list(df_with_tickers.to_dict(orient='index').items())[23]
     for i, feed_item in df_with_tickers.to_dict(orient='index').items():
 
-        # 'C:\\sec_gov\\Archives\\edgar\\filings\\2018\\QTR2'
         folder_dir = os.path.basename(feed_item['Filename']).split('.')[0].replace("-","")
         folder_path_cik = CONFIG.SEC_TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", folder_dir)
-        # 'C:\\sec_gov\\Archives\\edgar\\filings\\cik\\1050825'
-        # folder_path_cik_other = os.path.join(CONFIG.SEC_TXT_DIR, 'cik', feed_item['edgar_ciknumber'])
 
         filepath_feed_item = os.path.join(folder_path_cik, os.path.basename(feed_item['Filename']))
 

@@ -6,8 +6,8 @@ import os
 from datetime import datetime
 from urllib.parse import urljoin
 
-from py_sec_edgar_data.feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
-from py_sec_edgar_data.proxy_request import Gotem
+from py_sec_edgar_data.utilities import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar_data.proxy_request import ProxyRequest
 from datetime import timedelta
 import pandas as pd
 
@@ -41,5 +41,5 @@ def update_daily_files():
             elif consecutive_days_same > 5 and os.path.exists(daily_local_filepath):
                 pass
             else:
-                g = Gotem()
+                g = ProxyRequest()
                 g.GET_FILE(daily_url,daily_local_filepath)

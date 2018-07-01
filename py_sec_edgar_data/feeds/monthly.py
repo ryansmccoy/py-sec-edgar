@@ -12,9 +12,8 @@ from urllib.parse import urljoin
 import lxml.html
 import pandas as pd
 from bs4 import BeautifulSoup
-from py_sec_edgar_data.feeds import CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
-from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser
-from py_sec_edgar_data.proxy_request import VPNagent
+from py_sec_edgar_data.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar_data.proxy_request import ProxyRequest
 from urllib import parse
 from datetime import datetime
 import requests
@@ -28,7 +27,7 @@ def download_edgar_filings_xbrl_rss_files():
     dates.reverse()
     for date in dates:
         try:
-            vpn_agent = VPNagent()
+            vpn_agent = ProxyRequest()
             vpn_agent.generate_random_header_and_proxy_host()
 
             basename = 'xbrlrss-' + str(date.year) + '-' + str(date.month).zfill(2) + ".xml"
@@ -49,7 +48,7 @@ def generate_monthly_index_url_and_filepaths(day):
 
 def download_and_flatten_monthly_xbrl_filings_list():
 
-    vpn_agent = VPNagent()
+    vpn_agent = ProxyRequest()
     vpn_agent.generate_random_header_and_proxy_host()
 
     r = requests.get(CONFIG.edgar_monthly_index, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
@@ -184,7 +183,7 @@ def parse_monthly():
 
                         if not os.path.exists(filepath):
 
-                            vpn_agent = VPNagent()
+                            vpn_agent = ProxyRequest()
                             vpn_agent.generate_random_header_and_proxy_host()
 
                             r = requests.get(CONFIG.edgar_monthly_index, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(vpn_agent.connect_timeout, vpn_agent.read_timeout))
