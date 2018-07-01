@@ -26,17 +26,17 @@ class Config(object):
     CONFIG_DIR = os.path.join(BASE_DIR, "config")
     # todo: need to reorganize get rid of irrelavent
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
-    DATA_DIR = os.path.join(SEC_DIR, r'data')
+    DATA_DIR = os.path.join(BASE_DIR, r'data')
     EDGAR_DIR = os.path.join(SEC_DIR, "Archives\edgar")
     MONTHLY_DIR = os.path.join(EDGAR_DIR, "monthly")
     FULL_INDEX_DIR = os.path.join(EDGAR_DIR, "full-index")
     DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
-    SEC_TXT_LATEST = os.path.join(EDGAR_DIR, latest_folder)
-    SEC_TXT_FILING_DIR =  os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
-    SEC_XBRL_ZIP_DIR = os.path.join(EDGAR_DIR, "xbrl-zip")
-    SEC_XBRL_TXT_DIR = os.path.join(EDGAR_DIR, "xbrl")
+    # TXT_LATEST = os.path.join(EDGAR_DIR, latest_folder)
+    TXT_FILING_DIR =  os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
+    XBRL_ZIP_DIR = os.path.join(EDGAR_DIR, "xbrl-zip")
+    # XBRL_TXT_DIR = os.path.join(EDGAR_DIR, "xbrl")
 
-    dirs_all = [SEC_DIR, DATA_DIR, EDGAR_DIR, SEC_TXT_FILING_DIR, MONTHLY_DIR, FULL_INDEX_DIR, DAILY_INDEX_DIR, SEC_TXT_LATEST, SEC_XBRL_TXT_DIR]
+    dirs_all = [SEC_DIR, DATA_DIR, EDGAR_DIR, MONTHLY_DIR, FULL_INDEX_DIR, DAILY_INDEX_DIR]
 
     for _ in dirs_all:
 

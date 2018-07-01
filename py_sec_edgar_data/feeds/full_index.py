@@ -8,10 +8,16 @@ import os
 import os.path
 from urllib.parse import urljoin
 import pandas as pd
-from py_sec_edgar_data.utilities import format_filename
-# from py_sec_edgar_data.celery_producer_filings import CONFIG
-from py_sec_edgar_data.proxy_request import ProxyRequest
-from py_sec_edgar_data.settings import Config
+
+try:
+    from py_sec_edgar_data.utilities import format_filename
+    from py_sec_edgar_data.proxy_request import ProxyRequest
+    from py_sec_edgar_data.settings import Config
+except:
+    from proxy_request import ProxyRequest
+    from settings import Config
+    from utilities import format_filename
+
 CONFIG = Config()
 
 full_index_files = ["company.gz",
@@ -50,24 +56,27 @@ def download_latest_quarterly_full_index_files():
         # py_sec_edgar_data.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
 
         url = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
-        filepath = os.path.join(CONFIG.SEC_FULL_INDEX_DIR, file)
+
+        filepath = os.path.join(CONFIG.FULL_INDEX_DIR, file)
 
         g.GET_FILE(url, filepath)
 
         print('saved {}'.format(filepath))
 
 def download_latest_idx():
+    g = ProxyRequest()
+
     # load lookup column
     df_tickers_cik = pd.read_excel(CONFIG.tickercheck)
 
-    df_tickers_cik = df_tickers_cik.assign(EDGAR_CIKNUMBER=df_tickers_cik['EDGAR_CIKNUMBER'].astype(str))
+    df_tickers_cik = df_tickers_cik.assign(EDGAR_CIKNUMBER=df_tickers_cik['EDGAR_CIK'].astype(str))
 
     local_idx = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
 
     if os.path.exists(local_idx):
         os.remove(local_idx)
 
-    print("Downloading Latest {}".format(CONFIG.edgar_full_master))
+    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
 
     g.GET_FILE(CONFIG.edgar_full_master_url, local_idx)
 
@@ -93,7 +102,7 @@ def download_filings_from_idx():
     # todo: allow for ability to filter forms dynamically
     g = ProxyRequest()
 
-    idx_filename = "{}.csv".format(format_filename(CONFIG.edgar_full_master))
+    idx_filename = "{}.csv".format(format_filename(CONFIG.edgar_full_master_url))
 
     df_with_tickers = pd.read_csv(os.path.join(CONFIG.DATA_DIR, idx_filename))
 

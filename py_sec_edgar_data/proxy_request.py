@@ -1,14 +1,14 @@
 import os
 import random
 import time
-import csv
-import lxml.html
 import requests
-from bs4 import BeautifulSoup
-from pprint import pprint
-from py_sec_edgar_data.settings import Config
-from itertools import cycle
 import pandas as pd
+
+try:
+    from py_sec_edgar_data.settings import Config
+except:
+    from settings import Config
+
 
 class ProxyRequest(object):
     def __init__(self):
