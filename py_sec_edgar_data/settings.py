@@ -66,3 +66,5 @@ class Config(object):
     sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
 
     VPN_PROVIDER = "PP"
+
+    forms_list = ['10-K']

@@ -74,8 +74,11 @@ def download_latest_idx():
     g.GET_FILE(url, local_idx)
 
     df = pd.read_csv(local_idx, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+
     df = df[-df['CIK'].str.contains("---")]
+
     df = df.sort_values('Date Filed', ascending=False)
+
     df = df.assign(published=pd.to_datetime(df['Date Filed']))
 
     df['link'] = df['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x))
@@ -92,13 +95,11 @@ def download_filings_from_idx():
     # todo: allow for ability to filter forms dynamically
     g = ProxyRequest()
 
-    forms_list = ['10-K']
-
     idx_filename = "{}.csv".format(format_filename(CONFIG.edgar_full_master))
 
     df_with_tickers = pd.read_csv(os.path.join(CONFIG.DATA_DIR, idx_filename))
 
-    df_with_tickers = df_with_tickers[df_with_tickers['Form Type'].isin(forms_list)]
+    df_with_tickers = df_with_tickers[df_with_tickers['Form Type'].isin(CONFIG.forms_list)]
 
     df_with_tickers = df_with_tickers.assign(published=pd.to_datetime(df_with_tickers['published']))
 
