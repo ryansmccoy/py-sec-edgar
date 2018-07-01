@@ -19,7 +19,7 @@ test_requirements = ['pytest', ]
 
 setup(
     author="Ryan S. McCoy",
-    author_email='ryan@gotemstl.com',
+    author_email='ryan413@users.noreply.github.com',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
