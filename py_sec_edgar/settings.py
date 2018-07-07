@@ -18,6 +18,18 @@ load_dotenv(find_dotenv())
 
 class Config(object):
 
+    VPN_PROVIDER = "PP"
+
+    # for complete list see py-sec-edgar/refdata/filing_types.xlsx
+    forms_list = ['10-K', '20-F']
+
+    # the urls of all filings are stored in index files
+    # need to download these index files
+    # below just says download all of them
+    index_start_date = "1/1/1993"
+    index_end_date = datetime.now().strftime("%m/%d/%Y")
+
+
     ROOT_DIR = os.path.abspath(os.sep)
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     # BASE_DIR = r'C:\@CODE\py-sec-edgar'
@@ -26,8 +38,9 @@ class Config(object):
     CONFIG_DIR = os.path.join(BASE_DIR, "config")
     # todo: need to reorganize get rid of irrelavent
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
-    DATA_DIR = os.path.join(BASE_DIR, r'data')
+    REF_DIR = os.path.join(BASE_DIR, r'refdata')
     EDGAR_DIR = os.path.join(SEC_DIR, "Archives\edgar")
+    DATA_DIR = os.path.join(SEC_DIR, r'data')
     MONTHLY_DIR = os.path.join(EDGAR_DIR, "monthly")
     FULL_INDEX_DIR = os.path.join(EDGAR_DIR, "full-index")
     DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
@@ -42,14 +55,12 @@ class Config(object):
 
         if not os.path.exists(_):
             print("{} Doesn't Exists".format(_))
-            print("Creating Directory")
+            print("Creating Directory {}".format(SEC_DIR))
             os.makedirs(_)
-        else:
-            print("\t SEC Filing Output Directory: \t{}".format(_))
 
-    tickercheck = os.path.join(DATA_DIR, "cik_tickers.xlsx")
-    cik_ticker = os.path.join(DATA_DIR, "cik_ticker_name_exchange_sic_business_incorporated_irs.xlsx")
-    monthly_urls = os.path.join(DATA_DIR, "sec_gov_archives_edgar_monthly_xbrl_urls.xlsx")
+    tickercheck = os.path.join(REF_DIR, "cik_tickers.xlsx")
+    cik_ticker = os.path.join(REF_DIR, "cik_ticker_name_exchange_sic_business_incorporated_irs.xlsx")
+    monthly_urls = os.path.join(REF_DIR, "sec_gov_archives_edgar_monthly_xbrl_urls.xlsx")
 
     edgar_Archives_url = r'https://www.sec.gov/Archives/'
     edgar_full_index = urljoin(edgar_Archives_url,'edgar/full-index/')
@@ -61,6 +72,3 @@ class Config(object):
     sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
     sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day == sec_dates_weekdays[0].day]
 
-    VPN_PROVIDER = "PP"
-
-    forms_list = ['10-K']

@@ -12,8 +12,6 @@ BROKER_URL='amqp://'
 CELERY_RESULT_BACKEND = "amqp"
 CELERY_IMPORTS=("tasks",)
 
-import py_sec_edgar.edgars_download_celery_tasks
-import py_sec_edgar.edgars_download_celery_tasks
 # print('grabbing html files')
 # url = config['EDGAR_URLS']['edgar_monthly_xml_list']
 from py_sec_edgar.settings import flattenDict

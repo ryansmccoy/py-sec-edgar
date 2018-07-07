@@ -49,21 +49,6 @@ def cik_ticker_lookup():
     df_tick = df_tick[df_tick.index != "-1"]
     return df_tick
 
-def generate_folder_names_years_quarters(end_date,start_date):
-    dates_data = []
-    date_range = pd.date_range(start_date,end_date, freq="Q")
-    for i, values in enumerate(date_range):
-        quarter = '{}'.format(values.year), "QTR{}".format(int(values.month/3))
-        dates_data.append(quarter)
-
-    dates_quarters = list(set(dates_data))
-    dates_quarters.sort(reverse=True)
-    return dates_quarters
-
-def scan_all_local_filings(main_dir=None, year=None):
-    files = walk_dir_fullpath(os.path.join(main_dir,"{}".format(year)))
-    return files
-
 def celery_feed_all_filings_for_download(df_all_filings, celery_enabled=True):
     all_items = []
     for ii, file in enumerate(df_all_filings.itertuples()):

@@ -246,13 +246,6 @@ def identify_10_K_filing(sec_filing_documents, override=None):
 
 def parse_10k_html_document(input_filepath):
     lxml_dict = {}
-    #
-    # rawdata = open(filepath, "rb").read()
-    #
-    # result = chardet.detect(rawdata)
-    #
-    # charenc = result['encoding']
-    # sec_filing_documents['SEC-HEADER'] = df_sec_filing_header.to_dict(orient='index')
 
     try:
         # or codecs.open on Python 2

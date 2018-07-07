@@ -7,7 +7,13 @@
 import os
 import os.path
 from urllib.parse import urljoin
+from datetime import datetime
+
 import pandas as pd
+pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.max_rows', 100)
+pd.set_option('display.width', 600)
 
 try:
     from py_sec_edgar.utilities import format_filename
@@ -39,48 +45,62 @@ full_index_files = ["company.gz",
                     "xbrl.Z",
                     "xbrl.zip"]
 
-def download_latest_quarterly_full_index_files():
+index_files = ['master.idx']
 
+def generate_folder_names_years_quarters(start_date, end_date):
+
+    dates_data = []
+    date_range = pd.date_range(datetime.strptime(start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
+
+    for i, values in enumerate(date_range):
+        quarter = '{}'.format(values.year), "QTR{}".format(int(values.month/3))
+        dates_data.append(quarter)
+
+    dates_quarters = list(set(dates_data))
+    dates_quarters.sort(reverse=True)
+
+    return dates_quarters
+
+def scan_all_local_filings(main_dir=None, year=None):
+    files = walk_dir_fullpath(os.path.join(main_dir,"{}".format(year)))
+    return files
+
+def download_latest_full_index_files():
     g = ProxyRequest()
-
-    for i, file in enumerate(full_index_files):
-
-        # comments below for celery version
-        # item = {}
-        # item['OUTPUT_FOLDER'] = 'full-index'
-        # item['RELATIVE_FILEPATH'] = '{}'.format(file)
-        # item['OUTPUT_MAIN_FILEPATH'] = CONFIG.SEC_FULL_INDEX_DIR
-        # item['URL'] = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
-        # item['OVERWRITE_FILE'] = True
-        # fullfilepath = os.path.join(item['OUTPUT_MAIN_FILEPATH'], item['RELATIVE_FILEPATH'])
-        # py_sec_edgar.celery_consumer_filings.consume_sec_filing_txt.delay(json.dumps(item))
-
-        url = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}'.format(file))
-
-        filepath = os.path.join(CONFIG.FULL_INDEX_DIR, file)
-
-        g.GET_FILE(url, filepath)
-
-        print('saved {}'.format(filepath))
-
-def download_latest_idx():
-    g = ProxyRequest()
-
-    # load lookup column
-    df_tickers_cik = pd.read_excel(CONFIG.tickercheck)
-
-    df_tickers_cik = df_tickers_cik.assign(EDGAR_CIKNUMBER=df_tickers_cik['EDGAR_CIK'].astype(str))
 
     local_idx = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
 
     if os.path.exists(local_idx):
         os.remove(local_idx)
 
-    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
-
     g.GET_FILE(CONFIG.edgar_full_master_url, local_idx)
 
-    df = pd.read_csv(local_idx, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+    dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
+
+    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
+
+    for qtr in dates_quarters:
+
+        for i, file in enumerate(index_files):
+
+            url = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}/{}/{}'.format(qtr[0], qtr[1], file))
+
+            filepath = os.path.join(CONFIG.FULL_INDEX_DIR, '{}/{}/{}'.format(qtr[0], qtr[1], file))
+
+            if not os.path.exists(os.path.dirname(filepath)):
+                os.makedirs(os.path.dirname(filepath))
+
+            g.GET_FILE(url, filepath)
+
+            print('saved {}'.format(filepath))
+
+def download_index_file(url, filepath):
+
+    g = ProxyRequest()
+
+    g.GET_FILE(url, filepath)
+
+    df = pd.read_csv(filepath, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
 
     df = df[-df['CIK'].str.contains("---")]
 
@@ -88,30 +108,38 @@ def download_latest_idx():
 
     df = df.assign(published=pd.to_datetime(df['Date Filed']))
 
-    df['link'] = df['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x))
-    df['edgar_ciknumber'] = df['CIK'].astype(str)
-    df['edgar_companyname'] = df['Company Name']
-    df['edgar_formtype'] = df['Form Type']
+    df.reset_index()
 
-    df_with_tickers = pd.merge(df, df_tickers_cik, how='left', left_on=df.edgar_ciknumber, right_on=df_tickers_cik.EDGAR_CIKNUMBER)
-    df_with_tickers = df_with_tickers.sort_values('Date Filed', ascending=False)
+    df.to_csv(filepath.replace(".idx", ".csv"), index=False)
 
-    df_with_tickers.to_csv(local_idx.replace(".idx", ".csv"))
 
 def download_filings_from_idx():
+
+    local_idx = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
+
+    df_idx = pd.read_csv(local_idx.replace(".idx", ".csv"))
+    df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+    df_idx = df_idx.assign(CIK=df_idx['CIK'].astype(str))
+    df_idx = df_idx.set_index('CIK')
+
+    # load ticker lookup
+    df_tickers = pd.read_excel(CONFIG.tickercheck)
+    df_tickers =  df_tickers.assign(CIK= df_tickers['CIK'].astype(str))
+    df_tickers = df_tickers.set_index('CIK')
+
+    df = pd.merge(df_idx, df_tickers, how='left', left_index=True, right_index=True)
+    df = df.reset_index()
+    df = df.sort_values('Date Filed', ascending=False)
+
     # todo: allow for ability to filter forms dynamically
     g = ProxyRequest()
 
-    idx_filename = "{}.csv".format(format_filename(CONFIG.edgar_full_master_url))
+    df = df[df['Form Type'].isin(CONFIG.forms_list)]
 
-    df_with_tickers = pd.read_csv(os.path.join(CONFIG.DATA_DIR, idx_filename))
-
-    df_with_tickers = df_with_tickers[df_with_tickers['Form Type'].isin(CONFIG.forms_list)]
-
-    df_with_tickers = df_with_tickers.assign(published=pd.to_datetime(df_with_tickers['published']))
+    df = df.assign(published=pd.to_datetime(df['published']))
 
     # i, feed_item = list(df_with_tickers.to_dict(orient='index').items())[23]
-    for i, feed_item in df_with_tickers.to_dict(orient='index').items():
+    for i, feed_item in df.to_dict(orient='index').items():
 
         folder_dir = os.path.basename(feed_item['Filename']).split('.')[0].replace("-","")
         folder_path_cik = CONFIG.TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", folder_dir)

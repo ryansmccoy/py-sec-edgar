@@ -8,7 +8,6 @@ import os
 from time import sleep
 from py_sec_edgar.utilities import edgar_filing_idx_create_filename
 from py_sec_edgar.proxy_request import ProxyRequest
-from py_sec_edgar.cik_ticker_loader import cik2ticker, get_cik_from_ticker
 import py_sec_edgar.filing
 from py_sec_edgar.settings import Config
 import json

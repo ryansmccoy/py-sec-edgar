@@ -10,10 +10,10 @@ except:
     import feeds.full_index as full_index
 
 @click.command()
-def download_latest_filings():
+def main():
     full_index.download_latest_idx()
     full_index.download_filings_from_idx()
 
 if __name__ == "__main__":
 
-    sys.exit(download_latest_filings())  # pragma: no cover
+    sys.exit(main())  # pragma: no cover
