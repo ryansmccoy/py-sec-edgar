@@ -17,9 +17,10 @@ import unicodedata
 
 import os
 import time
-from datetime import date
+from datetime import date, datetime
 from urllib.parse import urljoin
 
+import pandas as pd
 import requests
 from dateutil.parser import parse
 from time import mktime
@@ -530,3 +531,23 @@ def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
             os.remove(local_filepath)
         os.rename(temp_filepath, temp_filepath.replace("temp_", ""))
         return True
+
+
+def generate_folder_names_years_quarters(start_date, end_date):
+
+    dates_data = []
+    date_range = pd.date_range(datetime.strptime(start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
+
+    for i, values in enumerate(date_range):
+        quarter = '{}'.format(values.year), "QTR{}".format(int(values.month/3))
+        dates_data.append(quarter)
+
+    dates_quarters = list(set(dates_data))
+    dates_quarters.sort(reverse=True)
+
+    return dates_quarters
+
+
+def scan_all_local_filings(directory, year=None):
+    files = walk_dir_fullpath(os.path.join(directory,year))
+    return files

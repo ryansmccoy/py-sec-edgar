@@ -2,6 +2,9 @@
 #######################
 # DAILY FILINGS FEEDS
 # https://www.sec.gov/Archives/edgar/daily-index/
+
+from .. import CONFIG
+
 import os
 from datetime import datetime
 from urllib.parse import urljoin

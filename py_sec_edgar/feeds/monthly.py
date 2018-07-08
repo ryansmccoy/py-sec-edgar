@@ -4,6 +4,9 @@
 # http://www.sec.gov/Archives/edgar/monthly/
 # "./xbrlrss-{YEAR}-{MONTH}.xml"
 
+from .. import CONFIG
+
+
 import os
 from datetime import datetime
 from pprint import pprint
@@ -12,7 +15,7 @@ from urllib.parse import urljoin
 import lxml.html
 import pandas as pd
 from bs4 import BeautifulSoup
-from py_sec_edgar.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, CONFIG, determine_if_sec_edgar_feed_and_local_files_differ
+from py_sec_edgar.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, determine_if_sec_edgar_feed_and_local_files_differ
 from py_sec_edgar.proxy_request import ProxyRequest
 from urllib import parse
 from datetime import datetime
@@ -193,3 +196,4 @@ def parse_monthly():
                             print('found file {}'.format(filepath))
                     else:
                         # consume_complete_submission_filing.delay(basename, item, ticker)
+                        print('yes')

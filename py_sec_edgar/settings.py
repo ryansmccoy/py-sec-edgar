@@ -29,6 +29,26 @@ class Config(object):
     index_start_date = "1/1/1993"
     index_end_date = datetime.now().strftime("%m/%d/%Y")
 
+    # index_files = ["company.gz",
+    #                     "company.idx",
+    #                     "company.Z",
+    #                     "company.zip",
+    #                     "crawler.idx",
+    #                     "form.gz",
+    #                     "form.idx",
+    #                     "form.Z",
+    #                     "form.zip",
+    #                     "master.gz",
+    #                     "master.idx",
+    #                     "master.Z",
+    #                     "master.zip",
+    #                     "sitemap.quarterlyindex1.xml",
+    #                     "xbrl.gz",
+    #                     "xbrl.idx",
+    #                     "xbrl.Z",
+    #                     "xbrl.zip"]
+
+    index_files = ['master.idx']
 
     ROOT_DIR = os.path.abspath(os.sep)
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))

@@ -1,28 +1,27 @@
 import os
+
+
 import random
 import time
 import requests
 import pandas as pd
 
-try:
-    from py_sec_edgar.settings import Config
-except:
-    from settings import Config
-
+from . import CONFIG
 
 class ProxyRequest(object):
     def __init__(self):
 
-        CONFIG = Config()
-
         self.retry_counter = 3
 
-        file_list_user_agents = os.path.join(CONFIG.CONFIG_DIR, 'user_agents.txt')
+        self.pause_for_courtesy = False
 
-        with open(file_list_user_agents, 'r') as f:
-            self.list_user_agents = f.read().splitlines()
+        # file_list_user_agents = os.path.join(CONFIG.CONFIG_DIR, 'user_agents.txt')
+        #
+        # with open(file_list_user_agents, 'r') as f:
+        #     self.list_user_agents = f.read().splitlines()
 
         # self.proxy_pool = cycle(self.proxies)
+
         if CONFIG.VPN_PROVIDER is None or CONFIG.VPN_PROVIDER == "N":
 
             self.USERNAME = os.getenv('N_USERNAME')
@@ -48,18 +47,30 @@ class ProxyRequest(object):
 
             self.proxies = proxies['IP'].tolist()
 
-
         self.connect_timeout, self.read_timeout = 10.0, 30.0
+
+        self.list_user_agents = [
+            'Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14',
+            'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0'
+        ]
 
     def generate_random_proxy_hosts(self):
         proxy = random.choice(self.proxies)
-        # proxy = next(self.proxy_pool)
+
         proxies = {
             'http': '{}://{}:{}@{}:{}'.format(self.service, self.USERNAME, self.PASSWORD, proxy, self.port),
             'https': '{}://{}:{}@{}:{}'.format(self.service, self.USERNAME, self.PASSWORD, proxy, self.port)
         }
 
-        print("\n\tproxy:\t{}".format(proxies))
+        print("\n\tSelected-Proxy:\t{}".format(proxies))
 
         return proxies
 
@@ -68,24 +79,28 @@ class ProxyRequest(object):
 
         _headers = {'User-Agent': _user_agent}
 
-        print("\n\tUser-Agent:\t{}\n".format(_headers))
+        print("\n\tSelected User-Agent:\t{}\n".format(_headers))
         return _headers
 
     def generate_random_header_and_proxy_host(self):
+
         self.random_proxy_host = self.generate_random_proxy_hosts()
+
         self.random_header = self.generate_random_header()
 
-        print('\tpausing as a courtesy...\n')
+        if self.pause_for_courtesy:
+            print('\tpausing ... as a courtesy...\n')
 
-        time.sleep(random.randrange(5, 10))
+            time.sleep(random.randrange(5, 10))
 
-    def GET_FILE(self, url, filepath=None):
+    def GET_FILE(self, url, filepath):
 
-        self.filepath = filepath
-        self.url = url
-        retry_counter = self.retry_counter
+        print("\n\tDownloading: \t{}\n".format(url))
+        print("\n\tSaving to: \t{}\n".format(filepath))
 
-        while retry_counter > 0:
+        retry_counter = 0
+
+        while retry_counter < self.retry_counter:
             try:
 
                 self.generate_random_header_and_proxy_host()
@@ -97,22 +112,19 @@ class ProxyRequest(object):
                         if chunk:  # filter out keep-alive new chunks
                             f.write(chunk)
 
-                status = "success"
-
                 print('\n\tSuccess!\tSaved to filepath:\t{}\n'.format(filepath))
+                break
 
-                return status
             except Exception as e:
                 print(" \n\n\t {} \n\nRetrying:".format(e), retry_counter)
                 time.sleep(3)
                 retry_counter -= 1
                 if retry_counter == 0:
                     print("Failed to Download " + url)
-                    status = "fail"
-                    return status
 
-    def __repr__(self):
-        return "URL: {}".format(self.url)
+        self.random_header = None
+        self.random_proxy_host = None
+
 
 if __name__ == "__main__":
     from py_sec_edgar.utilities import CONFIG

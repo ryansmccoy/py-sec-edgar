@@ -11,9 +11,9 @@ Using this Repo
 
 ### Run
 
-Bash (Work in Progress)
+CMD/Bash
 
-    python py_sec_edgar_data/cli_full_index.py
+    python examples/download_full_index_filings.py
 
 Docker (Work in Progress)
 
