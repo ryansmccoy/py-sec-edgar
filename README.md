@@ -1,4 +1,4 @@
-Python SEC Edgar (Currently Under Developement)
+Python SEC Edgar
 =============
 
 Python package used to download filings from the sec.gov/edgar website, which through Q3/2017 contains 16,867,734 filings.
@@ -7,6 +7,8 @@ Python package used to download filings from the sec.gov/edgar website, which th
 Using this Repo
 ---------------
 
+    conda install -n py_sec_edgar python=3.6 pandas numpy lxml
+    activate py_sec_edgar
     pip install -r requirements/requirements_dev.txt
 
 ---------------
@@ -33,9 +35,9 @@ py_sec_edgar/settings.py
     tickers_filepath = os.path.join(EXAMPLES_DIR, r'tickers.csv')
 
 
-### Run
+### Run Example
 
-CMD/Bash
+The example will create folders (i.e. C:\sec_gov\\), download all the idx files, convert them to csv, merge them into a 1.9 GB csv, load tickers from tickers.csv file, filter against forms set in settings.py file, and will then start downloading the individual filings for the tickers in the tickers.csv file.
 
     python examples/download_full_index_filings.py
 

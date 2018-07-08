@@ -11,3 +11,4 @@ from py_sec_edgar.settings import Config
 CONFIG = Config()
 
 from .feeds import daily_index, full_index, monthly
+from . import download

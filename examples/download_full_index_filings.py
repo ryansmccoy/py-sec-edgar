@@ -11,6 +11,7 @@ import py_sec_edgar
 def main():
 
     py_sec_edgar.feeds.full_index.download(save_idx_as_csv=True, skip_if_exists=True)
+    py_sec_edgar.download.filings()
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover

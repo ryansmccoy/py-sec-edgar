@@ -15,7 +15,7 @@ pd.set_option('display.width', 600)
 
 # import fastparquet as fp
 
-def download_filings():
+def filings():
 
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
