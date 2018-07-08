@@ -95,7 +95,11 @@ def filter_form(df_filings, form_filter):
     df_frame = df_filings[df_filings['FORM_TYPE'].isin(form_filter)]
     return df_frame
 
-
+#
+# Docker (Work in Progress)
+#
+#     $  docker run -d -p 5672:5672 -p 15672:15672 --name sec-rabbit rabbitmq:management
+#     $  celery -A edgar_download.celery_download_complete_submission_filing worker --loglevel=info
 def main():
     start_date = "2015-01-01"
     end_date = "2017-06-30"

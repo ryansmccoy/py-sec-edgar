@@ -547,7 +547,6 @@ def generate_folder_names_years_quarters(start_date, end_date):
 
     return dates_quarters
 
-
 def scan_all_local_filings(directory, year=None):
     files = walk_dir_fullpath(os.path.join(directory,year))
     return files

@@ -6,7 +6,7 @@
 
 from .. import CONFIG
 
-from py_sec_edgar.utilities import generate_folder_names_years_quarters
+from py_sec_edgar.utilities import generate_folder_names_years_quarters, walk_dir_fullpath
 from py_sec_edgar.proxy_request import ProxyRequest
 
 import os
@@ -19,6 +19,10 @@ pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
 pd.set_option('display.max_columns', 100)
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.width', 600)
+
+# import pyarrow as pa
+# import pyarrow.parquet as pq
+# import fastparquet as fp
 
 def convert_idx_to_csv(filepath):
 
@@ -37,7 +41,6 @@ def convert_idx_to_csv(filepath):
 def download(save_idx_as_csv=True, skip_if_exists=True):
 
     dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
-
 
     latest_full_index_master = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
 
@@ -66,10 +69,34 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
 
                 g.GET_FILE(url, filepath)
 
-                if save_idx_as_csv == True:
+            if save_idx_as_csv == True or skip_if_exists == False:
 
-                    print('Converting idx to csv')
-                    convert_idx_to_csv(filepath)
+                print('\tConverting idx to csv')
+                convert_idx_to_csv(filepath)
+
+def merge_idx_files():
+
+    files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR,contains='.csv')
+
+    files.sort(reverse=True)
+
+    dfs = []
+
+    for filepath in files:
+        print(filepath)
+        df_ = pd.read_csv(filepath)
+        dfs.append(df_)
+
+    df_idx = pd.concat(dfs)
+
+    out_path = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
+
+    df_idx.to_csv(out_path)
+
+    # arrow_table = pa.Table.from_pandas(df_idx)
+    # pq.write_table(arrow_table, out_path, compression='GZIP')
+
+    # df_idx = fp.ParquetFile(out_path).to_pandas()
 
 if __name__ == "__main__":
     download()

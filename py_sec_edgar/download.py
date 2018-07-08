@@ -1,8 +1,8 @@
 
-from . import CONFIG
-
+from py_sec_edgar import CONFIG
 from py_sec_edgar.proxy_request import ProxyRequest
 
+from pprint import pprint
 import os
 from urllib.parse import urljoin
 
@@ -13,33 +13,38 @@ pd.set_option('display.max_columns', 100)
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.width', 600)
 
+# import fastparquet as fp
+
 def download_filings():
 
-    local_idx = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
+    merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
-    df_idx = pd.read_csv(local_idx.replace(".idx", ".csv"))
-    df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
-    df_idx = df_idx.assign(CIK=df_idx['CIK'].astype(str))
-    df_idx = df_idx.set_index('CIK')
+    # df_idx = fp.ParquetFile(merged_idx_files.replace(".csv",".parq")).to_pandas()
 
-    # load ticker lookup
-    df_tickers = pd.read_excel(CONFIG.tickercheck)
-    df_tickers =  df_tickers.assign(CIK= df_tickers['CIK'].astype(str))
-    df_tickers = df_tickers.set_index('CIK')
+    df_idx = pd.read_csv(merged_idx_files, index_col=0, dtype={"CIK": int})
+    # df_idx = df_idx.set_index('CIK')
 
-    df = pd.merge(df_idx, df_tickers, how='left', left_index=True, right_index=True)
-    df = df.reset_index()
-    df = df.sort_values('Date Filed', ascending=False)
+    # load ticker lookup and lookup CIK
+    df_tickers = pd.read_csv(CONFIG.tickers_filepath, header=None)
+    list_of_tickers = df_tickers.iloc[:,0].tolist()
 
-    # todo: allow for ability to filter forms dynamically
+    # load CIK to tickers
+    df_cik_tickers = pd.read_excel(CONFIG.tickercheck)
+
+    df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(list_of_tickers)]
+
+    list_of_ciks = df_cik_tickers['CIK'].tolist()
+
+    df_filtered_idx = df_idx[df_idx['CIK'].isin(list_of_ciks)]
+
+    df_filtered_idx = df_filtered_idx[df_filtered_idx['Form Type'].isin(CONFIG.forms_list)]
+
+    df_filtered_idx = df_filtered_idx.assign(url=df_filtered_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+
     g = ProxyRequest()
 
-    df = df[df['Form Type'].isin(CONFIG.forms_list)]
-
-    df = df.assign(published=pd.to_datetime(df['published']))
-
     # i, feed_item = list(df_with_tickers.to_dict(orient='index').items())[23]
-    for i, feed_item in df.to_dict(orient='index').items():
+    for i, feed_item in df_filtered_idx.to_dict(orient='index').items():
 
         folder_dir = os.path.basename(feed_item['Filename']).split('.')[0].replace("-","")
         folder_path_cik = CONFIG.TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", folder_dir)
@@ -51,7 +56,9 @@ def download_filings():
             if not os.path.exists(folder_path_cik):
                 os.makedirs(folder_path_cik)
 
-            g.GET_FILE(feed_item['link'], filepath_feed_item)
+            pprint(feed_item)
+
+            g.GET_FILE(feed_item['url'], filepath_feed_item)
 
             # todo: celery version of download full
             # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)

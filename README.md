@@ -9,16 +9,36 @@ Using this Repo
 
     pip install -r requirements/requirements_dev.txt
 
+---------------
+Settings File
+---------------
+
+py_sec_edgar/settings.py
+
+
+    # for complete list see py-sec-edgar/refdata/filing_types.xlsx
+    # to filter against specific forms, add to list
+
+    forms_list = ['10-K', '20-F']
+
+    # the urls of all filings are stored in index files
+    # so need to download these index files
+    # below just says download all of them
+
+    index_start_date = "1/1/1993"
+    index_end_date = datetime.now().strftime("%m/%d/%Y")
+
+    # if you want to filter against a list of tickers, add them to tickers.csv
+
+    tickers_filepath = os.path.join(EXAMPLES_DIR, r'tickers.csv')
+
+
 ### Run
 
 CMD/Bash
 
     python examples/download_full_index_filings.py
 
-Docker (Work in Progress)
-
-    $  docker run -d -p 5672:5672 -p 15672:15672 --name sec-rabbit rabbitmq:management
-    $  celery -A edgar_download.celery_download_complete_submission_filing worker --loglevel=info
 
 Paths and Directory Structure
 ----------------
@@ -38,7 +58,6 @@ sec.gov website:
     https://www.sec.gov/Archives/edgar/data/1041588/0001041588-18-000005.txt <- these are the complete submission file
 
     https://www.sec.gov/Archives/edgar/data/<CIK>/<ACCESSION_NUMBER_WITHOUT_DASHES>/<ACCESSION_NUMBER>.txt <-  follows this format
-
 
 
 local folder equivalent:
@@ -165,3 +184,6 @@ TOTAL FILINGS
     2017_QTR2_MASTER	 254,917
     2017_QTR3_MASTER	 113,448
                             16,867,734
+
+TOTAL FILINGS
+----------------------------

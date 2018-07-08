@@ -103,5 +103,5 @@ ENV/
 .env
 .github
 .idea
-sec_gov
-refdata/indexmaster.idx.csv
+refdata/merged_idx_files.csv
+refdata/merged_idx_files.parq

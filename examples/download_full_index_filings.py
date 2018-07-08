@@ -5,7 +5,6 @@ import sys
 sys.path.append('..')
 
 import click
-
 import py_sec_edgar
 
 @click.command()
