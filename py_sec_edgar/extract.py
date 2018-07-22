@@ -39,53 +39,15 @@ from py_sec_edgar.utilities import uudecode
 
 # from celery import Celery
 # # subprocess.call(['chmod', '-R', '+w', some_folder])
-header_list = ["ACCESSION NUMBER", "CONFORMED SUBMISSION TYPE", "PUBLIC DOCUMENT COUNT",
-               "CONFORMED PERIOD OF REPORT", "FILED AS OF DATE", "DATE AS OF CHANGE", "FILER", "COMPANY data",
-               "COMPANY CONFORMED NAME", "CENTRAL INDEX KEY", "STANDARD INDUSTRIAL CLASSIFICATION", "IRS NUMBER",
-               "STATE OF INCORPORATION", "FISCAL YEAR END", "FILING VALUES", "FORM TYPE", "SEC ACT",
-               "SEC FILE NUMBER", "FILM NUMBER", "BUSINESS ADDRESS", "STREET 1", "STREET 2", "CITY", "STATE", "ZIP",
-               "BUSINESS PHONE", "MAIL ADDRESS", "STREET 1", "STREET 2", "CITY", "STATE", "ZIP", "FORMER COMPANY",
-               "FORMER CONFORMED NAME", "DATE OF NAME CHANGE"]
-
-header = {
-    "COMPANY data": {
-        "COMPANY CONFORMED NAME": "",
-        "CENTRAL INDEX KEY": "",
-        "STANDARD INDUSTRIAL CLASSIFICATION": "",
-        "IRS NUMBER": "",
-        "STATE OF INCORPORATION": "",
-        "FISCAL YEAR END": ""},
-    "FILING VALUES": {
-        "FORM TYPE": "",
-        "SEC ACT": "",
-        "SEC FILE NUMBER": "",
-        "FILM NUMBER": ""},
-    "BUSINESS ADDRESS": {
-        "STREET 1": "",
-        "STREET 2": "",
-        "CITY": "",
-        "STATE": "",
-        "ZIP": "",
-        "BUSINESS PHONE": ""},
-    "MAIL ADDRESS": {
-        "STREET 1": "",
-        "STREET 2": "",
-        "CITY": "",
-        "STATE": "",
-        "ZIP": ""},
-    "FORMER COMPANY": {
-        "FORMER CONFORMED NAME": "",
-        "DATE OF NAME CHANGE": ""}
-}
-
-def write_filing_header_to_file(SEC_FILING_HEADER_FILEPATH, sec_filing_documents):
-    with open(SEC_FILING_HEADER_FILEPATH, "w", newline='') as fp:
-        wr = csv.writer(fp, dialect='excel')
-        wr.writerow(["ITEM", "KEY", "VALUE"])
-        for i, (colname, value) in enumerate(sec_filing_documents.items()):
-            if isinstance(value, list):
-                value = ", ".join(value)
-            wr.writerow([i, colname, value])
+#
+# def write_filing_header_to_file(SEC_FILING_HEADER_FILEPATH, sec_filing_documents):
+#     with open(SEC_FILING_HEADER_FILEPATH, "w", newline='') as fp:
+#         wr = csv.writer(fp, dialect='excel')
+#         wr.writerow(["ITEM", "KEY", "VALUE"])
+#         for i, (colname, value) in enumerate(sec_filing_documents.items()):
+#             if isinstance(value, list):
+#                 value = ", ".join(value)
+#             wr.writerow([i, colname, value])
 
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
@@ -281,6 +243,7 @@ def parse_10k_html_document(input_filepath):
     return file_metadata
 
 def create_header_file_from_complete_submission_filing(root=None, input_filepath=None, output_directory=None):
+
     print("\nSplitting the Complete Submission Filing\n")
     filing_header = defaultdict(dict)
     if root.xpath("//*/sec-header"):
@@ -308,7 +271,7 @@ def create_header_file_from_complete_submission_filing(root=None, input_filepath
     return filing_header, SEC_FILING_HEADER_FILEPATH
 
 
-def extract_documents_from_complete_submission_txt_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
+def complete_submission_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
 
     FOLDER_PATH = True
     elements_list = [('FILENAME', './/filename'), ('TYPE', './/type'), ('SEQUENCE', './/sequence'), ('DESCRIPTION', './/description')]
@@ -395,18 +358,27 @@ def extract_documents_from_complete_submission_txt_filing(input_filepath=None, o
             raw_text = raw_text.replace("<XML>", "").replace("</XML>", "").strip()
 
             if raw_text.lower().startswith("begin"):
+
                 # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
+
                 output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
                 with open(output_document, 'w', encoding=charenc) as f:
                     f.write(raw_text)
+
                 uudecode(output_document, out_file=output_document.replace(".uue", ""))
+
                 uue_file = True
+
             elif document.lower().startswith("begin"):
+
                 # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
                 output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
+
                 with open(output_document, 'w', encoding=charenc) as f:
                     f.write(raw_text)
+
                 uudecode(output_document, out_file=output_document.replace(".uue", ""))
+
                 os.remove(output_document)
                 uue_file = True
 
