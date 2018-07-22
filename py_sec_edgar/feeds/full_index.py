@@ -38,6 +38,30 @@ def convert_idx_to_csv(filepath):
 
     df.to_csv(filepath.replace(".idx", ".csv"), index=False)
 
+def merge_idx_files():
+
+    files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR,contains='.csv')
+
+    files.sort(reverse=True)
+
+    dfs = []
+
+    for filepath in files:
+        # print(filepath)
+        df_ = pd.read_csv(filepath)
+        dfs.append(df_)
+
+    df_idx = pd.concat(dfs)
+
+    out_path = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
+
+    df_idx.to_csv(out_path)
+
+    # arrow_table = pa.Table.from_pandas(df_idx)
+    # pq.write_table(arrow_table, out_path, compression='GZIP')
+
+    # df_idx = fp.ParquetFile(out_path).to_pandas()
+
 def download(save_idx_as_csv=True, skip_if_exists=True):
 
     dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
@@ -49,9 +73,11 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
 
     g = ProxyRequest()
 
+    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
+
     g.GET_FILE(CONFIG.edgar_full_master_url, latest_full_index_master)
 
-    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
+    convert_idx_to_csv(latest_full_index_master)
 
     for year, qtr in dates_quarters:
 
@@ -74,29 +100,9 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
                 print('\tConverting idx to csv')
                 convert_idx_to_csv(filepath)
 
-def merge_idx_files():
+    print('Merging IDX files')
+    merge_idx_files()
 
-    files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR,contains='.csv')
-
-    files.sort(reverse=True)
-
-    dfs = []
-
-    for filepath in files:
-        print(filepath)
-        df_ = pd.read_csv(filepath)
-        dfs.append(df_)
-
-    df_idx = pd.concat(dfs)
-
-    out_path = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
-
-    df_idx.to_csv(out_path)
-
-    # arrow_table = pa.Table.from_pandas(df_idx)
-    # pq.write_table(arrow_table, out_path, compression='GZIP')
-
-    # df_idx = fp.ParquetFile(out_path).to_pandas()
 
 if __name__ == "__main__":
     download()

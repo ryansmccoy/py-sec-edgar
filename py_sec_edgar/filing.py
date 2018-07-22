@@ -29,25 +29,9 @@ regex_no_rfiles = re.compile(r'R.+\.htm')
 from collections import defaultdict
 import chardet
 import os
-# input_filepath = r'C:\sec_gov\Archives\edgar\data\913778\000114420418035277\0001144204-18-035277.txt'
-# input_filepath = r'\\HV-WS1202\sec_gov\Archives\edgar\data\2017\QTR3\0001564590-17-017693.txt'
-# input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000034088-17-000017.txt'
-# input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000039263-17-000017.txt'
-# input_filepath = r'C:\SECDATA\sec_gov\Archives\edgar\filings\2017\QTR1\0000065984-17-000098.txt'
+
 from py_sec_edgar.utilities import format_filename
 from py_sec_edgar.utilities import uudecode
-
-# from celery import Celery
-# # subprocess.call(['chmod', '-R', '+w', some_folder])
-#
-# def write_filing_header_to_file(SEC_FILING_HEADER_FILEPATH, sec_filing_documents):
-#     with open(SEC_FILING_HEADER_FILEPATH, "w", newline='') as fp:
-#         wr = csv.writer(fp, dialect='excel')
-#         wr.writerow(["ITEM", "KEY", "VALUE"])
-#         for i, (colname, value) in enumerate(sec_filing_documents.items()):
-#             if isinstance(value, list):
-#                 value = ", ".join(value)
-#             wr.writerow([i, colname, value])
 
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
@@ -88,6 +72,7 @@ def parse_filing_header(raw_html):
     header_dict = header_dict.iloc[:, 1:]
     header_dict = header_dict.dropna()
     header_dict.columns = ['GROUP', 'KEY', 'VALUE']
+    print(header_dict)
     return header_dict
 
 def extract_header_from_filing(input_filepath=None, header_output_filepath=None, ticker="--"):
@@ -371,7 +356,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
 
             elif document.lower().startswith("begin"):
 
-                # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
                 output_document = os.path.join(output_directory, file_metadata['FILENAME'] + ".uue")
 
                 with open(output_document, 'w', encoding=charenc) as f:
@@ -383,8 +367,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
                 uue_file = True
 
             else:
-                # print(file_metadata)
-                # print(output_directory)
                 output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']), file_metadata['TYPE'], file_metadata['DESCRIPTION'], file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace(
                     "__", "_")
 
@@ -414,10 +396,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
     else:
         print("already extracted")
         return output_directory
-
-
-# https://www.sec.gov/Archives/edgar/daily-index/2017/QTR3/
-#/Archives/edgar/daily-index — daily index files through the current year;
 
 
 if __name__ == '__main__':

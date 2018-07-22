@@ -8,7 +8,7 @@ import os
 from time import sleep
 from py_sec_edgar.utilities import edgar_filing_idx_create_filename
 from py_sec_edgar.proxy_request import ProxyRequest
-import py_sec_edgar.extract
+import py_sec_edgar.filing
 from py_sec_edgar.settings import Config
 import json
 import py_sec_edgar.feeds
@@ -56,7 +56,7 @@ def celery_extract_content_from_complete_submission_txt_filing(self, item):
 
     output_filepath = os.path.join(CONFIG.OUTPUT_DIR,item['CIK'],item['FILE'].replace('-',"").replace(".txt",""))
     print(output_filepath)
-    py_sec_edgar.extract.complete_submission_filing(input_filepath=filepath, output_filepath=output_filepath, extract_items=['HEADER_AND_DOCUMENTS'])
+    py_sec_edgar.filing.complete_submission_filing(input_filepath=filepath, output_filepath=output_filepath, extract_items=['HEADER_AND_DOCUMENTS'])
 
 
 @app.task(bind=True, max_retries=3)

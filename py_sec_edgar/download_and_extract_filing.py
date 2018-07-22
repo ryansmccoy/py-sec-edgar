@@ -1,7 +1,7 @@
 
 from py_sec_edgar import CONFIG
 from py_sec_edgar.proxy_request import ProxyRequest
-import py_sec_edgar.extract
+import py_sec_edgar.filing
 
 from pprint import pprint
 import os
@@ -31,7 +31,6 @@ def filings(feed_item):
         if not os.path.exists(folder_path_cik):
             os.makedirs(folder_path_cik)
 
-
         g.GET_FILE(feed_item['url'], filepath_feed_item)
 
         # todo: celery version of download full
@@ -45,7 +44,7 @@ def filings(feed_item):
 
     if not os.path.exists(filing_contents):
 
-        py_sec_edgar.extract.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
+        py_sec_edgar.filing.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
 
         # todo: celery version of download full
         # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)

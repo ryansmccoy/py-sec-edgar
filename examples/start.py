@@ -7,7 +7,7 @@ import os
 import sys
 import click
 import py_sec_edgar
-import py_sec_edgar.extract
+import py_sec_edgar.filing
 from py_sec_edgar import CONFIG
 
 import pandas as pd
@@ -18,7 +18,7 @@ pd.set_option('display.max_rows', 100)
 pd.set_option('display.width', 600)
 
 from urllib.parse import urljoin
-from fastparquet import ParquetFile
+# from fastparquet import ParquetFile
 
 @click.command()
 def main(filter_ticker_list=False, filter_form_list=True):
@@ -27,10 +27,10 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
-    pf = ParquetFile(merged_idx_files.replace(".csv",".parq"))
-    df_idx = pf.to_pandas()
+    # pf = ParquetFile(merged_idx_files.replace(".csv",".parq"))
+    # df_idx = pf.to_pandas()
 
-    # df_idx = pd.read_csv(merged_idx_files, index_col=0, dtype={"CIK": int})
+    df_idx = pd.read_csv(merged_idx_files, index_col=0, dtype={"CIK": int})
 
     df_idx = df_idx.sort_values("Date Filed", ascending=False)
     # df_idx = df_idx.set_index('CIK')
@@ -57,10 +57,9 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
         df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
 
-
     for i, feed_item in df_idx.iterrows():
 
-        py_sec_edgar.download_and_extract.filings(feed_item)
+        py_sec_edgar.download_and_extract_filing.filings(feed_item)
 
 
 if __name__ == "__main__":
