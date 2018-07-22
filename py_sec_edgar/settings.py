@@ -16,7 +16,8 @@ load_dotenv(find_dotenv())
 # print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class Config(Folders):
-
+    # in order to download
+    # https://www.perfect-privacy.com/
     VPN_PROVIDER = "PP"
 
     # extract all contents from txt file

@@ -95,15 +95,26 @@ In the example above, "0001193125-15-118890" is the "accession number," a unique
 Filings Statistics
 ------------------
 
-
     Form 4        6,420,154
     8-K	 1,473,193
     10-K	   180,787
     10-Q	   552,059
     13F-HR	   224,996
     S-1	    21,366
-
+    ------------------
     Total         17,492,303
 
+
+Download Time Estimates
+-----------------------
+
+	 180,787        10-K filings
+            8       seconds on average to download single filing
+     ------------------
+     1,446,296 	    seconds
+	 24,104.93 	    minutes
+	 401.75 	    hours
+     ------------------
+	 16.74 	        days to download all 10-K filings via 1 connection
 
 
