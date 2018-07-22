@@ -4,16 +4,15 @@
 # https://www.sec.gov/Archives/edgar/full-index/
 # "./{YEAR}/QTR{NUMBER}/"
 
-from .. import CONFIG
-
-from py_sec_edgar.utilities import generate_folder_names_years_quarters, walk_dir_fullpath
-from py_sec_edgar.proxy_request import ProxyRequest
-
 import os
 import os.path
 from urllib.parse import urljoin
 
 import pandas as pd
+
+from py_sec_edgar.proxy_request import ProxyRequest
+from py_sec_edgar.utilities import generate_folder_names_years_quarters, walk_dir_fullpath
+from .. import CONFIG
 
 pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
 pd.set_option('display.max_columns', 100)
@@ -24,9 +23,10 @@ pd.set_option('display.width', 600)
 # import pyarrow.parquet as pq
 # import fastparquet as fp
 
-def convert_idx_to_csv(filepath):
 
-    df = pd.read_csv(filepath, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+def convert_idx_to_csv(filepath):
+    df = pd.read_csv(filepath, skiprows=10, names=[
+        'CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
 
     df = df[-df['CIK'].str.contains("---")]
 
@@ -38,9 +38,9 @@ def convert_idx_to_csv(filepath):
 
     df.to_csv(filepath.replace(".idx", ".csv"), index=False)
 
-def merge_idx_files():
 
-    files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR,contains='.csv')
+def merge_idx_files():
+    files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR, contains='.csv')
 
     files.sort(reverse=True)
 
@@ -62,11 +62,13 @@ def merge_idx_files():
 
     # df_idx = fp.ParquetFile(out_path).to_pandas()
 
+
 def download(save_idx_as_csv=True, skip_if_exists=True):
+    dates_quarters = generate_folder_names_years_quarters(
+        CONFIG.index_start_date, CONFIG.index_end_date)
 
-    dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
-
-    latest_full_index_master = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
+    latest_full_index_master = os.path.join(
+        CONFIG.FULL_INDEX_DIR, "master.idx")
 
     if os.path.exists(latest_full_index_master):
         os.remove(latest_full_index_master)
@@ -91,7 +93,8 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
                 if not os.path.exists(os.path.dirname(filepath)):
                     os.makedirs(os.path.dirname(filepath))
 
-                url = urljoin(CONFIG.edgar_Archives_url, 'edgar/full-index/{}/{}/{}'.format(year, qtr, file))
+                url = urljoin(CONFIG.edgar_Archives_url,
+                              'edgar/full-index/{}/{}/{}'.format(year, qtr, file))
 
                 g.GET_FILE(url, filepath)
 

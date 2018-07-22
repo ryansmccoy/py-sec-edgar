@@ -1,3 +1,4 @@
+dotenv
 pip
 wheel
 beautifulsoup4
@@ -12,3 +13,4 @@ XlsxWriter
 python-dotenv
 pandas
 lxml
+chardet

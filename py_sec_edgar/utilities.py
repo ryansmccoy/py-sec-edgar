@@ -4,32 +4,25 @@
 # https://www.sec.gov/Archives/edgar/usgaap.rss.xml
 # http://www.sec.gov/Archives/edgar/xbrlrss.all.xml
 # https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&CIK=&type=10-K&company=&dateb=&owner=include&start=0&count=100&output=atom
-import sys
-
+import binascii
+import os
 import re
 import shutil
+import string
+import sys
+import time
+import unicodedata
 import zipfile
 from collections import OrderedDict
-
-import string
-
-import unicodedata
-
-import os
-import time
-from datetime import date, datetime
-from urllib.parse import urljoin
-
-import pandas as pd
-import requests
-from dateutil.parser import parse
-from time import mktime
+from datetime import date
 from datetime import datetime
-
-import binascii
+from time import mktime
+from urllib.parse import urljoin
 
 # __all__ = ["Error", "encode", "decode"]
 import feedparser
+import pandas as pd
+from dateutil.parser import parse
 
 try:
     from py_sec_edgar.proxy_request import ProxyRequest
@@ -40,7 +33,9 @@ except:
 class Error(Exception):
     pass
 
+
 from bs4 import UnicodeDammit  # BeautifulSoup 4
+
 
 def decode_html(html_string):
     converted = UnicodeDammit(html_string)
@@ -75,54 +70,9 @@ def clean_text_string_func(s):
     return s
 
 
-def clean_text_string_func_newlines(s):
-    s = s.replace('\r', ' ')
-    s = s.replace('\t', ' ')
-    s = s.replace('\f', ' ')
-    s = s.replace('\n', ' ')
-    s = s.replace('\x92', "'")
-    s = s.replace('\x93', '"')
-    s = s.replace('\x94', '"')
-    s = s.replace('\x96', "-")
-    s = s.replace('\x95', "-")
-    s = s.replace('\\', " ")
-    s = s.replace('- ', "-")
-    s = s.replace(r'—', "--")
-    s = s.replace('â', " ")
-    s = s.replace('\x97', "-")
-    s = s.replace('\'s', "'s")
-    s = s.replace(" 's", "'s")
-    s = s.replace("nan", "")
-    s = s.replace("\n", "")
-    s = " ".join(s.split())
-    # s = s.lower()
-    return s
-
-
-def clean_text_string_func_Az(s):
-    s = s.replace('\r', ' ')
-    s = s.replace('\t', ' ')
-    s = s.replace('\f', ' ')
-    # s = s.replace('\n', ' ')
-    s = s.replace('\x92', "'")
-    s = s.replace('\x93', '"')
-    s = s.replace('\x94', '"')
-    s = s.replace('\x96', "-")
-    s = s.replace('\x95', "-")
-    s = s.replace('\\', " ")
-    s = s.replace('- ', " ")
-    s = s.replace('â', " ")
-    s = s.replace(" 's", "'s")
-    re.sub(r"[A-z]\'", r"'", s)
-    s = " ".join(s.split())
-    # s = s.lower()
-    return s
-
-
-# lista = list(element.itertext())
-
 def cleanLists_newlines(lista):
-    lista = ['\n'.join(' '.join(line.split()) for line in x.split('\n')) for x in lista]
+    lista = ['\n'.join(' '.join(line.split())
+                       for line in x.split('\n')) for x in lista]
     lista = ["".join(x) for x in lista]
     lista = [x.replace('\b', ' ') for x in lista]
     lista = [x.replace('\n', '  ') for x in lista]
@@ -145,10 +95,12 @@ def cleanLists(lista):
 def normalize_accented_characters(i, vtext):
     # print("this text", vtext)
     try:
-        ctext = unicodedata.normalize('NFKD', vtext).decode('utf-8').encode('ascii', 'ignore')
+        ctext = unicodedata.normalize('NFKD', vtext).decode(
+            'utf-8').encode('ascii', 'ignore')
         return ctext
     except TypeError:
-        ctext = clean_text_string_func(decode_html(unicodedata.normalize("NFKD", vtext)))
+        ctext = clean_text_string_func(decode_html(
+            unicodedata.normalize("NFKD", vtext)))
         return ctext
     except:
         # print('big prob', type(vtext))
@@ -208,7 +160,8 @@ def uuencode(in_file, out_file, name=None, mode=None):
         #
         # Write the data
         #
-        out_file.write(('begin %o %s\n' % ((mode & 0o777), name)).encode("ascii"))
+        out_file.write(('begin %o %s\n' %
+                        ((mode & 0o777), name)).encode("ascii"))
         data = in_file.read(45)
         while len(data) > 0:
             out_file.write(binascii.b2a_uu(data))
@@ -290,8 +243,6 @@ def uudecode(in_file, out_file=None, mode=None, quiet=True):
             f.close()
 
 
-
-
 def flattenDict(d, result=None):
     if result is None:
         result = {}
@@ -316,6 +267,7 @@ def flattenDict(d, result=None):
         else:
             result[key] = value
     return result
+
 
 def walk_dir_fullpath(directory, contains=None):
     all_files = []
@@ -342,12 +294,13 @@ def unzip_excel(fullfilepath):
         for file in archive.namelist():
             if file == excel_file_name:
                 archive.extract(file, dirname)
-                os.rename(extracted_excel_file, zfullfilepath.replace('.zip', '.xlsx'))
+                os.rename(extracted_excel_file,
+                          zfullfilepath.replace('.zip', '.xlsx'))
     except:
         print("ERROR! ERROR! ABORT! ABORT! " + fullfilepath)
 
 
-###### get files in cik folder
+# get files in cik folder
 
 def get_list_of_cik_folders(FOLDER):
     folders = os.listdir(FOLDER)
@@ -355,9 +308,9 @@ def get_list_of_cik_folders(FOLDER):
 
 
 def get_fullfilepaths_files_in_folder(folder_to_process):
-    files_in_folder = [os.path.join(folder_to_process, x) for x in os.listdir(folder_to_process)]
+    files_in_folder = [os.path.join(folder_to_process, x)
+                       for x in os.listdir(folder_to_process)]
     return files_in_folder
-
 
 
 def get_pattern_for_filename(filename, pattern):
@@ -366,6 +319,7 @@ def get_pattern_for_filename(filename, pattern):
     e = match.end()
     result = filename[s:e]
     return result
+
 
 def get_cik_form_period(filename):
     edgar_items = OrderedDict()
@@ -378,6 +332,7 @@ def get_cik_form_period(filename):
             p = pkey
             edgar_items[p] = None
     return edgar_items
+
 
 def move_file_to_new_folder(filename, new_file_path):
     basename = os.path.basename(filename)
@@ -402,6 +357,7 @@ def file_size(file_path):
         file_info = os.stat(file_path)
         return convert_bytes(file_info.st_size)
 
+
 def create_edgarfilename(basename, item):
     try:
         edgfilepath = str(basename + "#2_" + item['edgar_filenumber'] + "_#3_" + date.fromtimestamp(
@@ -413,7 +369,6 @@ def create_edgarfilename(basename, item):
             mktime(item['published_parsed'])).strftime("%Y-%m-%dTZ%H-%M-%S") + "_#4_" + item[
                               'edgar_ciknumber'] + "_#5_" + item['edgar_companyname'] + "_#6_" + item[
                               'edgar_formtype'] + "_#7_" + "NOPERIOD")
-
 
     return edgfilepath
 
@@ -450,28 +405,34 @@ def create_edgarfilename_one(item):
 def split_edgarfilename(filepath):
     filepath_stats = {}
 
-    name_list = ['SEC_SOURCE', 'SEC_UID', 'SEC_DATETIME', 'SEC_CIK', 'TICKER_NAME', 'SEC_FORM', 'SEC_PERIOD']
+    name_list = ['SEC_SOURCE', 'SEC_UID', 'SEC_DATETIME',
+                 'SEC_CIK', 'TICKER_NAME', 'SEC_FORM', 'SEC_PERIOD']
 
     # split basename of edgar filing by # then if 2nd character is _ then start from 2 and upper else upper
-    value_list = [value[2:].upper() if value[1] == "_" else value.upper() for value in os.path.basename(filepath).split("_#")]
+    value_list = [value[2:].upper() if value[1] == "_" else value.upper()
+                  for value in os.path.basename(filepath).split("_#")]
 
     filepath_stats.update(dict(list(zip(name_list, value_list))))
 
     filepath_stats['SEC_DATE'] = filepath_stats['SEC_DATETIME'].split("TZ")[0]
-    filepath_stats['SEC_PERIOD'] = filepath_stats['SEC_PERIOD'].split(".")[0].replace(".txt","")
+    filepath_stats['SEC_PERIOD'] = filepath_stats['SEC_PERIOD'].split(".")[
+        0].replace(".txt", "")
     filepath_stats['SEC_YEAR'] = int(filepath_stats['SEC_PERIOD'][0:4])
     filepath_stats["TICKER"] = filepath_stats["TICKER_NAME"].split(")")[0][1:]
     filepath_stats["NAME"] = filepath_stats["TICKER_NAME"].split(")")[1][1:]
     filepath_stats['FILEPATH'] = filepath.upper()
     filepath_stats['DIRECTORY'] = os.path.dirname(filepath.upper())
     filepath_stats['BASENAME'] = os.path.basename(filepath.upper())
-    filepath_stats['SEC_ARCHIVES_INDEX_URL'] = urljoin("https://www.sec.gov/Archives/", filepath_stats['SEC_UID'].replace("_","/").lower() + "-index.htm")
+    filepath_stats['SEC_ARCHIVES_INDEX_URL'] = urljoin(
+        "https://www.sec.gov/Archives/", filepath_stats['SEC_UID'].replace("_", "/").lower() + "-index.htm")
     filepath_stats['SEC_ARCHIVES_COMPLETE_FILING_URL'] = urljoin("https://www.sec.gov/Archives/",
-                                                                 filepath_stats['SEC_UID'].replace("_","/").lower().replace("-","") + "/" +
+                                                                 filepath_stats['SEC_UID'].replace("_", "/").lower().replace("-", "") + "/" +
                                                                  filepath_stats['SEC_UID'].split("_")[-1] + ".txt")
     try:
-        filepath_stats['DATE_MODIFIED'] = time.strftime("%Y%m%dT%H%M%S", time.localtime(os.path.getmtime(filepath)))
-        filepath_stats['DATE_CREATED'] = time.strftime("%Y%m%dT%H%M%S", time.localtime(os.path.getctime(filepath)))
+        filepath_stats['DATE_MODIFIED'] = time.strftime(
+            "%Y%m%dT%H%M%S", time.localtime(os.path.getmtime(filepath)))
+        filepath_stats['DATE_CREATED'] = time.strftime(
+            "%Y%m%dT%H%M%S", time.localtime(os.path.getctime(filepath)))
     except:
         filepath_stats['DATE_MODIFIED'] = "#N/A"
         filepath_stats['DATE_CREATED'] = "#N/A"
@@ -480,23 +441,32 @@ def split_edgarfilename(filepath):
 
 
 def edgar_filing_idx_create_filename(basename, item, ticker):
-    date_string = datetime.strftime(parse(str(item['published'])), "%Y-%m-%dTZ%H-%M-%S")
+    date_string = datetime.strftime(
+        parse(str(item['published'])), "%Y-%m-%dTZ%H-%M-%S")
     try:
-        edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/',"").replace(".txt","").replace("/","_").replace("-index.htm",""), date_string, item['edgar_ciknumber'],ticker , item['edgar_companyname'],item['edgar_formtype'], item['edgar_period'])
+        edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(
+            ".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'], item['edgar_formtype'], item['edgar_period'])
     except:
-        edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'],item['edgar_formtype'], "NOPERIOD")
+        edgfilepath = 'edgaridx-{}_txt_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(
+            ".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'], item['edgar_formtype'], "NOPERIOD")
 
-    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\","_").replace("__", "_")
+    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(
+        ".", "_").replace("/", "_").replace("\\", "_").replace("__", "_")
     return edgfilepath + ".txt"
 
-def edgar_filing_txt_create_filename(basename, item, ticker):
-    date_string = datetime.strftime(parse(str(item['published'])), "%Y-%m-%dTZ%H-%M-%S")
-    try:
-        edgfilepath = 'edgaridx-{}_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/',"").replace(".txt","").replace("/","_").replace("-index.htm",""), date_string, item['edgar_ciknumber'],ticker , item['edgar_companyname'],item['edgar_formtype'], item['edgar_period'])
-    except:
-        edgfilepath = 'edgaridx-{}_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'],item['edgar_formtype'], "NOPERIOD")
 
-    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").replace("\\","_").replace("__", "_")
+def edgar_filing_txt_create_filename(basename, item, ticker):
+    date_string = datetime.strftime(
+        parse(str(item['published'])), "%Y-%m-%dTZ%H-%M-%S")
+    try:
+        edgfilepath = 'edgaridx-{}_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(".txt", "").replace(
+            "/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'], item['edgar_formtype'], item['edgar_period'])
+    except:
+        edgfilepath = 'edgaridx-{}_#2_{}_#3_{}_#4_{}_#5_({})_{}_#6_{}_#7_{}'.format(basename[8:], item['link'].replace(r'http://www.sec.gov/Archives/', "").replace(
+            ".txt", "").replace("/", "_").replace("-index.htm", ""), date_string, item['edgar_ciknumber'], ticker, item['edgar_companyname'], item['edgar_formtype'], "NOPERIOD")
+
+    edgfilepath = edgfilepath.replace(" ", "_").replace(",", "_").replace(
+        ".", "_").replace("/", "_").replace("\\", "_").replace("__", "_")
     return edgfilepath + ".txt"
 
 
@@ -514,9 +484,10 @@ def read_xml_feedparser(source_file):
 
 desired_width = 600
 
-def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
 
-    temp_filepath = os.path.join(os.path.dirname(local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
+def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
+    temp_filepath = os.path.join(os.path.dirname(
+        local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
 
     temp_size = file_size(temp_filepath)
     local_size = file_size(local_filepath)
@@ -534,12 +505,12 @@ def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
 
 
 def generate_folder_names_years_quarters(start_date, end_date):
-
     dates_data = []
-    date_range = pd.date_range(datetime.strptime(start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
+    date_range = pd.date_range(datetime.strptime(
+        start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
 
     for i, values in enumerate(date_range):
-        quarter = '{}'.format(values.year), "QTR{}".format(int(values.month/3))
+        quarter = '{}'.format(values.year), "QTR{}".format(int(values.month / 3))
         dates_data.append(quarter)
 
     dates_quarters = list(set(dates_data))
@@ -547,6 +518,7 @@ def generate_folder_names_years_quarters(start_date, end_date):
 
     return dates_quarters
 
+
 def scan_all_local_filings(directory, year=None):
-    files = walk_dir_fullpath(os.path.join(directory,year))
+    files = walk_dir_fullpath(os.path.join(directory, year))
     return files

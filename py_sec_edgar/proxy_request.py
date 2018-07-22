@@ -1,12 +1,9 @@
-import os
-
-
 import random
 import time
-import requests
-import pandas as pd
 
-from . import CONFIG
+import pandas as pd
+import requests
+
 
 class ProxyRequest(object):
     def __init__(self):
@@ -105,7 +102,8 @@ class ProxyRequest(object):
 
                 self.generate_random_header_and_proxy_host()
 
-                self.r = requests.get(url, stream=True, headers=self.random_header, proxies=self.random_proxy_host, timeout=(self.connect_timeout, self.read_timeout))
+                self.r = requests.get(url, stream=True, headers=self.random_header, proxies=self.random_proxy_host, timeout=(
+                    self.connect_timeout, self.read_timeout))
 
                 with open(filepath, 'wb') as f:
                     for chunk in self.r.iter_content(chunk_size=1024):
@@ -127,7 +125,7 @@ class ProxyRequest(object):
 
 
 if __name__ == "__main__":
-    from py_sec_edgar.utilities import CONFIG
+    from py_sec_edgar import CONFIG
     import os
     url = r'https://www.sec.gov/Archives/edgar/data/897078/0001493152-18-009029.txt'
     g = ProxyRequest()

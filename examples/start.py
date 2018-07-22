@@ -5,12 +5,13 @@
 
 import os
 import sys
+
 import click
+import pandas as pd
+
 import py_sec_edgar
 import py_sec_edgar.filing
 from py_sec_edgar import CONFIG
-
-import pandas as pd
 
 pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
 pd.set_option('display.max_columns', 100)
@@ -20,10 +21,11 @@ pd.set_option('display.width', 600)
 from urllib.parse import urljoin
 # from fastparquet import ParquetFile
 
+
 @click.command()
 def main(filter_ticker_list=False, filter_form_list=True):
-
-    py_sec_edgar.feeds.full_index.download(save_idx_as_csv=True, skip_if_exists=True)
+    py_sec_edgar.feeds.full_index.download(
+        save_idx_as_csv=True, skip_if_exists=True)
 
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
@@ -39,13 +41,14 @@ def main(filter_ticker_list=False, filter_form_list=True):
         # load ticker lookup and lookup CIK
         df_tickers = pd.read_csv(CONFIG.tickers_filepath, header=None)
 
-        list_of_tickers = df_tickers.iloc[:,0].tolist()
+        list_of_tickers = df_tickers.iloc[:, 0].tolist()
 
         # load CIK to tickers
         df_cik_tickers = pd.read_excel(CONFIG.tickercheck)
 
         # filter cik list only tickers in tickers.csv file
-        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(list_of_tickers)]
+        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(
+            list_of_tickers)]
 
         list_of_ciks = df_cik_tickers['CIK'].tolist()
 
@@ -55,7 +58,8 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
         df_idx = df_idx[df_idx['Form Type'].isin(CONFIG.forms_list)]
 
-        df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+        df_idx = df_idx.assign(url=df_idx['Filename'].apply(
+            lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
 
     for i, feed_item in df_idx.iterrows():
 
