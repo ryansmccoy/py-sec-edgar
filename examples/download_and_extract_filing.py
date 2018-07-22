@@ -63,7 +63,7 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
     for i, feed_item in df_idx.iterrows():
 
-        py_sec_edgar.download_and_extract_filing.filings(feed_item)
+        py_sec_edgar.extract_and_transform.filings(feed_item)
 
 
 if __name__ == "__main__":

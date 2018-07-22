@@ -11,7 +11,7 @@ from py_sec_edgar.settings import Config
 CONFIG = Config()
 
 from .feeds import daily_index, full_index, monthly
-from . import download_and_extract_filing
+from . import extract_and_transform
 
 header_list = ["ACCESSION NUMBER", "CONFORMED SUBMISSION TYPE", "PUBLIC DOCUMENT COUNT",
                "CONFORMED PERIOD OF REPORT", "FILED AS OF DATE", "DATE AS OF CHANGE", "FILER", "COMPANY data",
