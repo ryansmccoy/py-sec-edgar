@@ -1,3 +1,5 @@
+
+import os
 import random
 import time
 
@@ -7,6 +9,7 @@ import requests
 
 class ProxyRequest(object):
     def __init__(self):
+        from py_sec_edgar import CONFIG
 
         self.retry_counter = 3
 

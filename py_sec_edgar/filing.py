@@ -1,39 +1,23 @@
 # -*- coding: utf-8 -*-
 
-"""
-
-Todo:
-    * refactor into class
-
-"""
 import sys
-
-sys.path.append('..')
-import csv
 import io
-import re
-from html import unescape
-from pprint import pprint
-import lxml.html
-from bs4 import BeautifulSoup
-from py_sec_edgar.settings import Config
-
-CONFIG = Config()
-from datetime import datetime
-
-from py_sec_edgar.utilities import file_size
-
-re10k = re.compile('10-K')
-import pandas as pd
-
-regex_no_rfiles = re.compile(r'R.+\.htm')
-from collections import defaultdict
 import chardet
 import os
+from html import unescape
+import lxml.html
+from bs4 import BeautifulSoup
+import pandas as pd
+from collections import defaultdict
 
+from py_sec_edgar.utilities import file_size
+from py_sec_edgar import CONFIG
 from py_sec_edgar.utilities import format_filename
 from py_sec_edgar.utilities import uudecode
 
+import re
+re10k = re.compile('10-K')
+regex_no_rfiles = re.compile(r'R.+\.htm')
 
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
@@ -79,82 +63,6 @@ def parse_filing_header(raw_html):
     header_dict.columns = ['GROUP', 'KEY', 'VALUE']
     print(header_dict)
     return header_dict
-
-
-def extract_header_from_filing(input_filepath=None, header_output_filepath=None, ticker="--"):
-    with io.open(input_filepath, "rb") as f:
-        raw_html = f.read()
-
-    # lxml is a fast html file parser c++
-    # lxml_html = lxml.html.fromstring(raw_html)
-
-    # root = lxml_html.getroottree()
-
-    if header_output_filepath is None:
-        header_output_filepath = os.path.dirname(
-            input_filepath.replace(".txt", "-header.csv"))
-
-    try:
-        df_header = parse_filing_header(raw_html)
-
-        df_header = df_header[['KEY', 'VALUE']].set_index('KEY')
-        filename_items = ['FILED AS OF DATE', 'ACCESSION NUMBER', '<acceptance-datetime>', 'CENTRAL INDEX KEY',
-                          'COMPANY CONFORMED NAME', 'CONFORMED SUBMISSION TYPE', 'CONFORMED PERIOD OF REPORT']
-        header_dict = df_header[df_header.index.isin(filename_items)].reindex(
-            filename_items).to_dict()['VALUE']
-
-        edgfilename = str('edgaridx-' + header_dict['FILED AS OF DATE'][0:4] + "-" + header_dict['FILED AS OF DATE'][4:6] +
-                          "_#2_" + header_dict['ACCESSION NUMBER'] +
-                          "_#3_" + datetime.strptime(header_dict['<acceptance-datetime>'].strip(
-        ), "%Y%m%d%H%M%S").strftime("%Y-%m-%dTZ%H-%M-%S")
-                          + "_#4_" + header_dict['CENTRAL INDEX KEY'].lstrip("0") +
-                          "_#5_({})_".format(ticker) + header_dict['COMPANY CONFORMED NAME'].upper() +
-                          "_#6_" + header_dict['CONFORMED SUBMISSION TYPE'] +
-                          "_#7_" + header_dict['FILED AS OF DATE'])
-
-        edgfilename = edgfilename.replace(" ", "_").replace(".", "_").replace(
-            ",", "_").replace("/", "_").replace("__", "_").replace("/", "_").replace(" ", "_")
-
-        sec_filing_output_directory = os.path.join(
-            header_output_filepath, '{}.csv'.format(edgfilename))
-        df_final = df_header.T
-        df_final.index = [edgfilename]
-        df_final.to_csv(sec_filing_output_directory)
-        return edgfilename
-    except:
-        print("error {}".format(input_filepath))
-
-
-def _parse_single_document():
-    """extracts the meta-data from an individual document inside an SEC Edgar Filing"""
-    root = lxml.html.fromstring(r.text)
-    root = root.getroottree()
-    sec_filing_docs = {}
-    d_of_matches = {}
-    re_matches = re.compile("-----BEGIN PRIVACY-ENHANCED MESSAGE-----")
-    re_matches = re.compile(
-        '<(DOCUMENT|document)>(.*?)</(DOCUMENT|document)>', re.DOTALL)
-    matches = re_matches.findall(lxml.html.tostring(root).decode())
-    # i, match = list(enumerate(matches))[0]
-    for i, match in enumerate(matches):
-        d_of_matches[i] = match
-        # print(match[0:1000])
-        sequenceItem = re.findall(
-            '<SEQUENCE>.+', match)[0].replace("<SEQUENCE>", "")
-        typeItem = re.findall('<TYPE>.+', matches[0])[0].replace("<TYPE>", "")
-        filepathItem = re.findall(
-            '<filepath>.+', match)[0].replace("<filepath>", "")
-        descriptionItem = re.findall(
-            '<DESCRIPTION>.+', match)[0].replace("<DESCRIPTION>", "")
-        textItem = re.findall('<TEXT>.*', match, re.DOTALL +
-                              re.MULTILINE)[0].replace("<TEXT>", "").strip().split(":")
-        sec_filing_docs[i] = {"TYPE": typeItem,
-                              "SEQUENCE": sequenceItem,
-                              "filepath": filepathItem,
-                              "DESCRIPTION": descriptionItem,
-                              "TEXT": textItem[1]}
-    return sec_filing_docs
-
 
 def identify_10_K_filing(sec_filing_documents, override=None):
     max_doc = 0
@@ -208,75 +116,6 @@ def identify_10_K_filing(sec_filing_documents, override=None):
         i, document = list(sec_filing_documents.items())[seq_no - 1]
     print("Parsing DOC {}".format(i))
     return i, document
-
-
-def parse_10k_html_document(input_filepath):
-    lxml_dict = {}
-
-    try:
-        # or codecs.open on Python 2
-        raw_text = open(input_filepath, "rb").read()
-        result = chardet.detect(raw_text)
-        charenc = result['encoding']
-        raw_text = raw_text.decode(charenc)
-    except:
-        with io.open(input_filepath, "rb") as f:
-            raw_text = f.read()
-
-    lxml_html = lxml.html.fromstring(raw_text)
-    root = lxml_html.getroottree()
-    soup = BeautifulSoup(lxml.html.tostring(root), 'lxml')
-
-    file_metadata = {}
-    file_metadata['FILEPATH'] = input_filepath
-
-    for ii, element in enumerate(root.xpath("//*/body/*")):
-        lxml_dict[ii] = element
-
-    div_check = {}
-    for ii, element in enumerate(lxml.html.fromstring(soup.prettify()).xpath("//*/div/*")):
-        div_check[ii] = element
-
-    file_metadata['NUMBER_OF_ELEMENTS'] = len(lxml_dict)
-    file_metadata['FILE_SIZE'] = file_size(file_metadata['FILEPATH'])
-    file_metadata['FILE_SIZE_BYTES'] = os.stat(
-        file_metadata['FILEPATH']).st_size
-    file_metadata['lxml_dict'] = lxml_dict
-    file_metadata['div_check'] = div_check
-    file_metadata['ENCODING'] = charenc
-
-    return file_metadata
-
-
-def create_header_file_from_complete_submission_filing(root=None, input_filepath=None, output_directory=None):
-    print("\nSplitting the Complete Submission Filing\n")
-    filing_header = defaultdict(dict)
-    if root.xpath("//*/sec-header"):
-        filing_header['SEC-HEADER'] = parse_filing_header(root)
-        filepath_dict = edgar_filename.split_edgarfilename(input_filepath)
-        incremented_values = [{i: (key, val)} for i, (key, val) in enumerate(
-            filepath_dict.items(), start=len(filing_header) + 1)]
-        for item in incremented_values:
-            filing_header['SEC-HEADER'].update(item)
-
-        pprint(filing_header)
-
-    SEC_FILING_HEADER_FILEPATH = os.path.join(
-        output_directory, "SEC_FILING_HEADER_{}.CSV".format(os.path.basename(output_directory)))
-
-    try:
-        with open(SEC_FILING_HEADER_FILEPATH, "w", newline='') as fp:
-            wr = csv.writer(fp, dialect='excel')
-            wr.writerow(["ITEM", "KEY", "VALUE"])
-            for i, (colname, value) in filing_header["SEC-HEADER"].items():
-                if isinstance(value, list):
-                    value = ", ".join(value)
-                wr.writerow([i, colname, value])
-    except KeyError:
-        print("no header")
-
-    return filing_header, SEC_FILING_HEADER_FILEPATH
-
 
 def complete_submission_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
     FOLDER_PATH = True
@@ -348,7 +187,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
         sec_filing_documents = {}
         debug_sec_filing_documents = {}
 
-        # i, document = list(enumerate(documents, start=1))[1]
         for i, document in enumerate(documents, start=1):
             uue_file = False
             file_metadata = {}
@@ -401,8 +239,11 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
                 uue_file = True
 
             else:
-                output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']), file_metadata['TYPE'], file_metadata['DESCRIPTION'], file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace(
-                    "__", "_")
+                output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']),
+                                                             file_metadata['TYPE'],
+                                                             file_metadata['DESCRIPTION'],
+                                                             file_metadata['FILENAME']
+                                                             ).replace(" ", "_").replace(":", "").replace("__", "_")
 
                 output_filepath = format_filename(output_filepath)
                 # print(output_filepath)
@@ -449,6 +290,6 @@ if __name__ == '__main__':
 
     if len(sys.argv[1:]) >= 1:
         args = parser.parse_args()
-        extract_header_from_filing(input_filepath=args.input_filepath[0])
+        complete_submission_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False)
     else:
         sys.exit(parser.print_help())
