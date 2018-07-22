@@ -41,14 +41,13 @@ py_sec_edgar/settings.py
 
 #### Run Example:
 
-    python examples/download_full_index_filings.py
+    python examples/download_and_extract_filings.py
 
 # Alright, what did I just do?
  - Create folder structure which mimics sec.gov website structure (see "Paths and Directory Structure" below)
  - Download the necessary idx files and merge them into combined file (fyi 1.9 GB csv)
  - load tickers from tickers.csv file and filters them
-  - load forms from settings.py file and filters them
-
+ - load forms from settings.py file and filters them
  - filter against forms set in settings.py file, and will then start downloading the individual filings for the tickers in the tickers.csv file.
 
 
