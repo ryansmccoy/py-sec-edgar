@@ -29,15 +29,15 @@ CELERY_IMPORTS = ("tasks",)
 
 # print('grabbing html files')
 # url = config['EDGAR_URLS']['edgar_monthly_xml_list']
-from py_sec_edgar.settings import flattenDict
+from py_sec_edgar.utilities import flattenDict
 
 
 CONFIG = Config()
 
-from py_sec_edgar.celery import app
+from py_sec_edgar.celery import celery
 
 
-@app.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=3)
 def celery_consume_rss_feed(self, item):
     item = json.loads(item)
     item = item['ITEM']
@@ -48,7 +48,7 @@ def celery_consume_rss_feed(self, item):
     vals.to_csv(os.path.join(CONFIG.DATA_DIR, "{}.csv".format(item['netloc'])))
 
 
-@app.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=3)
 def celery_extract_content_from_complete_submission_txt_filing(self, item):
     item = json.loads(item)
     if item['OUTPUT_FOLDER'] == "full-index":
@@ -66,7 +66,7 @@ def celery_extract_content_from_complete_submission_txt_filing(self, item):
         input_filepath=filepath, output_filepath=output_filepath, extract_items=['HEADER_AND_DOCUMENTS'])
 
 
-@app.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=3)
 def consume_sec_filing_txt(self, item):
     item = json.loads(item)
 
@@ -95,7 +95,7 @@ def consume_sec_filing_txt(self, item):
 #  celery_process_sec_filing_with_arelle
 
 
-@app.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=3)
 def download_recent_edgar_filings_xbrl_rss_feed(self, url, filename):
     try:
         print(' [ X ] Requesting URL')
@@ -111,7 +111,7 @@ def download_recent_edgar_filings_xbrl_rss_feed(self, url, filename):
 import random
 
 
-@app.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=3)
 def consume_complete_submission_filing(self, basename, item, ticker):
     main_url = r'https://www.sec.gov'
     if ticker == "TICKER":
@@ -149,7 +149,7 @@ def consume_complete_submission_filing(self, basename, item, ticker):
         print("file already downloaded")
 
 
-@app.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=3)
 def consume_complete_submission_filing_txt(self, item, filepath):
     main_url = r'https://www.sec.gov'
     if not os.path.exists(filepath):
