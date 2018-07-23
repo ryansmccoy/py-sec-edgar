@@ -117,3 +117,5 @@ Download Time Estimates
 	 16.74 	        days to download all 10-K filings via 1 connection
 
 
+# Todo
+ * need to figure out way to quickly access downloaded content
