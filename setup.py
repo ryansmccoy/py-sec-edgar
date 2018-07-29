@@ -19,7 +19,7 @@ test_requirements = ['pytest', ]
 
 setup(
     author="Ryan S. McCoy",
-    author_email='ryan413@users.noreply.github.com',
+    author_email='ryansmccoy@users.noreply.github.com',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -48,7 +48,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/ryan413/py_sec_edgar',
+    url='https://github.com/ryansmccoy/py_sec_edgar',
     version='0.1.0',
     zip_safe=False,
 )

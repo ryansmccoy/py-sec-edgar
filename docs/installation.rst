@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/ryan413/py_sec_edgar_data
+    $ git clone git://github.com/ryansmccoy/py_sec_edgar_data
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/ryan413/py_sec_edgar_data/tarball/master
+    $ curl  -OL https://github.com/ryansmccoy/py_sec_edgar_data/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/ryan413/py_sec_edgar_data
-.. _tarball: https://github.com/ryan413/py_sec_edgar_data/tarball/master
+.. _Github repo: https://github.com/ryansmccoy/py_sec_edgar_data
+.. _tarball: https://github.com/ryansmccoy/py_sec_edgar_data/tarball/master
