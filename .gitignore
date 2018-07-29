@@ -100,9 +100,10 @@ ENV/
 
 # mypy
 .mypy_cache/
-.env
+.envqq
 .github
 .idea
 refdata/merged_idx_files.csv
 refdata/merged_idx_files.parq
 New Folder/
+/refdata/merged_idx_files.zip

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from folders import Folders
+from .folders import Folders
 
 from dotenv import load_dotenv, find_dotenv
 

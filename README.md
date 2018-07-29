@@ -14,7 +14,7 @@ Features:
 
 #### Setup Environment:
 
-    conda install -n py-sec-edgar python=3.6 pandas numpy lxml
+    conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
     activate py-sec-edgar
     pip install -r requirements/requirements_dev.txt
 
@@ -37,6 +37,18 @@ py_sec_edgar/settings.py
     # add tickers to tickers.csv
 
     tickers_filepath = os.path.join(EXAMPLES_DIR, 'tickers.csv')
+
+#### Configure .env:
+
+rename .env.template to .env
+
+py_sec_edgar/.env
+
+    # perfect-privacy.com
+    USERNAME=user@domain.com
+    PASSWORD=password
+
+
 
 #### Run Example:
 

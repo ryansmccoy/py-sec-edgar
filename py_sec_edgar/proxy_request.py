@@ -15,13 +15,6 @@ class ProxyRequest(object):
 
         self.pause_for_courtesy = False
 
-        # file_list_user_agents = os.path.join(CONFIG.CONFIG_DIR, 'user_agents.txt')
-        #
-        # with open(file_list_user_agents, 'r') as f:
-        #     self.list_user_agents = f.read().splitlines()
-
-        # self.proxy_pool = cycle(self.proxies)
-
         if CONFIG.VPN_PROVIDER is None or CONFIG.VPN_PROVIDER == "N":
 
             self.USERNAME = os.getenv('N_USERNAME')
@@ -30,9 +23,9 @@ class ProxyRequest(object):
 
             self.service = "http"
             proxies = pd.read_csv(self.VPN_LIST, index_col=0)
-            # proxies = pd.read_csv(VPN_LIST, index_col=0)
 
             self.proxies = proxies['IP'].tolist()
+            self.use_proxy = True
 
         elif CONFIG.VPN_PROVIDER == "PP":
 
@@ -43,9 +36,12 @@ class ProxyRequest(object):
             self.service = "socks5"
 
             proxies = pd.read_csv(self.VPN_LIST, index_col=0)
-            # proxies = pd.read_csv(VPN_LIST, index_col=0)
 
             self.proxies = proxies['IP'].tolist()
+            self.use_proxy = True
+
+        else:
+            self.use_proxy = False
 
         self.connect_timeout, self.read_timeout = 10.0, 30.0
 
@@ -84,13 +80,13 @@ class ProxyRequest(object):
 
     def generate_random_header_and_proxy_host(self):
 
-        self.random_proxy_host = self.generate_random_proxy_hosts()
+        if self.use_proxy:
+            self.random_proxy_host = self.generate_random_proxy_hosts()
 
         self.random_header = self.generate_random_header()
 
         if self.pause_for_courtesy:
             print('\tpausing ... as a courtesy...\n')
-
             time.sleep(random.randrange(5, 10))
 
     def GET_FILE(self, url, filepath):

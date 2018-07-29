@@ -10,7 +10,6 @@ from py_sec_edgar.proxy_request import ProxyRequest
 # df_idx.to_sql('idx', idx_engine, if_exists='append')
 # df = pd.read_sql_query('SELECT * FROM idx LIMIT 3',idx_engine)
 
-
 def filings(feed_item):
 
     pprint(feed_item)

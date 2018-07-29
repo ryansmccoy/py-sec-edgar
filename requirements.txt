@@ -1,5 +1,3 @@
-dotenv
-pip
 wheel
 beautifulsoup4
 feedparser

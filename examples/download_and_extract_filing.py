@@ -6,6 +6,8 @@
 import os
 import sys
 
+sys.path.insert(0, "../py_sec_edgar")
+
 import click
 import pandas as pd
 
