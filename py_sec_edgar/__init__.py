@@ -6,8 +6,6 @@ __author__ = """Ryan S. McCoy"""
 __email__ = '18177650+ryansmccoy@users.noreply.github.com'
 __version__ = '0.1.0'
 
-git config --global user.email "18177650+ryansmccoy@users.noreply.github.com"
-git config user.email "18177650+ryansmccoy@users.noreply.github.com"
 from py_sec_edgar.settings import Config
 
 CONFIG = Config()
