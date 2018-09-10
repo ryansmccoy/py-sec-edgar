@@ -25,9 +25,9 @@ import pandas as pd
 from dateutil.parser import parse
 
 try:
-    from py_sec_edgar.proxy_request import ProxyRequest
+    from py_sec_edgar.proxy import ProxyRequest
 except:
-    import proxy_request as full_index
+    import proxy as full_index
 
 
 class Error(Exception):

@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 
 import pandas as pd
 
-from py_sec_edgar.proxy_request import ProxyRequest
+from py_sec_edgar.proxy import ProxyRequest
 from py_sec_edgar.utilities import generate_folder_names_years_quarters, walk_dir_fullpath
 from .. import CONFIG
 

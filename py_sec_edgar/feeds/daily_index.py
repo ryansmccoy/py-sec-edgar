@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 
 import pandas as pd
 
-from py_sec_edgar.proxy_request import ProxyRequest
+from py_sec_edgar.proxy import ProxyRequest
 from py_sec_edgar.utilities import determine_if_sec_edgar_feed_and_local_files_differ
 from .. import CONFIG
 

@@ -15,7 +15,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-from py_sec_edgar.proxy_request import ProxyRequest
+from py_sec_edgar.proxy import ProxyRequest
 from py_sec_edgar.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, determine_if_sec_edgar_feed_and_local_files_differ
 from .. import CONFIG
 

@@ -6,28 +6,14 @@ import time
 import pandas as pd
 import requests
 
-
 class ProxyRequest(object):
-    def __init__(self):
-        from py_sec_edgar import CONFIG
+    def __init__(self, CONFIG=None):
 
         self.retry_counter = 3
 
         self.pause_for_courtesy = False
 
-        if CONFIG.VPN_PROVIDER is None or CONFIG.VPN_PROVIDER == "N":
-
-            self.USERNAME = os.getenv('N_USERNAME')
-            self.PASSWORD = os.getenv('N_PASSWORD')
-            self.VPN_LIST = os.getenv('N_SERVER_LIST')
-
-            self.service = "http"
-            proxies = pd.read_csv(self.VPN_LIST, index_col=0)
-
-            self.proxies = proxies['IP'].tolist()
-            self.use_proxy = True
-
-        elif CONFIG.VPN_PROVIDER == "PP":
+        if CONFIG.VPN_PROVIDER == "PP":
 
             self.USERNAME = os.getenv('PP_USERNAME')
             self.PASSWORD = os.getenv('PP_PASSWORD')

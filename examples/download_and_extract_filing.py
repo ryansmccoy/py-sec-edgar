@@ -13,7 +13,7 @@ import pandas as pd
 
 import py_sec_edgar.feeds
 import py_sec_edgar.filing
-import py_sec_edgar.extract_and_transform
+import py_sec_edgar.etl
 
 from py_sec_edgar import CONFIG
 
@@ -66,7 +66,7 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
     for i, feed_item in df_idx.iterrows():
 
-        py_sec_edgar.extract_and_transform.filings(feed_item)
+        py_sec_edgar.etl.filings(feed_item)
 
 
 if __name__ == "__main__":

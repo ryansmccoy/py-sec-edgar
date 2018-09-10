@@ -3,7 +3,7 @@ from pprint import pprint
 
 import py_sec_edgar.filing
 from py_sec_edgar import CONFIG
-from py_sec_edgar.proxy_request import ProxyRequest
+from py_sec_edgar.proxy import ProxyRequest
 
 # from sqlalchemy import create_engine
 # idx_engine = create_engine('sqlite:///merged_idx_files.db')
