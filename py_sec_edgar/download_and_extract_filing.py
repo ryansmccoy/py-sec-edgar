@@ -6,14 +6,12 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.join("..", "py_sec_edgar"))
-
 import click
 import pandas as pd
 
-import py_sec_edgar.feeds
-import py_sec_edgar.filing
-import py_sec_edgar.etl
+from . import feeds
+from . import filing
+from . import etl
 
 from py_sec_edgar import CONFIG
 
