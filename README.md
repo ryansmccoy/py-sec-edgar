@@ -19,7 +19,7 @@ Features:
 
 #### Configure Settings (Optional):
 
-py_sec_edgar/settings.py
+py-sec-edgar/py_sec_edgar/settings.py
 
     # for complete list see py-sec-edgar/refdata/filing_types.xlsx
     # to filter against specific forms, add to list
@@ -35,7 +35,7 @@ py_sec_edgar/settings.py
 
 #### Configure Tickers (Optional):
 
-py_sec_edgar/examples/tickers.csv
+py-sec-edgar/py_sec_edgar/tickers.csv
 
     AAPL
     MSFT
@@ -48,7 +48,7 @@ py_sec_edgar/examples/tickers.csv
 
 rename .env.template to .env
 
-py_sec_edgar/.env
+py-sec-edgar/py_sec_edgar/.env
 
     # perfect-privacy.com
     USERNAME=user@domain.com
@@ -57,7 +57,7 @@ py_sec_edgar/.env
 
 #### Run Example:
 
-    python examples/download_and_extract_filings.py
+    python py_sec_edgar/example.py
 
 # Alright, what did I just do?
  - Create folder structure which mimics sec.gov website structure (see "Paths and Directory Structure" below)

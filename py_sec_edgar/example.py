@@ -6,14 +6,12 @@
 import os
 import sys
 
-import click
 import pandas as pd
 
-from . import feeds
-from . import filing
-from . import etl
+import feeds as py_sec_edgar_feeds
+import etl as py_sec_edgar_etl
 
-from py_sec_edgar import CONFIG
+from settings import CONFIG
 
 pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
 pd.set_option('display.max_columns', 100)
@@ -24,15 +22,11 @@ from urllib.parse import urljoin
 # from fastparquet import ParquetFile
 
 
-@click.command()
-def main(ticker_list=False, form_list=True):
+def main(ticker_list=None, form_list=None):
 
-    py_sec_edgar.feeds.download(save_idx_as_csv=True, skip_if_exists=True)
+    py_sec_edgar_feeds.download(save_idx_as_csv=True, skip_if_exists=True)
 
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
-
-    # pf = ParquetFile(merged_idx_files.replace(".csv",".parq"))
-    # df_idx = pf.to_pandas()
 
     df_idx = pd.read_csv(merged_idx_files, index_col=0, dtype={"CIK": int})
 
@@ -40,17 +34,11 @@ def main(ticker_list=False, form_list=True):
     # df_idx = df_idx.set_index('CIK')
 
     if ticker_list:
-        # load ticker lookup and lookup CIK
-        df_tickers = pd.read_csv(tickers_filepath, header=None)
-
-        list_of_tickers = df_tickers.iloc[:, 0].tolist()
-
         # load CIK to tickers
         df_cik_tickers = pd.read_excel(CONFIG.tickercheck)
 
         # filter cik list only tickers in tickers.csv file
-        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(
-            list_of_tickers)]
+        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
 
         list_of_ciks = df_cik_tickers['CIK'].tolist()
 
@@ -64,12 +52,16 @@ def main(ticker_list=False, form_list=True):
 
     for i, feed_item in df_idx.iterrows():
 
-        py_sec_edgar.etl.filings(feed_item)
+        py_sec_edgar_etl.filings(feed_item)
 
 
 if __name__ == "__main__":
 
     # if you want to filter against a list of tickers, add them to tickers.csv
-    tickers_filepath = os.path.join(CONFIG.EXAMPLES_DIR, r'tickers.csv')
+    tickers_filepath = os.path.join(CONFIG.APP_DIR, r'tickers.csv')
 
-    sys.exit(main(ticker_list=tickers_filepath))  # pragma: no cover
+    ticker_list = pd.read_csv(tickers_filepath, header=None).iloc[:, 0].tolist()
+
+    main(ticker_list=ticker_list, form_list=True)
+
+    sys.exit()  # pragma: no cover

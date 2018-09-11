@@ -13,7 +13,7 @@ class ProxyRequest(object):
 
         self.pause_for_courtesy = False
 
-        if CONFIG.VPN_PROVIDER == "PP":
+        if CONFIG:
 
             self.USERNAME = os.getenv('PP_USERNAME')
             self.PASSWORD = os.getenv('PP_PASSWORD')
@@ -68,6 +68,8 @@ class ProxyRequest(object):
 
         if self.use_proxy:
             self.random_proxy_host = self.generate_random_proxy_hosts()
+        else:
+            self.random_proxy_host = None
 
         self.random_header = self.generate_random_header()
 
@@ -87,8 +89,7 @@ class ProxyRequest(object):
 
                 self.generate_random_header_and_proxy_host()
 
-                self.r = requests.get(url, stream=True, headers=self.random_header, proxies=self.random_proxy_host, timeout=(
-                    self.connect_timeout, self.read_timeout))
+                self.r = requests.get(url, stream=True, headers=self.random_header, proxies=self.random_proxy_host, timeout=(self.connect_timeout, self.read_timeout))
 
                 with open(filepath, 'wb') as f:
                     for chunk in self.r.iter_content(chunk_size=1024):

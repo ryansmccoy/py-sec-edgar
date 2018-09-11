@@ -1,7 +1,8 @@
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
+from urllib.parse import urljoin
 
-from .folders import Folders
-
+import pandas as pd
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -12,6 +13,49 @@ month = datetime.today().month
 latest_folder = "{}//{}".format(str(year), str(month).zfill(2))
 
 SEC_EDGAR_ARCHIVES_URL = r'https://www.sec.gov/Archives/'
+
+
+class Folders(object):
+    ROOT_DIR = os.path.abspath(os.sep)
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    APP_DIR = os.path.abspath(os.path.dirname(__file__))
+
+    REF_DIR = os.path.join(BASE_DIR, r'refdata')
+
+    # this file maps CIK to tickers
+    tickercheck = os.path.join(REF_DIR, "cik_tickers.xlsx")
+
+    CONFIG_DIR = os.path.join(BASE_DIR, "config")
+    SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
+    EDGAR_DIR = os.path.join(SEC_DIR, "Archives", "edgar")
+    DATA_DIR = os.path.join(EDGAR_DIR, r'data')
+    MONTHLY_DIR = os.path.join(EDGAR_DIR, "monthly")
+    FULL_INDEX_DIR = os.path.join(EDGAR_DIR, "full-index")
+    DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
+
+    # used as template
+    TXT_FILING_DIR = os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
+
+    dirs_all = [SEC_DIR, DATA_DIR, EDGAR_DIR,
+                MONTHLY_DIR, FULL_INDEX_DIR, DAILY_INDEX_DIR]
+
+    for _ in dirs_all:
+        if not os.path.exists(_):
+            print("{} Doesn't Exists".format(_))
+            print("Creating Directory {}".format(SEC_DIR))
+            os.makedirs(_)
+
+    edgar_Archives_url = r'https://www.sec.gov/Archives/'
+    edgar_full_index = urljoin(edgar_Archives_url, 'edgar/full-index/')
+    edgar_full_master_url = urljoin(edgar_full_index, 'master.idx')
+    edgar_monthly_index = urljoin(edgar_Archives_url, 'edgar/monthly/')
+
+    sec_dates = pd.date_range(
+        datetime.now() - timedelta(days=365 * 22), datetime.now())
+    sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
+    sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
+    sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day ==
+                                          sec_dates_weekdays[0].day]
 
 class Config(Folders):
 
@@ -34,3 +78,6 @@ class Config(Folders):
     # allows 30 simultaneous connections
     # if going to use proxy, please only download on the weekends
     VPN_PROVIDER = "PP"
+
+
+CONFIG = Config()

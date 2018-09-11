@@ -1,9 +1,9 @@
 import os
 from pprint import pprint
 
-import py_sec_edgar.filing
-from py_sec_edgar import CONFIG
-from py_sec_edgar.proxy import ProxyRequest
+import filing
+from settings import CONFIG
+from proxy import ProxyRequest
 
 # from sqlalchemy import create_engine
 # idx_engine = create_engine('sqlite:///merged_idx_files.db')
@@ -45,7 +45,7 @@ def filings(feed_item):
 
     if not os.path.exists(filing_contents) and CONFIG.extract_filing_contents == True:
 
-        py_sec_edgar.filing.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
+        filing.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
 
         # todo: celery version of download full
         # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)

@@ -19,9 +19,24 @@ pd.set_option('display.width', 600)
 import requests
 from bs4 import BeautifulSoup
 
-from py_sec_edgar import CONFIG
-from py_sec_edgar.proxy import ProxyRequest
-from py_sec_edgar.utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict, edgar_filing_idx_create_filename
+from settings import CONFIG
+from proxy import ProxyRequest
+from utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict, edgar_filing_idx_create_filename
+
+def convert_idx_to_csv(filepath):
+    df = pd.read_csv(filepath, skiprows=10, names=[
+        'CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+
+    df = df[-df['CIK'].str.contains("---")]
+
+    df = df.sort_values('Date Filed', ascending=False)
+
+    df = df.assign(published=pd.to_datetime(df['Date Filed']))
+
+    df.reset_index()
+
+    df.to_csv(filepath.replace(".idx", ".csv"), index=False)
+
 
 #######################
 # DAILY FILINGS FEEDS
@@ -42,14 +57,11 @@ def generate_daily_index_urls_and_filepaths(day):
                        daily_files[-1][1].replace("idx", "xml"))
     return daily_files
 
-
 def update_daily_files():
     sec_dates = pd.date_range(
         datetime.today() - timedelta(days=365 * 22), datetime.today())
     sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
     sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
-    sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day ==
-                                          sec_dates_weekdays[0].day]
 
     for i, day in enumerate(sec_dates_weekdays):
         daily_files = generate_daily_index_urls_and_filepaths(day)
@@ -65,21 +77,6 @@ def update_daily_files():
             else:
                 g = ProxyRequest()
                 g.GET_FILE(daily_url, daily_local_filepath)
-
-
-def convert_idx_to_csv(filepath):
-    df = pd.read_csv(filepath, skiprows=10, names=[
-        'CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
-
-    df = df[-df['CIK'].str.contains("---")]
-
-    df = df.sort_values('Date Filed', ascending=False)
-
-    df = df.assign(published=pd.to_datetime(df['Date Filed']))
-
-    df.reset_index()
-
-    df.to_csv(filepath.replace(".idx", ".csv"), index=False)
 
 
 #######################
@@ -146,7 +143,7 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
 
                 g.GET_FILE(url, filepath)
 
-            if save_idx_as_csv == True and skip_if_exists == False:
+            if save_idx_as_csv == True or skip_if_exists == False:
 
                 print('\tConverting idx to csv')
                 convert_idx_to_csv(filepath)
@@ -303,8 +300,7 @@ def parse_monthly():
             monthly_url, monthly_local_filepath = generate_monthly_index_url_and_filepaths(
                 day)
 
-            status = determine_if_sec_edgar_feed_and_local_files_differ(
-                monthly_url, monthly_local_filepath)
+            status = determine_if_sec_edgar_feed_and_local_files_differ(monthly_url, monthly_local_filepath)
 
             feed = read_xml_feedparser(monthly_local_filepath)
 
