@@ -143,7 +143,7 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
 
                 g.GET_FILE(url, filepath)
 
-            if save_idx_as_csv == True or skip_if_exists == False:
+            if save_idx_as_csv == True and skip_if_exists == False:
 
                 print('\tConverting idx to csv')
                 convert_idx_to_csv(filepath)

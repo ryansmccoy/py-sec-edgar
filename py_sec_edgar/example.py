@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 """Console script for py_sec_edgar."""
 
 import os
@@ -54,8 +53,11 @@ def main(ticker_list=None, form_list=None):
 
     for i, feed_item in df_idx.iterrows():
         print("\n\tStarting Filings Download:\n")
-        py_sec_edgar_etl.filings(feed_item)
+        py_sec_edgar_etl.filings(feed_item, extract_filing=True)
         print('\n\tCompleted Filings Download')
+
+
+
 
 if __name__ == "__main__":
 

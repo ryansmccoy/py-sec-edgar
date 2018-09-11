@@ -89,6 +89,44 @@ py-sec-edgar/py_sec_edgar/.env
 
     Complete Filings Download
 
+    Extracting Filing Documents:
+
+        Path:  C:\sec_gov\Archives\edgar\data\80424\000008042418000055
+
+                       GROUP                                 KEY                                              VALUE
+        1       COMPANY DATA      0000080424-18-000055.hdr.sgml                                            20180807
+        2       COMPANY DATA               <acceptance-datetime>                                     20180807161922
+        4       COMPANY DATA                    ACCESSION NUMBER                               0000080424-18-000055
+        5       COMPANY DATA           CONFORMED SUBMISSION TYPE                                               10-K
+        6       COMPANY DATA               PUBLIC DOCUMENT COUNT                                                136
+        7       COMPANY DATA          CONFORMED PERIOD OF REPORT                                           20180630
+        8       COMPANY DATA                    FILED AS OF DATE                                           20180807
+        9       COMPANY DATA                   DATE AS OF CHANGE                                           20180807
+        14      COMPANY DATA              COMPANY CONFORMED NAME                                PROCTER & GAMBLE Co
+        15      COMPANY DATA                   CENTRAL INDEX KEY                                         0000080424
+        16      COMPANY DATA  STANDARD INDUSTRIAL CLASSIFICATION  SOAP, DETERGENT, CLEANING PREPARATIONS, PERFUM...
+        17      COMPANY DATA                          IRS NUMBER                                          310411980
+        18      COMPANY DATA              STATE OF INCORPORATION                                                 OH
+        19      COMPANY DATA                     FISCAL YEAR END                                               0630
+        22     FILING VALUES                           FORM TYPE                                               10-K
+        23     FILING VALUES                             SEC ACT                                           1934 Act
+        24     FILING VALUES                     SEC FILE NUMBER                                          001-00434
+        25     FILING VALUES                         FILM NUMBER                                           18998362
+        28  BUSINESS ADDRESS                            STREET 1                         ONE PROCTER & GAMBLE PLAZA
+        29  BUSINESS ADDRESS                                CITY                                         CINCINNATI
+        30  BUSINESS ADDRESS                               STATE                                                 OH
+        31  BUSINESS ADDRESS                                 ZIP                                              45202
+        32  BUSINESS ADDRESS                      BUSINESS PHONE                                         5139831100
+        35      MAIL ADDRESS                            STREET 1                         ONE PROCTER & GAMBLE PLAZA
+        36      MAIL ADDRESS                                CITY                                         CINCINNATI
+        37      MAIL ADDRESS                               STATE                                                 OH
+        38      MAIL ADDRESS                                 ZIP                                              45202
+        41    FORMER COMPANY               FORMER CONFORMED NAME                                PROCTER & GAMBLE CO
+        42    FORMER COMPANY                 DATE OF NAME CHANGE                                           19920703
+
+    Extraction Complete
+
+
 
 
 

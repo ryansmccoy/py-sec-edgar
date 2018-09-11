@@ -10,7 +10,7 @@ from proxy import ProxyRequest
 # df_idx.to_sql('idx', idx_engine, if_exists='append')
 # df = pd.read_sql_query('SELECT * FROM idx LIMIT 3',idx_engine)
 
-def filings(feed_item):
+def filings(feed_item, extract_filing=None):
 
     pprint(feed_item)
 
@@ -43,7 +43,7 @@ def filings(feed_item):
     filing_contents = filepath_feed_item.replace(
         ".txt", "_FILING_CONTENTS.csv").replace("-", "")
 
-    if not os.path.exists(filing_contents) and CONFIG.extract_filing_contents == True:
+    if not os.path.exists(filing_contents) and extract_filing:
 
         filing.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
 
