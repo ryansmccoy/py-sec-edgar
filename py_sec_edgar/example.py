@@ -23,9 +23,11 @@ from urllib.parse import urljoin
 
 
 def main(ticker_list=None, form_list=None):
+    print("\n\tStarting Index Download:\n")
 
     py_sec_edgar_feeds.download(save_idx_as_csv=True, skip_if_exists=True)
 
+    print('\n\tCompleted Index Download')
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
     df_idx = pd.read_csv(merged_idx_files, index_col=0, dtype={"CIK": int})
@@ -51,9 +53,9 @@ def main(ticker_list=None, form_list=None):
         df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
 
     for i, feed_item in df_idx.iterrows():
-
+        print("\n\tStarting Filings Download:\n")
         py_sec_edgar_etl.filings(feed_item)
-
+        print('\n\tCompleted Filings Download')
 
 if __name__ == "__main__":
 

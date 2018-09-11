@@ -59,6 +59,39 @@ py-sec-edgar/py_sec_edgar/.env
 
     python py_sec_edgar/example.py
 
+#### Output Example:
+
+    Starting Index Download:
+
+        Downloading Latest https://www.sec.gov/Archives/edgar/full-index/master.idx
+
+        Downloading: 	https://www.sec.gov/Archives/edgar/full-index/master.idx
+        Saving to: 	C:\sec_gov\Archives\edgar\full-index\master.idx
+        Selected User-Agent:	{'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36'}
+        Success!	Saved to filepath:	C:\sec_gov\Archives\edgar\full-index\master.idx
+
+    Completed Index Download
+
+    Starting Filings Download:
+
+        CIK                                                         80424
+        Company Name                                  PROCTER & GAMBLE Co
+        Form Type                                                    10-K
+        Date Filed                                             2018-08-07
+        Filename                edgar/data/80424/0000080424-18-000055.txt
+        published                                              2018-08-07
+        url             https://www.sec.gov/Archives/edgar/data/80424/...
+
+        Downloading: 	https://www.sec.gov/Archives/edgar/data/80424/0000080424-18-000055.txt
+        Saving to: 	C:\sec_gov\Archives\edgar\data\80424\000008042418000055\0000080424-18-000055.txt
+        Selected User-Agent:	{'User-Agent': 'Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'}
+        Success!	Saved to filepath:	C:\sec_gov\Archives\edgar\data\80424\000008042418000055\0000080424-18-000055.txt
+
+    Complete Filings Download
+
+
+
+
 # Alright, what did I just do?
  - Create folder structure which mimics sec.gov website structure (see "Paths and Directory Structure" below)
  - Download the necessary idx files and merge them into combined file (fyi 1.9 GB csv)
