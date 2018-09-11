@@ -7,7 +7,7 @@ import pytest
 
 from click.testing import CliRunner
 
-from examples import download_and_extract_filing
+from py_sec_edgar import download_and_extract_filing
 
 
 @pytest.fixture

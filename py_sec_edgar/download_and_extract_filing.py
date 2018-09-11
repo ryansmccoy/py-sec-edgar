@@ -6,7 +6,7 @@
 import os
 import sys
 
-sys.path.insert(0, "../py_sec_edgar")
+sys.path.insert(0, os.path.join("..", "py_sec_edgar"))
 
 import click
 import pandas as pd
@@ -27,9 +27,9 @@ from urllib.parse import urljoin
 
 
 @click.command()
-def main(filter_ticker_list=False, filter_form_list=True):
+def main(ticker_list=False, form_list=True):
 
-    py_sec_edgar.feeds.full_index.download(save_idx_as_csv=True, skip_if_exists=True)
+    py_sec_edgar.feeds.download(save_idx_as_csv=True, skip_if_exists=True)
 
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
@@ -41,9 +41,9 @@ def main(filter_ticker_list=False, filter_form_list=True):
     df_idx = df_idx.sort_values("Date Filed", ascending=False)
     # df_idx = df_idx.set_index('CIK')
 
-    if filter_ticker_list:
+    if ticker_list:
         # load ticker lookup and lookup CIK
-        df_tickers = pd.read_csv(CONFIG.tickers_filepath, header=None)
+        df_tickers = pd.read_csv(tickers_filepath, header=None)
 
         list_of_tickers = df_tickers.iloc[:, 0].tolist()
 
@@ -58,7 +58,7 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
         df_idx = df_idx[df_idx['CIK'].isin(list_of_ciks)]
 
-    if filter_form_list:
+    if form_list:
 
         df_idx = df_idx[df_idx['Form Type'].isin(CONFIG.forms_list)]
 
@@ -70,4 +70,8 @@ def main(filter_ticker_list=False, filter_form_list=True):
 
 
 if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+
+    # if you want to filter against a list of tickers, add them to tickers.csv
+    tickers_filepath = os.path.join(CONFIG.EXAMPLES_DIR, r'tickers.csv')
+
+    sys.exit(main(ticker_list=tickers_filepath))  # pragma: no cover

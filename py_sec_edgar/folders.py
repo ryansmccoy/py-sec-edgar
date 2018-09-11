@@ -13,9 +13,6 @@ class Folders(object):
 
     REF_DIR = os.path.join(BASE_DIR, r'refdata')
 
-    # if you want to filter against a list of tickers, add them to tickers.csv
-    tickers_filepath = os.path.join(EXAMPLES_DIR, r'tickers.csv')
-
     # this file maps CIK to tickers
     tickercheck = os.path.join(REF_DIR, "cik_tickers.xlsx")
 

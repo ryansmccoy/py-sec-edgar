@@ -7,8 +7,7 @@ Python package used to download complete submission filings from the sec.gov/edg
 Features:
  - Filter by Ticker
  - Filter by Form Type
- - Proxy Support
- - Celery (Coming Soon)
+ - Proxy
 
 # Quick Start Guides
 
@@ -18,7 +17,7 @@ Features:
     activate py-sec-edgar
     pip install -r requirements/requirements_dev.txt
 
-#### Configure Settings:
+#### Configure Settings (Optional):
 
 py_sec_edgar/settings.py
 
@@ -34,11 +33,18 @@ py_sec_edgar/settings.py
     start_date = "1/1/1993"
     end_date = "1/1/2020"
 
-    # add tickers to tickers.csv
+#### Configure Tickers (Optional):
 
-    tickers_filepath = os.path.join(EXAMPLES_DIR, 'tickers.csv')
+py_sec_edgar/examples/tickers.csv
 
-#### Configure .env:
+    AAPL
+    MSFT
+    BRK.B
+    XOM
+    GOOGL
+    WFC
+
+#### Configure Proxy (Optional):
 
 rename .env.template to .env
 
@@ -47,7 +53,6 @@ py_sec_edgar/.env
     # perfect-privacy.com
     USERNAME=user@domain.com
     PASSWORD=password
-
 
 
 #### Run Example:

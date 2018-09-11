@@ -1,23 +1,158 @@
-
-#######################
-# MONTHLY FILINGS FEEDS (XBRL)
-# http://www.sec.gov/Archives/edgar/monthly/
-# "./xbrlrss-{YEAR}-{MONTH}.xml"
-
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pprint import pprint
 from urllib import parse
 from urllib.parse import urljoin
 
 import lxml.html
 import pandas as pd
+
+pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.max_rows', 100)
+pd.set_option('display.width', 600)
+
+# import pyarrow as pa
+# import pyarrow.parquet as pq
+# import fastparquet as fp
+
 import requests
 from bs4 import BeautifulSoup
 
+from py_sec_edgar import CONFIG
 from py_sec_edgar.proxy import ProxyRequest
-from py_sec_edgar.utilities import flattenDict, edgar_filing_idx_create_filename, read_xml_feedparser, determine_if_sec_edgar_feed_and_local_files_differ
-from .. import CONFIG
+from py_sec_edgar.utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict, edgar_filing_idx_create_filename
+
+#######################
+# DAILY FILINGS FEEDS
+# https://www.sec.gov/Archives/edgar/daily-index/
+
+def generate_daily_index_urls_and_filepaths(day):
+    edgar_url = r'https://www.sec.gov/Archives/edgar/'
+    daily_files_templates = ["master", "form", "company", "crawler", "sitemap"]
+    date_formated = datetime.strftime(day, "%Y%m%d")
+    daily_files = []
+    for template in daily_files_templates:
+        download_url = urljoin(edgar_url, "daily-index/{}/QTR{}/{}.{}.idx".format(
+            day.year, day.quarter, template, date_formated))
+        local_filepath = os.path.join(CONFIG.SEC_DAILY_INDEX_DIR, "{}".format(
+            day.year), "QTR{}".format(day.quarter), "{}.{}.idx".format(template, date_formated))
+        daily_files.append((download_url, local_filepath))
+    daily_files[-1] = (daily_files[-1][0].replace("idx", "xml"),
+                       daily_files[-1][1].replace("idx", "xml"))
+    return daily_files
+
+
+def update_daily_files():
+    sec_dates = pd.date_range(
+        datetime.today() - timedelta(days=365 * 22), datetime.today())
+    sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
+    sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
+    sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day ==
+                                          sec_dates_weekdays[0].day]
+
+    for i, day in enumerate(sec_dates_weekdays):
+        daily_files = generate_daily_index_urls_and_filepaths(day)
+        # url, local = daily_files[0]
+        for daily_url, daily_local_filepath in daily_files:
+
+            if consecutive_days_same < 5 and os.path.exists(daily_local_filepath):
+                status = determine_if_sec_edgar_feed_and_local_files_differ(
+                    daily_url, daily_local_filepath)
+                consecutive_days_same = 0
+            elif consecutive_days_same > 5 and os.path.exists(daily_local_filepath):
+                pass
+            else:
+                g = ProxyRequest()
+                g.GET_FILE(daily_url, daily_local_filepath)
+
+
+def convert_idx_to_csv(filepath):
+    df = pd.read_csv(filepath, skiprows=10, names=[
+        'CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+
+    df = df[-df['CIK'].str.contains("---")]
+
+    df = df.sort_values('Date Filed', ascending=False)
+
+    df = df.assign(published=pd.to_datetime(df['Date Filed']))
+
+    df.reset_index()
+
+    df.to_csv(filepath.replace(".idx", ".csv"), index=False)
+
+
+#######################
+# FULL-INDEX FILINGS FEEDS (TXT)
+# https://www.sec.gov/Archives/edgar/full-index/
+# "./{YEAR}/QTR{NUMBER}/"
+
+def merge_idx_files():
+    files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR, contains='.csv')
+
+    files.sort(reverse=True)
+
+    dfs = []
+
+    for filepath in files:
+        # print(filepath)
+        df_ = pd.read_csv(filepath)
+        dfs.append(df_)
+
+    df_idx = pd.concat(dfs)
+
+    out_path = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
+
+    df_idx.to_csv(out_path)
+
+    # arrow_table = pa.Table.from_pandas(df_idx)
+    # pq.write_table(arrow_table, out_path, compression='GZIP')
+
+    # df_idx = fp.ParquetFile(out_path).to_pandas()
+
+
+def download(save_idx_as_csv=True, skip_if_exists=True):
+    dates_quarters = generate_folder_names_years_quarters(
+        CONFIG.index_start_date, CONFIG.index_end_date)
+
+    latest_full_index_master = os.path.join(
+        CONFIG.FULL_INDEX_DIR, "master.idx")
+
+    if os.path.exists(latest_full_index_master):
+        os.remove(latest_full_index_master)
+
+    g = ProxyRequest()
+
+    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
+
+    g.GET_FILE(CONFIG.edgar_full_master_url, latest_full_index_master)
+
+    convert_idx_to_csv(latest_full_index_master)
+
+    for year, qtr in dates_quarters:
+
+        # CONFIG.index_files = ['master.idx']
+        for i, file in enumerate(CONFIG.index_files):
+
+            filepath = os.path.join(CONFIG.FULL_INDEX_DIR, year, qtr, file)
+
+            if not os.path.exists(filepath) or skip_if_exists == False:
+
+                if not os.path.exists(os.path.dirname(filepath)):
+                    os.makedirs(os.path.dirname(filepath))
+
+                url = urljoin(CONFIG.edgar_Archives_url,
+                              'edgar/full-index/{}/{}/{}'.format(year, qtr, file))
+
+                g.GET_FILE(url, filepath)
+
+            if save_idx_as_csv == True and skip_if_exists == False:
+
+                print('\tConverting idx to csv')
+                convert_idx_to_csv(filepath)
+
+    print('Merging IDX files')
+    merge_idx_files()
 
 
 def download_edgar_filings_xbrl_rss_files():
@@ -44,6 +179,12 @@ def download_edgar_filings_xbrl_rss_files():
                 # g.GET_FILE(edgarFilingsFeed, filepath)
         except Exception as e:
             print(e)
+
+
+#######################
+# MONTHLY FILINGS FEEDS (XBRL)
+# http://www.sec.gov/Archives/edgar/monthly/
+# "./xbrlrss-{YEAR}-{MONTH}.xml"
 
 
 def generate_monthly_index_url_and_filepaths(day):
