@@ -45,8 +45,12 @@ def filings(feed_item, extract_filing=None):
 
     if not os.path.exists(filing_contents) and extract_filing:
 
-        filing.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
+        print("\n\tExtracting Filing Documents:\n")
 
+        contents = filing.complete_submission_filing(input_filepath=filepath_feed_item, output_directory=folder_path_cik, extraction_override=True)
+
+        print(contents)
         # todo: celery version of download full
         # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)
+        print("\n\tExtraction Complete\n")
 
