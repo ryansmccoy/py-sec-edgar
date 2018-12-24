@@ -103,8 +103,8 @@ ENV/
 .envqq
 .github
 .idea
-refdata/merged_idx_files.csv
-refdata/merged_idx_files.parq
+refdata/
+refdata/
 New Folder/
-/refdata/merged_idx_files.zip
+refdata/
 scrap
