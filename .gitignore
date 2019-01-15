@@ -103,5 +103,7 @@ ENV/
 .envqq
 .github
 .idea
-refdata/
+refdata/*
 scrap
+transformer.py
+extractor.py
