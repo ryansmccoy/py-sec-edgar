@@ -19,6 +19,7 @@ import re
 re10k = re.compile('10-K')
 regex_no_rfiles = re.compile(r'R.+\.htm')
 
+
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
 
@@ -61,7 +62,10 @@ def parse_filing_header(raw_html):
     header_dict = header_dict.iloc[:, 1:]
     header_dict = header_dict.dropna()
     header_dict.columns = ['GROUP', 'KEY', 'VALUE']
-    print(header_dict)
+    try:
+        print(header_dict)
+    except UnicodeEncodeError:
+        pass
     return header_dict
 
 def identify_10_K_filing(sec_filing_documents, override=None):
@@ -116,6 +120,48 @@ def identify_10_K_filing(sec_filing_documents, override=None):
         i, document = list(sec_filing_documents.items())[seq_no - 1]
     print("Parsing DOC {}".format(i))
     return i, document
+
+def parse_10_K_filing(input_filepath):
+
+    # input_filepath = filing[0]
+
+    lxml_dict = {}
+
+    try:
+        # or codecs.open on Python 2
+        raw_text = open(input_filepath, "rb").read()
+        result = chardet.detect(raw_text)
+        charenc = result['encoding']
+        raw_text = raw_text.decode(charenc)
+    except:
+        with io.open(input_filepath, "rb") as f:
+            raw_text = f.read()
+
+    lxml_html = lxml.html.fromstring(raw_text)
+    root = lxml_html.getroottree()
+    soup = BeautifulSoup(lxml.html.tostring(root), 'lxml')
+
+    file_metadata = {}
+
+    file_metadata['FILEPATH'] = input_filepath
+
+    for ii, element in enumerate(root.xpath("//*/body/*")):
+        lxml_dict[ii] = element
+
+    div_check = {}
+
+    for ii, element in enumerate(lxml.html.fromstring(soup.prettify()).xpath("//*/div/*")):
+        div_check[ii] = element
+
+    file_metadata['NUMBER_OF_ELEMENTS'] = len(lxml_dict)
+    file_metadata['FILE_SIZE'] = file_size(file_metadata['FILEPATH'])
+    file_metadata['FILE_SIZE_BYTES'] = os.stat(file_metadata['FILEPATH']).st_size
+    file_metadata['lxml_dict'] = lxml_dict
+    file_metadata['div_check'] = div_check
+    file_metadata['ENCODING'] = charenc
+
+    return file_metadata
+
 
 def complete_submission_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
     FOLDER_PATH = True
@@ -239,19 +285,35 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
                 uue_file = True
 
             else:
-                output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']),
-                                                             file_metadata['TYPE'],
-                                                             file_metadata['DESCRIPTION'],
-                                                             file_metadata['FILENAME']
-                                                             ).replace(" ", "_").replace(":", "").replace("__", "_")
 
-                output_filepath = format_filename(output_filepath)
-                # print(output_filepath)
-                output_document = os.path.join(
-                    output_directory, output_filepath)
+                try:
 
-                with open(output_document, 'w', encoding=charenc) as f:
-                    f.write(raw_text)
+                    output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']),
+                                                                 file_metadata['TYPE'],
+                                                                 file_metadata['DESCRIPTION'],
+                                                                 file_metadata['FILENAME']
+                                                                 ).replace(" ", "_").replace(":", "").replace("__", "_")
+
+                    output_filepath = format_filename(output_filepath)
+                    # print(output_filepath)
+                    output_document = os.path.join(
+                        output_directory, output_filepath)
+
+                    with open(output_document, 'w', encoding=charenc) as f:
+                        f.write(raw_text)
+                except:
+
+                    output_filepath = '{:04d}-({}) {}'.format(int(file_metadata['SEQUENCE']),
+                                                                 file_metadata['TYPE'],
+                                                                 file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace("__", "_")
+
+                    output_filepath = format_filename(output_filepath)
+                    # print(output_filepath)
+                    output_document = os.path.join(
+                        output_directory, output_filepath)
+
+                    with open(output_document, 'w', encoding=charenc) as f:
+                        f.write(raw_text)
 
             debug_sec_filing_documents[i]['OUTPUT_FILEPATH'] = output_document
 

@@ -18,6 +18,10 @@ from datetime import date
 from datetime import datetime
 from time import mktime
 from urllib.parse import urljoin
+import os
+import os.path
+import shutil
+import zipfile
 
 # __all__ = ["Error", "encode", "decode"]
 import feedparser
@@ -59,8 +63,8 @@ def clean_text_string_func(s):
     s = s.replace('\x95', "-")
     s = s.replace('\\', " ")
     s = s.replace('- ', "-")
-    s = s.replace(r'—', "--")
-    s = s.replace('â', " ")
+    s = s.replace(r'â€”', "--")
+    s = s.replace('aÌ‚', " ")
     s = s.replace('\x97', "-")
     s = s.replace('\'s', "'s")
     s = s.replace(" 's", "'s")
@@ -522,3 +526,120 @@ def generate_folder_names_years_quarters(start_date, end_date):
 def scan_all_local_filings(directory, year=None):
     files = walk_dir_fullpath(os.path.join(directory, year))
     return files
+
+
+def zip_folder_filings():
+
+    folders = glob.glob(edgar_config.SEC_GOV_OUTPUT_DIR + "\*")
+
+    tickers = set()
+    # folder = folders[2]
+
+    for folder in folders:
+        bname = os.path.basename(folder)
+        result = re.search('\(.+\)', bname)
+        if result:
+            value = result.group(0)
+            tickers.add(value[1:-1])
+
+    tickers = list(tickers)
+
+    # filing_filter = [tickers[11]]
+    for ticker in tickers:
+        filing_filter = [ticker]
+        # list comprehension - for each folder in folders if contains strings from filing filter add to new list filtered_folders
+        filtered_folders = [folder for folder in folders if all(x in folder for x in filing_filter)]
+        # filtered_folder = filtered_folders[0]
+        for filtered_folder in filtered_folders:
+            output_folder = os.path.join(zip_output, '{}.zip'.format(os.path.basename(filtered_folder)))
+            # if not os.path.exists(output_folder):
+            #     os.makedirs(output_folder)
+            zip_folder(filtered_folder, output_folder)
+
+# in_folder = r'E:\sec_gov\Archives\edgar\data\19617\000001961718000204'
+# out_folder = r'E:\sec_gov\Archives\edgar\data\19617\000001961718000204.zip'
+
+
+def zip_folder(folder_path, output_path):
+    parent_folder = os.path.dirname(folder_path)
+    # Retrieve the paths of the folder contents.
+    contents = os.walk(folder_path)
+
+    zip_file = zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED)
+
+    for root, folders, files in contents:
+        # Include all subfolders, including empty ones.
+        for folder_name in folders:
+            absolute_path = os.path.join(root, folder_name)
+            relative_path = absolute_path.replace(parent_folder + '\\', '')
+            print("Adding {} to archive.".format(absolute_path))
+            zip_file.write(absolute_path, relative_path)
+
+        for file_name in files:
+            absolute_path = os.path.join(root, file_name)
+            relative_path = absolute_path.replace(parent_folder + '\\', '')
+            print("Adding '{}' to archive.".format(absolute_path))
+            zip_file.write(absolute_path, relative_path)
+    print("'{}' created successfully.".format(output_path))
+
+    zip_file.close()
+    shutil.rmtree(folder_path)
+
+def zip_directory(directory):
+    folders = [name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))]
+    for i in folders:
+        zip_folder(os.path.join(directory, i), os.path.join(directory, i + ".zip"))
+
+def sec_zip():
+    directory = r'B:\SEC\ZIP'
+    for path, dirnames, files in os.walk(directory):
+        for file in files:
+            filepath, filename = path, file
+            fullfilepath = os.path.join(path, file)
+            if fullfilepath.endswith(".zip"):
+                print("preparing to zip: " + fullfilepath)
+                unzip_to_new_folder(fullfilepath)
+
+def unzip_to_new_folder(fullfilepath):
+    try:
+        basename = os.path.basename(fullfilepath)
+        extname = os.path.splitext(basename)
+        dirname = os.path.dirname(fullfilepath)
+        destfolder = os.path.join(dirname, extname[0])
+        if not os.path.exists(destfolder):
+            os.mkdir(destfolder)
+            zip = zipfile.ZipFile(fullfilepath)
+            zip.extractall(path=destfolder)
+            print("unzipped contents: " + destfolder)
+    except:
+        print("ERROR! ERROR! ABORT! ABORT! " + fullfilepath)
+
+
+def unzip_file_and_rename_excel(zip_files):
+    file = zip_files[0]
+
+    for file in zip_files:
+        basename = os.path.basename(file)
+        try:
+            inzip = zfullfilepath.replace(r'C:\SEC\OUT', r'C:\SEC\IN')
+            inarchive = zipfile.ZipFile(inzip)
+            for file in inarchive.namelist():
+                if file.endswith(".htm"):
+                    archive.extract(file, newdir)
+                    os.rename(file, zfullfilepath.replace('.zip', '.htm'))
+        except:
+            print("ERROR! ERROR! ABORT! ABORT! " + inzip)
+
+
+# unzip_file_and_rename_excel(unprocessed_files[0:5])
+
+def unzip_report_dir():
+    directory = r'B:\REPORT'
+    for path, dirnames, files in os.walk(directory):
+        for file in files:
+            filepath, filename = path, file
+            fullfilepath = os.path.join(path, file)
+            if fullfilepath.endswith(".zip"):
+                print("extracting " + fullfilepath)
+                unzip_file_and_rename_excel(fullfilepath)
+

@@ -22,14 +22,16 @@ from urllib.parse import urljoin
 
 
 def main(ticker_list=None, form_list=None):
+
     print("\n\tStarting Index Download:\n")
 
     py_sec_edgar_feeds.download(save_idx_as_csv=True, skip_if_exists=True)
 
     print('\n\tCompleted Index Download')
+
     merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
 
-    df_idx = pd.read_csv(merged_idx_files, index_col=0, dtype={"CIK": int})
+    df_idx = pd.read_csv(merged_idx_files, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
 
     df_idx = df_idx.sort_values("Date Filed", ascending=False)
     # df_idx = df_idx.set_index('CIK')
@@ -41,6 +43,8 @@ def main(ticker_list=None, form_list=None):
         # filter cik list only tickers in tickers.csv file
         df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
 
+        print(df_cik_tickers.head(25))
+
         list_of_ciks = df_cik_tickers['CIK'].tolist()
 
         df_idx = df_idx[df_idx['CIK'].isin(list_of_ciks)]
@@ -49,14 +53,17 @@ def main(ticker_list=None, form_list=None):
 
         df_idx = df_idx[df_idx['Form Type'].isin(CONFIG.forms_list)]
 
-        df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+
+    df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+
+    # i, feed_item = list(df_idx.iterrows())[16]
 
     for i, feed_item in df_idx.iterrows():
-        print("\n\tStarting Filings Download:\n")
-        py_sec_edgar_etl.filings(feed_item, extract_filing=True)
+
+        print("\n\tStarting Data Pipeline:\n")
+        py_sec_edgar_etl.broker(feed_item, extract_filing=True, extract_tables=False, zip_folder_contents=True)
+
         print('\n\tCompleted Filings Download')
-
-
 
 
 if __name__ == "__main__":
@@ -66,6 +73,6 @@ if __name__ == "__main__":
 
     ticker_list = pd.read_csv(tickers_filepath, header=None).iloc[:, 0].tolist()
 
-    main(ticker_list=ticker_list, form_list=True)
+    main(ticker_list=False, form_list=True)
 
     sys.exit()  # pragma: no cover
