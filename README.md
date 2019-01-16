@@ -241,3 +241,4 @@ Download Time Estimates
 
 # Todo
  * need to figure out way to quickly access downloaded content
+ * extract earnings data from 8-K
