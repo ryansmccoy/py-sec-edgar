@@ -19,7 +19,10 @@ pd.set_option('display.width', 600)
 
 from urllib.parse import urljoin
 # from fastparquet import ParquetFile
-
+# https://finance.yahoo.com/quote/GOOG/analysis?p=GOOG
+# estimate
+# https://finance.yahoo.com/calendar/earnings?day=2019-01-15
+# calendar
 
 def main(ticker_list=None, form_list=None):
 
@@ -53,7 +56,6 @@ def main(ticker_list=None, form_list=None):
 
         df_idx = df_idx[df_idx['Form Type'].isin(CONFIG.forms_list)]
 
-
     df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
 
     # i, feed_item = list(df_idx.iterrows())[16]
@@ -62,7 +64,6 @@ def main(ticker_list=None, form_list=None):
 
         print("\n\tStarting Data Pipeline:\n")
         py_sec_edgar_etl.broker(feed_item, extract_filing=True, extract_tables=False, zip_folder_contents=True)
-
         print('\n\tCompleted Filings Download')
 
 

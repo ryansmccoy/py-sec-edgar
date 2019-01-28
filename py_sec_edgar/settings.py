@@ -49,7 +49,7 @@ class Folders:
     REF_DIR = os.path.join(BASE_DIR, r'refdata')
 
     # this file maps CIK to tickers
-    tickercheck = os.path.join(REF_DIR, "cik_tickers.xlsx")
+    tickercheck = os.path.join(REF_DIR, "cik_tickers.csv")
 
     CONFIG_DIR = os.path.join(BASE_DIR, "config")
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
@@ -90,8 +90,8 @@ class Config(Folders):
 
     # for complete list see py-sec-edgar/refdata/filing_types.xlsx
     # forms_list = ['10-K', '20-F', '10-K/A', '10-Q']
-    forms_list = ['497', '497K']
-
+    # forms_list = ['497', '497K']
+    forms_list = ['8-K']
     # the urls of all broker are stored in index files
     # so need to download these index files
     # below just says download all of them

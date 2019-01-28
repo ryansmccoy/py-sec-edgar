@@ -44,8 +44,7 @@ def parse_filing_header(raw_html):
                         valuename = split_header[i + 1]
                         data[i] = ["", "", keyname.strip(), valuename]
                     elif not headerItem.startswith("\t") and headerItem != valuename and "<" not in headerItem:
-                        data[i] = ["", "", headerItem.split(":")[0].split(
-                            "\t")[0], unescape(headerItem.split(":")[1].lstrip())]
+                        data[i] = ["", "", headerItem.split(":")[0].split("\t")[0], unescape(headerItem.split(":")[1].lstrip())]
                     elif headerItem != "" and headerItem != valuename and "<" not in headerItem:
                         data[i] = headerItem.split(":")[0].split(
                             "\t") + [unescape(headerItem.split(":")[1].lstrip())]
@@ -192,8 +191,7 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
             file_ext = ['.']
 
         xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
-        xbrl_text = re.compile(
-            r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
+        xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
 
         try:
             # or codecs.open on Python 2

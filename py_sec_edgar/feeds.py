@@ -32,7 +32,7 @@ def convert_idx_to_csv(filepath):
     df = df.sort_values('Date Filed', ascending=False)
 
     df = df.assign(published=pd.to_datetime(df['Date Filed']))
-
+re
     df.reset_index()
 
     df.to_csv(filepath.replace(".idx", ".csv"), index=False)
@@ -41,6 +41,8 @@ def convert_idx_to_csv(filepath):
 #######################
 # DAILY FILINGS FEEDS
 # https://www.sec.gov/Archives/edgar/daily-index/
+# https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&CIK=&type=&company=&dateb=&owner=include&start=0&count=400&output=atom
+# https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=8-K&type=8-K&owner=exclude&count=400&action=getcurrent
 
 def generate_daily_index_urls_and_filepaths(day):
     edgar_url = r'https://www.sec.gov/Archives/edgar/'

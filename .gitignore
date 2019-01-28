@@ -103,7 +103,7 @@ ENV/
 .envqq
 .github
 .idea
-refdata/*
-scrap
+scrap.py
 transformer.py
 extractor.py
+merged_idx_files.csv

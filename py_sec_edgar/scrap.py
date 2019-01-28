@@ -14,6 +14,13 @@ df_idx['Form Type'].nunique()
 df_forms = df_idx.groupby(['Form Type']).size().to_frame('Form Type').sort_values('Form Type', ascending=False)
 
 
-
+import feedparser
 
 df_idx['Form Type'].str.contains("10-K")
+
+
+from utilities import read_xml_feedparser
+
+url = r'https://www.sec.gov/cgi-bin/browse-edgar?company=&CIK=&type=8-K&type=8-K&owner=exclude&count=400&action=getcurrent'
+feed = feedparser.parse(url)
+feed
