@@ -32,7 +32,7 @@ def convert_idx_to_csv(filepath):
     df = df.sort_values('Date Filed', ascending=False)
 
     df = df.assign(published=pd.to_datetime(df['Date Filed']))
-re
+
     df.reset_index()
 
     df.to_csv(filepath.replace(".idx", ".csv"), index=False)
