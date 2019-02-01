@@ -3,11 +3,9 @@ Python SEC Edgar
 
 Python package used to download complete submission filings from the sec.gov/edgar website.
 
-
 Features:
  - Filter by Ticker
  - Filter by Form Type
- - Proxy
 
 # Quick Start Guides
 
@@ -15,7 +13,7 @@ Features:
 
     conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
     activate py-sec-edgar
-    pip install -r requirements/requirements_dev.txt
+    pip install -r requirements.txt
 
 #### Configure Settings (Optional):
 
@@ -30,7 +28,7 @@ py-sec-edgar/py_sec_edgar/settings.py
     # so need to download these index files
     # below just says download all of them
 
-    start_date = "1/1/1993"
+    start_date = "1/1/2018"
     end_date = "1/1/2020"
 
 #### Configure Tickers (Optional):
@@ -216,12 +214,12 @@ In the example above, "0001193125-15-118890" is the "accession number," a unique
 Filings Statistics
 ------------------
 
-    Form 4        6,420,154
-    8-K	 1,473,193
-    10-K	   180,787
-    10-Q	   552,059
-    13F-HR	   224,996
-    S-1	    21,366
+    Form 4        6,420,154  (Ownership)
+    8-K	          1,473,193  (Press Releases)
+    10-K	      180,787    (Annual Report)
+    10-Q	      552,059    (Quarterly Report)
+    13F-HR	      224,996    (Investment Fund Holdings)
+    S-1	          21,366     (IPO offering)
     ------------------
     Total         17,492,303
 
