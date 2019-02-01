@@ -2,13 +2,10 @@ beautifulsoup4
 feedparser
 html5lib
 openpyxl
-Pillow
 requests
-SQLAlchemy
 xlrd
-XlsxWriter
 python-dotenv
 pandas
 lxml
 chardet
-pysocks
+numpy
