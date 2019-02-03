@@ -2,7 +2,11 @@ import os
 from pprint import pprint
 import glob
 import filing as edgar_filing
-import transformer as edgar_transformer
+try:
+    import transformer as edgar_transformer
+except:
+    print('Transformer Not Found')
+    
 from settings import CONFIG
 from proxy import ProxyRequest
 import lxml.html
