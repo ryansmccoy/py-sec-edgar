@@ -1,23 +1,26 @@
-Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)
+For personal usage
+Py-Sec-Edgar is absolutely free for personal usage and is licensed under MIT.
 
-This is a human-readable summary of (and not a substitute for) the license <https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode>. Disclaimer <https://creativecommons.org/licenses/by-nc-nd/4.0/#>.
+MIT License
+Copyright 2019 Ryan S. McCoy (github@ryansmccoy.com)
 
-You are free to:
-Share — copy and redistribute the material in any medium or format
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The licensor cannot revoke these freedoms as long as you follow the license terms.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Under the following terms:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+For commercial usage
+Py-Sec-Edgar is free for commercial usage and is licensed under GNU AGPLv3 License.
 
-NonCommercial — You may not use the material for commercial purposes.
+GNU AGPLv3 License
+Copyright © 2019 Ryan S. McCoy (github@ryansmccoy.com)
 
-Commercial  -  available for purchase or subscription, please visit https://www.gotem.co/licenses to learn more
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-NoDerivatives — If you remix, transform, or build upon the material, you may not distribute the modified material.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 
-No additional restrictions — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
-Notices:
-You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation.
-No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.
+You should have received a copy of the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+For business
+If you are a company that desires to use Py-Sec-Edgar in your buisness, please contact me at github@ryansmccoy.com
