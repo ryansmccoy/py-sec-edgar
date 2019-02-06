@@ -9,11 +9,23 @@ Features:
 
 # Quick Start Guides
 
-#### Setup Environment:
+#### Setup Environment & Run Example  (Windows):
 
-    conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
-    activate py-sec-edgar
-    pip install -r requirements.txt
+    $ git clone https://github.com/ryansmccoy/py-sec-edgar.git
+    $ cd py-sec-edgar
+    $ conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
+    $ activate py-sec-edgar
+    $ pip install -r requirements.txt
+    
+#### Setup Environment & Run Example (Linux):
+    
+    $ git clone https://github.com/ryansmccoy/py-sec-edgar.git
+    $ cd py-sec-edgar
+    $ conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
+    $ source activate py-sec-edgar
+    $ sudo mkdir /sec_gov
+    $ sudo chown -R $USER:$USER /sec_gov
+    $ pip install -r requirements.txt
 
 #### Configure Settings (Optional):
 
@@ -33,7 +45,7 @@ py-sec-edgar/py_sec_edgar/settings.py
 
 #### Configure Tickers (Optional):
 
-py-sec-edgar/py_sec_edgar/tickers.csv
+py-sec-edgar/refdata/tickers.csv
 
     AAPL
     MSFT
@@ -51,7 +63,6 @@ py-sec-edgar/py_sec_edgar/.env
     # perfect-privacy.com
     USERNAME=user@domain.com
     PASSWORD=password
-
 
 #### Run Example:
 
@@ -240,3 +251,5 @@ Download Time Estimates
 # Todo
  * need to figure out way to quickly access downloaded content
  * extract earnings data from 8-K
+ * setup proper logging instead of print
+ * add tests

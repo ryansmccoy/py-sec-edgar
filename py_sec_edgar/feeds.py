@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 
 from settings import CONFIG
 from proxy import ProxyRequest
-from utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict, edgar_filing_idx_create_filename
+from utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict
 
 def convert_idx_to_csv(filepath):
     df = pd.read_csv(filepath, skiprows=10, names=[
@@ -109,13 +109,11 @@ def merge_idx_files():
 
     # df_idx = fp.ParquetFile(out_path).to_pandas()
 
-
 def download(save_idx_as_csv=True, skip_if_exists=True):
-    dates_quarters = generate_folder_names_years_quarters(
-        CONFIG.index_start_date, CONFIG.index_end_date)
 
-    latest_full_index_master = os.path.join(
-        CONFIG.FULL_INDEX_DIR, "master.idx")
+    dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
+
+    latest_full_index_master = os.path.join(CONFIG.FULL_INDEX_DIR, "master.idx")
 
     if os.path.exists(latest_full_index_master):
         os.remove(latest_full_index_master)

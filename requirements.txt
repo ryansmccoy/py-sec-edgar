@@ -9,3 +9,5 @@ pandas
 lxml
 chardet
 numpy
+pytest
+click

@@ -4,8 +4,14 @@ import time
 
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
+import tempfile
+import os
+from tempfile import gettempdir
+tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
+os.makedirs(tmp)
 
 import pandas as pd
+
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
@@ -28,8 +34,6 @@ def SetupLogger():
 
     timefmt = '%y%m%d_%H:%M:%S'
 
-    # logging.basicConfig( level=logging.DEBUG,
-    #                    format=recfmt, datefmt=timefmt)
     logging.basicConfig(filename=time.strftime("log/py-sec-edgar.%y%m%d_%H%M%S.log"),
                         filemode="w",
                         level=logging.INFO,
@@ -95,7 +99,9 @@ class Config(Folders):
     # the urls of all broker are stored in index files
     # so need to download these index files
     # below just says download all of them
-    index_start_date = "1/1/1993"
+    # index_start_date = "1/1/1993"
+    index_start_date = "1/1/2018"
+
     index_end_date = datetime.now().strftime("%m/%d/%Y")
 
     # file with list of all broker for given period

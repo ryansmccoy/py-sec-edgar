@@ -4,31 +4,26 @@
 
 import os
 import sys
+from urllib.parse import urljoin
 
-import pandas as pd
+from settings import CONFIG
 
 import feeds as py_sec_edgar_feeds
 import etl as py_sec_edgar_etl
 
-from settings import CONFIG
+import pandas as pd
 
 pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
 pd.set_option('display.max_columns', 100)
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.width', 600)
 
-from urllib.parse import urljoin
-# from fastparquet import ParquetFile
-# https://finance.yahoo.com/quote/GOOG/analysis?p=GOOG
-# estimate
-# https://finance.yahoo.com/calendar/earnings?day=2019-01-15
-# calendar
-
-def main(ticker_list=None, form_list=None):
+def main(ticker_list=None, form_list=None, merge_feeds=True):
 
     print("\n\tStarting Index Download:\n")
 
-    py_sec_edgar_feeds.download(save_idx_as_csv=True, skip_if_exists=True)
+    if merge_feeds:
+        py_sec_edgar_feeds.download(save_idx_as_csv=True, skip_if_exists=True)
 
     print('\n\tCompleted Index Download')
 
@@ -37,11 +32,10 @@ def main(ticker_list=None, form_list=None):
     df_idx = pd.read_csv(merged_idx_files, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
 
     df_idx = df_idx.sort_values("Date Filed", ascending=False)
-    # df_idx = df_idx.set_index('CIK')
 
     if ticker_list:
         # load CIK to tickers
-        df_cik_tickers = pd.read_excel(CONFIG.tickercheck)
+        df_cik_tickers = pd.read_csv(CONFIG.tickercheck)
 
         # filter cik list only tickers in tickers.csv file
         df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
@@ -58,22 +52,18 @@ def main(ticker_list=None, form_list=None):
 
     df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
 
-    # i, feed_item = list(df_idx.iterrows())[16]
-
     for i, feed_item in df_idx.iterrows():
-
-        print("\n\tStarting Data Pipeline:\n")
-        py_sec_edgar_etl.broker(feed_item, extract_filing=True, extract_tables=False, zip_folder_contents=True)
-        print('\n\tCompleted Filings Download')
-
+        print("\n\tStarting Filing Download:\n")
+        py_sec_edgar_etl.broker(feed_item, extract_filing=True, zip_folder_contents=True)
+        print('\n\tCompleted Filings Download\n')
 
 if __name__ == "__main__":
 
     # if you want to filter against a list of tickers, add them to tickers.csv
-    tickers_filepath = os.path.join(CONFIG.APP_DIR, r'tickers.csv')
+    tickers_filepath = os.path.join(CONFIG.REF_DIR, r'tickers.csv')
 
     ticker_list = pd.read_csv(tickers_filepath, header=None).iloc[:, 0].tolist()
 
-    main(ticker_list=False, form_list=True)
+    main(ticker_list=ticker_list, form_list=True)
 
-    sys.exit()  # pragma: no cover
+    sys.exit()

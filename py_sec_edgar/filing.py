@@ -19,7 +19,6 @@ import re
 re10k = re.compile('10-K')
 regex_no_rfiles = re.compile(r'R.+\.htm')
 
-
 def parse_filing_header(raw_html):
     """parses the heading of an SEC Edgar filing"""
 
@@ -29,7 +28,6 @@ def parse_filing_header(raw_html):
     data = defaultdict(dict)
     valuename = ""
 
-    # sec_header_element = root.xpath("//*/sec-header")[0]
     for sec_header_element in root.xpath("//*/sec-header"):
         soup = BeautifulSoup(lxml.html.tostring(sec_header_element), 'lxml')
         sec_header = re.findall(
@@ -120,8 +118,12 @@ def identify_10_K_filing(sec_filing_documents, override=None):
     print("Parsing DOC {}".format(i))
     return i, document
 
-def parse_10_K_filing(input_filepath):
-
+def parse_filing(input_filepath):
+    """
+    Parses html file
+    :param input_filepath: html file
+    :return: dictionary of file_contents including lxml_dict
+    """
     # input_filepath = filing[0]
 
     lxml_dict = {}
@@ -315,8 +317,7 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
 
             debug_sec_filing_documents[i]['OUTPUT_FILEPATH'] = output_document
 
-            file_metadata['RELATIVE_FILEPATH'] = os.path.join(
-                os.path.basename(output_directory), 'FILES', output_filepath)
+            file_metadata['RELATIVE_FILEPATH'] = os.path.join(os.path.basename(output_directory), 'FILES', output_filepath)
             file_metadata['DESCRIPTIVE_FILEPATH'] = output_filepath
 
             file_metadata['FILE_SIZE'] = file_size(output_document)
@@ -327,10 +328,8 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
             if uue_file == True:
                 os.remove(output_document)
 
-        df_sec_filing_contents = pd.DataFrame.from_dict(
-            sec_filing_documents, orient='index')
-        df_sec_filing_contents.to_csv(os.path.join(
-            output_directory, "{}_FILING_CONTENTS.csv".format(os.path.basename(output_directory))))
+        df_sec_filing_contents = pd.DataFrame.from_dict(sec_filing_documents, orient='index')
+        df_sec_filing_contents.to_csv(os.path.join(output_directory, "{}_FILING_CONTENTS.csv".format(os.path.basename(output_directory))))
         return df_sec_filing_contents
     else:
         print("already extracted")
