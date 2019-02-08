@@ -6,9 +6,6 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin
 import tempfile
 import os
-from tempfile import gettempdir
-tmp = os.path.join(gettempdir(), '.{}'.format(hash(os.times())))
-os.makedirs(tmp)
 
 import pandas as pd
 
@@ -100,7 +97,7 @@ class Config(Folders):
     # so need to download these index files
     # below just says download all of them
     # index_start_date = "1/1/1993"
-    index_start_date = "1/1/2018"
+    index_start_date = "1/1/2016"
 
     index_end_date = datetime.now().strftime("%m/%d/%Y")
 
