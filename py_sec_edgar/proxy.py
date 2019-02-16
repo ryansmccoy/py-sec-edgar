@@ -6,6 +6,9 @@ import time
 import pandas as pd
 import requests
 
+import logging
+logger = logging.getLogger(__name__)
+
 class ProxyRequest(object):
     def __init__(self, CONFIG=None):
 
@@ -52,7 +55,7 @@ class ProxyRequest(object):
             'https': '{}://{}:{}@{}:{}'.format(self.service, self.USERNAME, self.PASSWORD, proxy, self.port)
         }
 
-        print("\n\tSelected-Proxy:\t{}".format(proxies))
+        logger.info("\n\n\tSelected-Proxy:\t{}\n\n".format(proxies))
 
         return proxies
 
@@ -61,7 +64,7 @@ class ProxyRequest(object):
 
         _headers = {'User-Agent': _user_agent}
 
-        print("\n\tSelected User-Agent:\t{}\n".format(_headers))
+        logger.info("\n\n\tSelected User-Agent:\t{}\n\n".format(_headers))
         return _headers
 
     def generate_random_header_and_proxy_host(self):
@@ -74,13 +77,13 @@ class ProxyRequest(object):
         self.random_header = self.generate_random_header()
 
         if self.pause_for_courtesy:
-            print('\tpausing ... as a courtesy...\n')
+            logger.info('\tpausing ... as a courtesy...\n\n')
             time.sleep(random.randrange(5, 10))
 
     def GET_FILE(self, url, filepath):
 
-        print("\n\tDownloading: \t{}\n".format(url))
-        print("\n\tSaving to: \t{}\n".format(filepath))
+        logger.info("\n\n\tDownloading: \t{}\n\n".format(url))
+        logger.info("\n\n\tSaving to: \t{}\n\n".format(filepath))
 
         retry_counter = 0
 
@@ -96,15 +99,15 @@ class ProxyRequest(object):
                         if chunk:  # filter out keep-alive new chunks
                             f.write(chunk)
 
-                print('\n\tSuccess!\tSaved to filepath:\t{}\n'.format(filepath))
+                logger.info('\n\n\n\tSuccess!\tSaved to filepath:\t{}\n\n'.format(filepath))
                 break
 
             except Exception as e:
-                print(" \n\n\t {} \n\nRetrying:".format(e), retry_counter)
+                logger.error(" \n\n\t {} \n\nRetrying:".format(e), retry_counter)
                 time.sleep(3)
                 retry_counter -= 1
                 if retry_counter == 0:
-                    print("Failed to Download " + url)
+                    logger.info("Failed to Download " + url)
 
         self.random_header = None
         self.random_proxy_host = None
