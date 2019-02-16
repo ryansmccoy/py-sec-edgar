@@ -1,69 +1,23 @@
-# -*- coding: utf-8 -*-
 
 """Console script for py_sec_edgar."""
 
-import os
 import sys
-from urllib.parse import urljoin
-
-from settings import CONFIG
 
 import feeds as py_sec_edgar_feeds
 import etl as py_sec_edgar_etl
 
-import pandas as pd
+def main():
 
-pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
-pd.set_option('display.max_columns', 100)
-pd.set_option('display.max_rows', 100)
-pd.set_option('display.width', 600)
+    py_sec_edgar_feeds.update_full_index_feed()
 
-def main(ticker_list=None, form_list=None, merge_feeds=True):
+    df_filings = py_sec_edgar_feeds.load_filings_feed(ticker_list=True, form_list=True)
 
-    print("\n\tStarting Index Download:\n")
+    for i, feed_item in df_filings.iterrows():
 
-    if merge_feeds:
-        py_sec_edgar_feeds.download(save_idx_as_csv=True, skip_if_exists=True)
-
-    print('\n\tCompleted Index Download')
-
-    merged_idx_files = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
-
-    df_idx = pd.read_csv(merged_idx_files, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
-
-    df_idx = df_idx.sort_values("Date Filed", ascending=False)
-
-    if ticker_list:
-        # load CIK to tickers
-        df_cik_tickers = pd.read_csv(CONFIG.tickercheck)
-
-        # filter cik list only tickers in tickers.csv file
-        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
-
-        print(df_cik_tickers.head(25))
-
-        list_of_ciks = df_cik_tickers['CIK'].tolist()
-
-        df_idx = df_idx[df_idx['CIK'].isin(list_of_ciks)]
-
-    if form_list:
-
-        df_idx = df_idx[df_idx['Form Type'].isin(CONFIG.forms_list)]
-
-    df_idx = df_idx.assign(url=df_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
-
-    for i, feed_item in df_idx.iterrows():
-        print("\n\tStarting Filing Download:\n")
-        py_sec_edgar_etl.broker(feed_item, extract_filing=True, zip_folder_contents=True)
-        print('\n\tCompleted Filings Download\n')
+        py_sec_edgar_etl.broker(feed_item)
 
 if __name__ == "__main__":
 
-    # if you want to filter against a list of tickers, add them to tickers.csv
-    tickers_filepath = os.path.join(CONFIG.REF_DIR, r'tickers.csv')
-
-    ticker_list = pd.read_csv(tickers_filepath, header=None).iloc[:, 0].tolist()
-
-    main(ticker_list=ticker_list, form_list=True)
+    main()
 
     sys.exit()

@@ -12,17 +12,25 @@ def export_estimates_from_yahoo(today_date=None):
 
     yesterday_date = (today_date - timedelta(days=1)).strftime('%Y-%m-%d')
     weekend_date = (today_date + timedelta(days=4)).strftime('%Y-%m-%d')
+    tomorrow_date = (today_date + timedelta(days=1)).strftime('%Y-%m-%d')
+
     today_date = today_date.strftime('%Y-%m-%d')
 
+    url = r'https://www.estimize.com/aapl/fq2-2019?metric_name=revenue&chart=historical'
+    url = r'https://www.benzinga.com/stock/abc/earnings'
+    df_calendar = pd.read_html(url)
+
     df_calendar = pd.read_html(f'https://finance.yahoo.com/calendar/earnings?from={yesterday_date}&to={weekend_date}&day={today_date}')
+    df_calendar[0].to_csv(os.path.join(CONFIG.DATA_DIR, r'{}_{}_calendar.csv'.format(datetime.now().strftime('%Y%m%dTZ%H%m%S'), datetime.today().strftime("%Y%m%d"))))
+    df_calendar = pd.read_html(f'https://finance.yahoo.com/calendar/earnings?from={yesterday_date}&to={weekend_date}&day={tomorrow_date}')
+    df_calendar[0].to_csv(os.path.join(CONFIG.DATA_DIR, r'{}_{}_calendar.csv'.format(datetime.now().strftime('%Y%m%dTZ%H%m%S'), tomorrow_date)))
 
     df_all_est = []
-
     for ticker in df_calendar[0]['Symbol'].tolist():
         try:
             print(f'Downloading Estimates for {ticker}')
 
-            df_est = pd.read_html(r'https://finance.yahoo.com/quote/{ticker}/analysis?p={ticker}')
+            df_est = pd.read_html(f'https://finance.yahoo.com/quote/{ticker}/analysis?p={ticker}')
             eps_est, rev_est = df_est[0], df_est[1]
 
             rev_est = rev_est.melt(id_vars=['Revenue Estimate'],var_name='Period')
@@ -48,4 +56,9 @@ def export_estimates_from_yahoo(today_date=None):
     df_all_merged = df_all_merged.reset_index(drop=True)
     df_all_merged = df_all_merged.T.reindex(['DateTime', 'Ticker', 'Item', 'Statistic', 'Period', 'value']).T
 
-    df_all_merged.to_csv(os.path.join(CONFIG.DATA_DIR, r'{}_{}_estimates.csv'.format(datetime.now().strftime('%Y%m%dTZ%H%m%S'), datetime.today().strftime("%Y%m%d"))))
+    export_filepath = os.path.join(CONFIG.DATA_DIR, r'{}_{}_calendar_estimates.csv'.format(datetime.today().strftime("%Y%m%d"), datetime.now().strftime('%Y%m%dTZ%H%m%S')))
+    df_all_merged.to_csv(export_filepath)
+
+if __name__ == "__main__":
+
+    export_estimates_from_yahoo()

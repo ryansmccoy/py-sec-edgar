@@ -11,7 +11,6 @@ import pandas as pd
 from collections import defaultdict
 
 from utilities import file_size
-from settings import CONFIG
 from utilities import format_filename
 from utilities import uudecode
 
@@ -65,7 +64,7 @@ def parse_filing_header(raw_html):
         pass
     return header_dict
 
-def identify_10_K_filing(sec_filing_documents, override=None):
+def identify_filing(sec_filing_documents, override=None):
     max_doc = 0
     seq_no = 1
     f10_k = 0
@@ -73,7 +72,6 @@ def identify_10_K_filing(sec_filing_documents, override=None):
     f10_size = 0
     max_doc_size = 0
     size_seq_no = 0
-    file_metadata = []
 
     for i, document in sec_filing_documents.items():
         try:
@@ -118,24 +116,25 @@ def identify_10_K_filing(sec_filing_documents, override=None):
     print("Parsing DOC {}".format(i))
     return i, document
 
-def parse_filing(input_filepath):
+def parse_filing(complete_submission_filing_filepath):
     """
     Parses html file
-    :param input_filepath: html file
+    :param complete_submission_filing_filepath: html file
     :return: dictionary of file_contents including lxml_dict
     """
-    # input_filepath = filing[0]
+    # complete_submission_filing_filepath = filing[0]
 
     lxml_dict = {}
 
     try:
         # or codecs.open on Python 2
-        raw_text = open(input_filepath, "rb").read()
+        raw_text = open(complete_submission_filing_filepath, "rb").read()
         result = chardet.detect(raw_text)
         charenc = result['encoding']
         raw_text = raw_text.decode(charenc)
     except:
-        with io.open(input_filepath, "rb") as f:
+        charenc = ""
+        with io.open(complete_submission_filing_filepath, "rb") as f:
             raw_text = f.read()
 
     lxml_html = lxml.html.fromstring(raw_text)
@@ -144,7 +143,7 @@ def parse_filing(input_filepath):
 
     file_metadata = {}
 
-    file_metadata['FILEPATH'] = input_filepath
+    file_metadata['FILEPATH'] = complete_submission_filing_filepath
 
     for ii, element in enumerate(root.xpath("//*/body/*")):
         lxml_dict[ii] = element
@@ -164,8 +163,10 @@ def parse_filing(input_filepath):
     return file_metadata
 
 
-def complete_submission_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
+def complete_submission_filing(complete_submission_filing_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
+
     FOLDER_PATH = True
+
     elements_list = [('FILENAME', './/filename'), ('TYPE', './/type'),
                      ('SEQUENCE', './/sequence'), ('DESCRIPTION', './/description')]
 
@@ -181,11 +182,10 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
         print("failed")
 
     if folder_exists == False or extraction_override == True:
-        # print(output_directory)
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
-        print("extracting documents from {}".format(input_filepath))
+        print("extracting documents from {}".format(complete_submission_filing_filepath))
 
         try:
             file_ext
@@ -197,34 +197,28 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
 
         try:
             # or codecs.open on Python 2
-            raw_text = open(input_filepath, "rb").read()
+            raw_text = open(complete_submission_filing_filepath, "rb").read()
             result = chardet.detect(raw_text)
             charenc = result['encoding']
 
-            with io.open(input_filepath, "r", encoding=charenc) as f:
+            with io.open(complete_submission_filing_filepath, "r", encoding=charenc) as f:
                 raw_text = f.read()
 
         except:
-            with io.open(input_filepath, "rb") as f:
+            with io.open(complete_submission_filing_filepath, "rb") as f:
                 raw_text = f.read()
 
         sec_filing_header = parse_filing_header(raw_text)
 
         if not FOLDER_PATH:
-            CIK_KEY = sec_filing_header[sec_filing_header['KEY'].isin(
-                ['CENTRAL INDEX KEY'])]['VALUE']
-            cik_folder_path = os.path.join(
-                output_directory, CIK_KEY.tolist()[0].lstrip("0"))
-            output_directory = os.path.join(cik_folder_path, os.path.basename(
-                input_filepath.replace(".txt", "").replace("-", "")))
+            CIK_KEY = sec_filing_header[sec_filing_header['KEY'].isin(['CENTRAL INDEX KEY'])]['VALUE']
+            cik_folder_path = os.path.join(output_directory, CIK_KEY.tolist()[0].lstrip("0"))
+            output_directory = os.path.join(cik_folder_path, os.path.basename(complete_submission_filing_filepath.replace(".txt", "").replace("-", "")))
 
-        headers_path = os.path.dirname(input_filepath)
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
 
-        if not os.path.exists(headers_path):
-            os.makedirs(headers_path)
-
-        header_filepath = os.path.join(headers_path, "{}_FILING_HEADER.csv".format(
-            os.path.basename(output_directory)))
+        header_filepath = os.path.join(output_directory, "{}_FILING_HEADER.csv".format(os.path.basename(output_directory)))
 
         sec_filing_header.to_csv(header_filepath)
 
@@ -257,8 +251,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
                 "<XML>", "").replace("</XML>", "").strip()
 
             if raw_text.lower().startswith("begin"):
-
-                # output_filepath = format_filename(file_metadata['FILENAME'].replace(" ", "_").replace(":", ""))
 
                 output_document = os.path.join(
                     output_directory, file_metadata['FILENAME'] + ".uue")
@@ -295,7 +287,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
                                                                  ).replace(" ", "_").replace(":", "").replace("__", "_")
 
                     output_filepath = format_filename(output_filepath)
-                    # print(output_filepath)
                     output_document = os.path.join(
                         output_directory, output_filepath)
 
@@ -308,7 +299,6 @@ def complete_submission_filing(input_filepath=None, output_directory=None, file_
                                                                  file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace("__", "_")
 
                     output_filepath = format_filename(output_filepath)
-                    # print(output_filepath)
                     output_document = os.path.join(
                         output_directory, output_filepath)
 
@@ -343,12 +333,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='SEC data Extract Header from Filing')
     parser.add_argument(
-        '--input_filepath', help='Input the Year(s) or ALL', action='append', nargs='*')
+        '--complete_submission_filing_filepath', help='Input the Year(s) or ALL', action='append', nargs='*')
     parser.add_argument(
         '--ticker', help='Input the Ticker(s) or ALL keyword', action='append', nargs='*')
 
     if len(sys.argv[1:]) >= 1:
         args = parser.parse_args()
-        complete_submission_filing(input_filepath=None, output_directory=None, file_ext=None, extraction_override=False)
+        complete_submission_filing(complete_submission_filing_filepath=None, output_directory=None, file_ext=None, extraction_override=False)
     else:
         sys.exit(parser.print_help())

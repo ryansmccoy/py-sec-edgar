@@ -314,9 +314,10 @@ def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
         return True
 
 def generate_folder_names_years_quarters(start_date, end_date):
+
     dates_data = []
-    date_range = pd.date_range(datetime.strptime(
-        start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
+
+    date_range = pd.date_range(datetime.strptime(start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
 
     for i, values in enumerate(date_range):
         quarter = '{}'.format(values.year), "QTR{}".format(int(values.month / 3))

@@ -1,11 +1,14 @@
 import os
 from datetime import datetime, timedelta
-from pprint import pprint
 from urllib import parse
 from urllib.parse import urljoin
 
+import logging
+logger = logging.getLogger(__name__)
+
 import lxml.html
 import pandas as pd
+
 
 pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
 pd.set_option('display.max_columns', 100)
@@ -94,7 +97,7 @@ def merge_idx_files():
     dfs = []
 
     for filepath in files:
-        # print(filepath)
+        # logging.info(filepath)
         df_ = pd.read_csv(filepath)
         dfs.append(df_)
 
@@ -109,7 +112,7 @@ def merge_idx_files():
 
     # df_idx = fp.ParquetFile(out_path).to_pandas()
 
-def download(save_idx_as_csv=True, skip_if_exists=True):
+def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=True):
 
     dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
 
@@ -119,8 +122,6 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
         os.remove(latest_full_index_master)
 
     g = ProxyRequest()
-
-    print("Downloading Latest {}".format(CONFIG.edgar_full_master_url))
 
     g.GET_FILE(CONFIG.edgar_full_master_url, latest_full_index_master)
 
@@ -145,11 +146,12 @@ def download(save_idx_as_csv=True, skip_if_exists=True):
 
             if save_idx_as_csv == True and skip_if_exists == False:
 
-                print('\tConverting idx to csv')
+                logging.info('\n\n\tConverting idx to csv\n\n')
                 convert_idx_to_csv(filepath)
 
-    print('Merging IDX files')
+    logging.info('\n\n\n\tMerging IDX files\n\n\n\t')
     merge_idx_files()
+    logging.info('\n\n\n\tCompleted Index Download\n\n\n\t')
 
 
 def download_edgar_filings_xbrl_rss_files():
@@ -175,7 +177,7 @@ def download_edgar_filings_xbrl_rss_files():
 
                 # g.GET_FILE(edgarFilingsFeed, filepath)
         except Exception as e:
-            print(e)
+            logging.info(e)
 
 
 #######################
@@ -209,12 +211,11 @@ def download_and_flatten_monthly_xbrl_filings_list():
     urls = [i for i in urls if "xml" in i]
     urls.sort(reverse=True)
 
-    print("Downloading Edgar Monthly XML Files to:\t" + CONFIG.SEC_MONTHLY_DIR)
+    logging.info("\n\n\n\nDownloading Edgar Monthly XML Files to:\t" + CONFIG.SEC_MONTHLY_DIR)
 
     df = pd.DataFrame(urls, columns=['URLS'])
 
-    df.to_excel(os.path.join(CONFIG.DATA_DIR,
-                             'sec_gov_archives_edgar_monthly_xbrl_urls.xlsx'))
+    df.to_excel(os.path.join(CONFIG.DATA_DIR,'sec_gov_archives_edgar_monthly_xbrl_urls.xlsx'))
 
     for url in urls:
         filename = url.split('/')[-1:][0]
@@ -227,7 +228,7 @@ def download_and_flatten_monthly_xbrl_filings_list():
         try:
 
             if not os.path.isfile(os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)) or url == urls[0]:
-                print("Downloading " + fullfilepath)
+                logging.info("\n\n\n\nDownloading " + fullfilepath)
                 vpn_agent.generate_random_header_and_proxy_host()
 
                 r = requests.get(url, headers=vpn_agent.random_header, proxies=vpn_agent.random_proxy_host, timeout=(
@@ -240,10 +241,10 @@ def download_and_flatten_monthly_xbrl_filings_list():
 
                 # g.GET_FILE(url, fullfilepath)
             else:
-                print("Found XML File " + fullfilepath)
+                logging.info("\n\n\n\nFound XML File " + fullfilepath)
 
             if not os.path.isfile(OUTPUT_FILENAME):
-                print("Parsing XML File and Exporting to XLSX")
+                logging.info("\n\n\n\nParsing XML File and Exporting to XLSX")
 
                 feeds = read_xml_feedparser(fullfilepath)
 
@@ -270,20 +271,19 @@ def download_and_flatten_monthly_xbrl_filings_list():
                     list_.append(df_)
 
                 df = pd.concat(list_)
-                new_columns_names = [column_name.replace(".", "_").replace(
-                    ":", "_").lower() for column_name in df.columns.tolist()]
+                new_columns_names = [column_name.replace(".", "_").replace(":", "_").lower() for column_name in df.columns.tolist()]
                 df.columns = new_columns_names
                 df['SOURCE_FILENAME'] = os.path.basename(fullfilepath)
                 df['SOURCE_IMPORT_TIMESTAMP'] = datetime.now()
                 df.index = [icount for icount in range(
                     0, len(df.index.tolist()))]
                 df.index.name = '_id'
-                print("exporting to excel {}".format(OUTPUT_FILENAME))
+                logging.info("\n\n\n\nexporting to excel {}".format(OUTPUT_FILENAME))
                 df.to_excel(OUTPUT_FILENAME)
-                print("")
-                print("")
+                logging.info("\n\n\n\n")
+                logging.info("\n\n\n\n")
         except:
-            print('Something Wrong')
+            logging.info('Something Wrong')
 
 
 def parse_monthly():
@@ -304,7 +304,7 @@ def parse_monthly():
 
             feed = read_xml_feedparser(monthly_local_filepath)
 
-            print(len(feed.entries))
+            logging.info(len(feed.entries))
             for i, feed_item in enumerate(feed.entries):
 
                 if "10-K" in feed_item["edgar_formtype"]:
@@ -313,7 +313,7 @@ def parse_monthly():
 
                     item = flattenDict(feed_item)
 
-                    pprint(item)
+                    logging.info(item)
 
                     try:
                         ticker = df_tickercheck[df_tickercheck['EDGAR_CIKNUMBER'].isin(
@@ -321,13 +321,13 @@ def parse_monthly():
                         symbol = ticker['SYMBOL'].tolist()[0]
                     except:
                         try:
-                            print('searching backup')
+                            logging.info('searching backup')
                             ticker = df_cik_ticker[df_cik_ticker['CIK'].isin(
                                 [item['edgar_ciknumber'].lstrip("0")])]['Ticker'].tolist()[0]
                         except:
                             ticker = "TICKER"
 
-                    pprint(item)
+                    logging.info(item)
                     basename = os.path.basename(
                         monthly_local_filepath).replace(".xml", "")
 
@@ -338,8 +338,7 @@ def parse_monthly():
                         os.makedirs(month_dir)
                     if ticker != "TICKER":
 
-                        filepath = edgar_filing_idx_create_filename(
-                            basename, item, ticker)
+                        filepath = edgar_filing_idx_create_filename(basename, item, ticker)
 
                         if not os.path.exists(filepath):
 
@@ -351,7 +350,30 @@ def parse_monthly():
 
                             # consume_complete_submission_filing.delay(basename, item, ticker)
                         else:
-                            print('found file {}'.format(filepath))
+                            logging.info('found file {}'.format(filepath))
                     else:
                         # consume_complete_submission_filing.delay(basename, item, ticker)
-                        print('yes')
+                        logging.info('yes')
+
+
+def load_filings_feed(ticker_list=True, form_list=True):
+
+    df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK)
+
+    df_merged_idx_filings = pd.read_csv(CONFIG.MERGED_IDX_FILE, index_col=0,  dtype={"CIK": int}, encoding='latin-1').sort_values("Date Filed", ascending=False)
+
+    if form_list:
+        df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['Form Type'].isin(CONFIG.forms_list)]
+
+    if ticker_list:
+        ticker_list = pd.read_csv(CONFIG.TICKER_LIST, header=None).iloc[:,0].tolist()
+        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
+
+    df_cik_tickers['CIK'] = df_cik_tickers['CIK'].astype(int)
+    cik_list = df_cik_tickers['CIK'].tolist()
+
+    df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['CIK'].isin(cik_list)]
+
+    df_filings = df_merged_idx_filings.assign(url=df_merged_idx_filings['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+
+    return df_filings

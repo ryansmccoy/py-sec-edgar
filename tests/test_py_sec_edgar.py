@@ -7,7 +7,7 @@ import pytest
 
 from click.testing import CliRunner
 
-from py_sec_edgar import example
+import example
 
 
 @pytest.fixture

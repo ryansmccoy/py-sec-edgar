@@ -4,8 +4,6 @@ import time
 
 from datetime import datetime, timedelta
 from urllib.parse import urljoin
-import tempfile
-import os
 
 import pandas as pd
 
@@ -15,10 +13,40 @@ load_dotenv(find_dotenv())
 
 year = datetime.today().year
 month = datetime.today().month
-
 latest_folder = "{}//{}".format(str(year), str(month).zfill(2))
 
 SEC_EDGAR_ARCHIVES_URL = r'https://www.sec.gov/Archives/'
+
+config = {
+    'disable_existing_loggers': False,
+    'version': 1,
+    'formatters': {
+        'short': {
+            'format': '%(asctime)s %(levelname)s %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'formatter': 'short',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'plugins': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
+        }
+    },
+}
+
+import logging.config
+logging.config.dictConfig(config)
 
 def SetupLogger():
 
@@ -37,8 +65,10 @@ def SetupLogger():
                         format=recfmt, datefmt=timefmt)
 
     logger = logging.getLogger()
+
     console = logging.StreamHandler()
     console.setLevel(logging.ERROR)
+
     logger.addHandler(console)
 
 class Folders:
@@ -49,9 +79,6 @@ class Folders:
 
     REF_DIR = os.path.join(BASE_DIR, r'refdata')
 
-    # this file maps CIK to tickers
-    tickercheck = os.path.join(REF_DIR, "cik_tickers.csv")
-
     CONFIG_DIR = os.path.join(BASE_DIR, "config")
     SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
     EDGAR_DIR = os.path.join(SEC_DIR, "Archives", "edgar")
@@ -59,6 +86,11 @@ class Folders:
     MONTHLY_DIR = os.path.join(EDGAR_DIR, "monthly")
     FULL_INDEX_DIR = os.path.join(EDGAR_DIR, "full-index")
     DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
+    FILING_DIR = os.path.join(EDGAR_DIR, "filings")
+
+    MERGED_IDX_FILE = os.path.join(REF_DIR, 'merged_idx_files.csv')
+    TICKER_LIST = os.path.join(REF_DIR, "tickers.csv")
+    TICKER_CIK = os.path.join(REF_DIR, "cik_tickers.csv")
 
     # used as template
     TXT_FILING_DIR = os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
@@ -90,7 +122,7 @@ class Config(Folders):
     extract_filing_contents = False
 
     # for complete list see py-sec-edgar/refdata/filing_types.xlsx
-    # forms_list = ['10-K', '20-F', '10-K/A', '10-Q']
+    # forms_list = ['10-K', '20-F', '10-K/A']
     # forms_list = ['497', '497K']
     forms_list = ['8-K']
     # the urls of all broker are stored in index files
@@ -110,6 +142,5 @@ class Config(Folders):
     VPN_PROVIDER = "PP"
 
     THROTTLE = True
-
 
 CONFIG = Config()

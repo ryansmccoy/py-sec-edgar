@@ -6,6 +6,9 @@ __author__ = """Ryan S. McCoy"""
 __email__ = '18177650+ryansmccoy@users.noreply.github.com'
 __version__ = '0.1.0'
 
+import logging
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 header_list = ["ACCESSION NUMBER", "CONFORMED SUBMISSION TYPE", "PUBLIC DOCUMENT COUNT",
                "CONFORMED PERIOD OF REPORT", "FILED AS OF DATE", "DATE AS OF CHANGE", "FILER", "COMPANY data",
                "COMPANY CONFORMED NAME", "CENTRAL INDEX KEY", "STANDARD INDUSTRIAL CLASSIFICATION", "IRS NUMBER",
@@ -44,5 +47,4 @@ header = {
         "FORMER CONFORMED NAME": "",
         "DATE OF NAME CHANGE": ""}
 }
-
 

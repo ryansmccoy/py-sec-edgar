@@ -54,16 +54,6 @@ py-sec-edgar/refdata/tickers.csv
     GOOGL
     WFC
 
-#### Configure Proxy (Optional):
-
-rename .env.template to .env
-
-py-sec-edgar/py_sec_edgar/.env
-
-    # perfect-privacy.com
-    USERNAME=user@domain.com
-    PASSWORD=password
-
 #### Run Example:
 
     python py_sec_edgar/example.py
