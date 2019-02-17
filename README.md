@@ -59,18 +59,31 @@ py-sec-edgar/refdata/tickers.csv
     python py_sec_edgar/example.py
 
 #### Output Example:
-
-    Starting Index Download:
-
-        Downloading Latest https://www.sec.gov/Archives/edgar/full-index/master.idx
-
-        Downloading: 	https://www.sec.gov/Archives/edgar/full-index/master.idx
-        Saving to: 	C:\sec_gov\Archives\edgar\full-index\master.idx
-        Selected User-Agent:	{'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36'}
-        Success!	Saved to filepath:	C:\sec_gov\Archives\edgar\full-index\master.idx
-
-    Completed Index Download
-
+    2019-02-16 01:20:03,136 INFO proxy:
+    
+            Downloading:    https://www.sec.gov/Archives/edgar/full-index/master.idx
+    
+    2019-02-16 01:20:03,504 INFO proxy:
+    
+            Download Complete
+            
+    2019-02-16 01:20:03,505 INFO proxy:
+    
+            Saving to:      C:\sec_gov\Archives\edgar\full-index\master.idx
+    
+    2019-02-16 01:20:04,088 INFO proxy:
+    
+            Success!        Saved to filepath:      C:\sec_gov\Archives\edgar\full-index\master.idx
+    
+    
+    2019-02-16 01:20:06,584 INFO root:
+    
+            Merging IDX files
+    
+    2019-02-16 01:21:08,377 INFO root:
+    
+            Completed Index Download
+            
     Starting Filings Download:
 
         CIK                                                         80424
@@ -185,7 +198,7 @@ py-sec-edgar/refdata/tickers.csv
 
     https://www.sec.gov/Archives/edgar/data/1041588/0001041588-18-000005.txt <- these are the complete submission file
 
-    https://www.sec.gov/Archives/edgar/data/<CIK>/<ACCESSION_NUMBER_WITHOUT_DASHES>/<ACCESSION_NUMBER>.txt <-  follows this format
+    https://www.sec.gov/Archives/edgar/data/<CIK>/<ACCESSION_NUMBER>.txt
 
 local folder equivalent:
 
@@ -197,9 +210,9 @@ local folder equivalent:
 
     c:\sec_gov\Archives\edgar\data\ <- path where all the actual filings are stored
 
-    c:\sec_gov\Archives\edgar\data\1041588\000104158818000005\0001041588-18-000005.txt <- these are the complete submission file
+    c:\sec_gov\Archives\edgar\data\1041588\0001041588-18-000005.txt <- these are the complete submission file
 
-    c:\sec_gov\Archives\edgar\data\<CIK>\<ACCESSION_NUMBER_WITHOUT_DASHES>\<ACCESSION_NUMBER>.txt <-  follow this format
+    c:\sec_gov\Archives\edgar\data\<CIK>\<ACCESSION_NUMBER>.txt <-  follow this format
 
 
 Central Index Key (CIK)
@@ -239,6 +252,10 @@ Download Time Estimates
 
 
 # Todo
+ * Feeds
+    * Make Full-Index more efficient
+    * Incorporate RSS Feed
+ * Celery
  * need to figure out way to quickly access downloaded content
  * extract earnings data from 8-K
  * setup proper logging instead of print

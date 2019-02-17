@@ -9,15 +9,8 @@ logger = logging.getLogger(__name__)
 import lxml.html
 import pandas as pd
 
-
-pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
-pd.set_option('display.max_columns', 100)
-pd.set_option('display.max_rows', 100)
-pd.set_option('display.width', 600)
-
-# import pyarrow as pa
-# import pyarrow.parquet as pq
-# import fastparquet as fp
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 import requests
 from bs4 import BeautifulSoup
@@ -26,20 +19,36 @@ from settings import CONFIG
 from proxy import ProxyRequest
 from utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict
 
-def convert_idx_to_csv(filepath):
-    df = pd.read_csv(filepath, skiprows=10, names=[
-        'CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+def load_filings_feed(ticker_list_filter=True, form_list_filter=True):
 
-    df = df[-df['CIK'].str.contains("---")]
+    df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK)
 
-    df = df.sort_values('Date Filed', ascending=False)
+    df_merged_idx_filings = pq.read_table(CONFIG.MERGED_IDX_FILE).to_pandas().sort_values("Date Filed", ascending=False)
+    # df_merged_idx_filings = pd.read_csv(CONFIG.MERGED_IDX_FILE, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
 
-    df = df.assign(published=pd.to_datetime(df['Date Filed']))
+    logging.info('\n\n\n\tLoaded IDX files\n\n\n')
 
-    df.reset_index()
+    if ticker_list_filter:
+        logging.info('\n\n\n\tLoading Forms Filter\n\n\n')
+        df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['Form Type'].isin(CONFIG.forms_list)]
 
-    df.to_csv(filepath.replace(".idx", ".csv"), index=False)
+    if form_list_filter:
+        ticker_list = pd.read_csv(CONFIG.TICKER_LIST, header=None).iloc[:,0].tolist()
+        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
+        logging.info('\n\n\n\tLoaded Tickers\n\n\n')
 
+    df_cik_tickers = df_cik_tickers.dropna(subset=['CIK'])
+
+    df_cik_tickers['CIK'] = df_cik_tickers['CIK'].astype(int)
+
+    cik_list = df_cik_tickers['CIK'].tolist()
+
+    if ticker_list_filter:
+        df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['CIK'].isin(cik_list)]
+
+    df_filings = df_merged_idx_filings.assign(url=df_merged_idx_filings['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
+
+    return df_filings
 
 #######################
 # DAILY FILINGS FEEDS
@@ -84,12 +93,8 @@ def update_daily_files():
                 g.GET_FILE(daily_url, daily_local_filepath)
 
 
-#######################
-# FULL-INDEX FILINGS FEEDS (TXT)
-# https://www.sec.gov/Archives/edgar/full-index/
-# "./{YEAR}/QTR{NUMBER}/"
-
 def merge_idx_files():
+
     files = walk_dir_fullpath(CONFIG.FULL_INDEX_DIR, contains='.csv')
 
     files.sort(reverse=True)
@@ -97,20 +102,46 @@ def merge_idx_files():
     dfs = []
 
     for filepath in files:
-        # logging.info(filepath)
         df_ = pd.read_csv(filepath)
         dfs.append(df_)
 
     df_idx = pd.concat(dfs)
 
-    out_path = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
+    pa_filings = pa.Table.from_pandas(df_idx)
 
-    df_idx.to_csv(out_path)
+    # out_path = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.csv')
+    # df_idx.to_csv(out_path)
+
+    pq_filepath = os.path.join(CONFIG.REF_DIR, 'merged_idx_files.pq')
+
+    if os.path.exists(pq_filepath):
+        os.remove(pq_filepath)
+
+    pq.write_table(pa_filings, pq_filepath, compression='snappy')
 
     # arrow_table = pa.Table.from_pandas(df_idx)
     # pq.write_table(arrow_table, out_path, compression='GZIP')
 
     # df_idx = fp.ParquetFile(out_path).to_pandas()
+
+def convert_idx_to_csv(filepath):
+    # filepath = latest_full_index_master
+    df = pd.read_csv(filepath, skiprows=10, names=['CIK', 'Company Name', 'Form Type', 'Date Filed', 'Filename'], sep='|', engine='python', parse_dates=True)
+
+    df = df[-df['CIK'].str.contains("---")]
+
+    df = df.sort_values('Date Filed', ascending=False)
+
+    df = df.assign(published=pd.to_datetime(df['Date Filed']))
+
+    df.reset_index()
+
+    df.to_csv(filepath.replace(".idx", ".csv"), index=False)
+
+#######################
+# FULL-INDEX FILINGS FEEDS (TXT)
+# https://www.sec.gov/Archives/edgar/full-index/
+# "./{YEAR}/QTR{NUMBER}/"
 
 def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=True):
 
@@ -139,8 +170,7 @@ def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=True):
                 if not os.path.exists(os.path.dirname(filepath)):
                     os.makedirs(os.path.dirname(filepath))
 
-                url = urljoin(CONFIG.edgar_Archives_url,
-                              'edgar/full-index/{}/{}/{}'.format(year, qtr, file))
+                url = urljoin(CONFIG.edgar_Archives_url,'edgar/full-index/{}/{}/{}'.format(year, qtr, file))
 
                 g.GET_FILE(url, filepath)
 
@@ -355,25 +385,3 @@ def parse_monthly():
                         # consume_complete_submission_filing.delay(basename, item, ticker)
                         logging.info('yes')
 
-
-def load_filings_feed(ticker_list=True, form_list=True):
-
-    df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK)
-
-    df_merged_idx_filings = pd.read_csv(CONFIG.MERGED_IDX_FILE, index_col=0,  dtype={"CIK": int}, encoding='latin-1').sort_values("Date Filed", ascending=False)
-
-    if form_list:
-        df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['Form Type'].isin(CONFIG.forms_list)]
-
-    if ticker_list:
-        ticker_list = pd.read_csv(CONFIG.TICKER_LIST, header=None).iloc[:,0].tolist()
-        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
-
-    df_cik_tickers['CIK'] = df_cik_tickers['CIK'].astype(int)
-    cik_list = df_cik_tickers['CIK'].tolist()
-
-    df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['CIK'].isin(cik_list)]
-
-    df_filings = df_merged_idx_filings.assign(url=df_merged_idx_filings['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
-
-    return df_filings

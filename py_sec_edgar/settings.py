@@ -88,7 +88,7 @@ class Folders:
     DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
     FILING_DIR = os.path.join(EDGAR_DIR, "filings")
 
-    MERGED_IDX_FILE = os.path.join(REF_DIR, 'merged_idx_files.csv')
+    MERGED_IDX_FILE = os.path.join(REF_DIR, 'merged_idx_files.pq')
     TICKER_LIST = os.path.join(REF_DIR, "tickers.csv")
     TICKER_CIK = os.path.join(REF_DIR, "cik_tickers.csv")
 
@@ -122,9 +122,9 @@ class Config(Folders):
     extract_filing_contents = False
 
     # for complete list see py-sec-edgar/refdata/filing_types.xlsx
-    # forms_list = ['10-K', '20-F', '10-K/A']
+    forms_list = ['10-K', '20-F', '10-K/A']
     # forms_list = ['497', '497K']
-    forms_list = ['8-K']
+    # forms_list = ['8-K']
     # the urls of all broker are stored in index files
     # so need to download these index files
     # below just says download all of them
@@ -141,6 +141,6 @@ class Config(Folders):
     # if going to use proxy, please only download on the weekends
     VPN_PROVIDER = "PP"
 
-    THROTTLE = True
+    THROTTLE = False
 
 CONFIG = Config()

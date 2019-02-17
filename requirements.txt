@@ -11,3 +11,4 @@ chardet
 numpy
 pytest
 click
+pyarrow

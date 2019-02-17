@@ -51,11 +51,11 @@ class ProxyRequest(object):
         proxy = random.choice(self.proxies)
 
         proxies = {
-            'http': '{}://{}:{}@{}:{}'.format(self.service, self.USERNAME, self.PASSWORD, proxy, self.port),
-            'https': '{}://{}:{}@{}:{}'.format(self.service, self.USERNAME, self.PASSWORD, proxy, self.port)
+            'http': f'{self.service}://{self.USERNAME}:{self.PASSWORD}@{proxy}:{self.port}',
+            'https': f'{self.service}://{self.USERNAME}:{self.PASSWORD}@{proxy}:{self.port}'
         }
 
-        logger.info("\n\n\tSelected-Proxy:\t{}\n\n".format(proxies))
+        logger.info("\n\n\tSelected-Proxy:\t{}\n".format(proxies))
 
         return proxies
 
@@ -64,7 +64,7 @@ class ProxyRequest(object):
 
         _headers = {'User-Agent': _user_agent}
 
-        logger.info("\n\n\tSelected User-Agent:\t{}\n\n".format(_headers))
+        # logger.info("\n\n\tSelected User-Agent:\t{}\n".format(_headers))
         return _headers
 
     def generate_random_header_and_proxy_host(self):
@@ -82,8 +82,7 @@ class ProxyRequest(object):
 
     def GET_FILE(self, url, filepath):
 
-        logger.info("\n\n\tDownloading: \t{}\n\n".format(url))
-        logger.info("\n\n\tSaving to: \t{}\n\n".format(filepath))
+        logger.info("\n\n\tDownloading: \t{}\n".format(url))
 
         retry_counter = 0
 
@@ -94,12 +93,15 @@ class ProxyRequest(object):
 
                 self.r = requests.get(url, stream=True, headers=self.random_header, proxies=self.random_proxy_host, timeout=(self.connect_timeout, self.read_timeout))
 
+                logger.info("\n\n\tDownload Complete\n")
+
+                logger.info("\n\n\tSaving to: \t{}\n".format(filepath))
+
                 with open(filepath, 'wb') as f:
                     for chunk in self.r.iter_content(chunk_size=1024):
                         if chunk:  # filter out keep-alive new chunks
                             f.write(chunk)
-
-                logger.info('\n\n\n\tSuccess!\tSaved to filepath:\t{}\n\n'.format(filepath))
+                logger.info('\n\n\tSuccess!\tSaved to filepath:\t{}\n\n'.format(filepath))
                 break
 
             except Exception as e:
