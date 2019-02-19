@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 
-from settings import CONFIG
+from py_sec_edgar import CONFIG
 
 def export_estimates_from_yahoo(today_date=None):
 

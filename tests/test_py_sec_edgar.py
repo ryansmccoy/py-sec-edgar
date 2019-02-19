@@ -7,7 +7,7 @@ import pytest
 
 from click.testing import CliRunner
 
-import example
+import py_sec_edgar.download_filings
 
 
 @pytest.fixture
@@ -29,9 +29,9 @@ def test_content(response):
 def test_command_line_interface():
     """Test the CLI."""
     runner = CliRunner()
-    result = runner.invoke(example.main)
+    result = runner.invoke(py_sec_edgar.download_filings.main)
     assert result.exit_code == 0
-    assert 'py_sec_edgar.cli.main' in result.output
-    help_result = runner.invoke(example.main, ['--help'])
+    assert 'py_sec_edgar.download_filings.main' in result.output
+    help_result = runner.invoke(py_sec_edgar.download_filings.main, ['--help'])
     assert help_result.exit_code == 0
     assert '--help  Show this message and exit.' in help_result.output

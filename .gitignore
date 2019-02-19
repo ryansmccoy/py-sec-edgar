@@ -110,3 +110,11 @@ scrap.py
 parser.py
 test.py
 merged_idx_files.pq
+celery/
+config/
+docker-compose.yml
+dockerfile
+py_sec_edgar/celery.py
+py_sec_edgar/celery_schedule.py
+py_sec_edgar/celery_tasks.py
+py_sec_edgar/start_celery.sh

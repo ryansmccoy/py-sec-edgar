@@ -10,9 +10,9 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from collections import defaultdict
 
-from utilities import file_size
-from utilities import format_filename
-from utilities import uudecode
+from py_sec_edgar.utilities import file_size
+from py_sec_edgar.utilities import format_filename
+from py_sec_edgar.utilities import uudecode
 
 import re
 re10k = re.compile('10-K')

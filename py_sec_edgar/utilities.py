@@ -14,15 +14,9 @@ import zipfile
 import feedparser
 import pandas as pd
 
-try:
-    from py_sec_edgar.proxy import ProxyRequest
-except:
-    import proxy as full_index
-
 
 class Error(Exception):
     pass
-
 
 
 

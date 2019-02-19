@@ -101,7 +101,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'py_sec_edgar_datadoc'
+htmlhelp_basename = 'py-sec-edgardoc'
 
 
 # -- Options for LaTeX output ------------------------------------------

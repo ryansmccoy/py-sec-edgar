@@ -15,27 +15,26 @@ import pyarrow.parquet as pq
 import requests
 from bs4 import BeautifulSoup
 
-from settings import CONFIG
-from proxy import ProxyRequest
-from utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict
+from py_sec_edgar import CONFIG
+from py_sec_edgar.proxy import ProxyRequest
+from py_sec_edgar.utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict
 
 def load_filings_feed(ticker_list_filter=True, form_list_filter=True):
 
     df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK)
 
+    logging.info('\n\n\n\tLoaded IDX files\n\n\n')
+
     df_merged_idx_filings = pq.read_table(CONFIG.MERGED_IDX_FILE).to_pandas().sort_values("Date Filed", ascending=False)
     # df_merged_idx_filings = pd.read_csv(CONFIG.MERGED_IDX_FILE, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
 
-    logging.info('\n\n\n\tLoaded IDX files\n\n\n')
-
     if ticker_list_filter:
-        logging.info('\n\n\n\tLoading Forms Filter\n\n\n')
-        df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['Form Type'].isin(CONFIG.forms_list)]
+        ticker_list = pd.read_csv(CONFIG.TICKER_LIST, header=None).iloc[:, 0].tolist()
+        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
 
     if form_list_filter:
-        ticker_list = pd.read_csv(CONFIG.TICKER_LIST, header=None).iloc[:,0].tolist()
-        df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
-        logging.info('\n\n\n\tLoaded Tickers\n\n\n')
+        logging.info('\n\n\n\tLoading Forms Filter\n\n\n')
+        df_merged_idx_filings = df_merged_idx_filings[df_merged_idx_filings['Form Type'].isin(CONFIG.forms_list)]
 
     df_cik_tickers = df_cik_tickers.dropna(subset=['CIK'])
 

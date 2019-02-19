@@ -255,7 +255,7 @@ Download Time Estimates
  * Feeds
     * Make Full-Index more efficient
     * Incorporate RSS Feed
- * Celery
+ * Add Celery
  * need to figure out way to quickly access downloaded content
  * extract earnings data from 8-K
  * setup proper logging instead of print

@@ -3,8 +3,8 @@
 
 import sys
 
-import feeds as py_sec_edgar_feeds
-import etl as py_sec_edgar_etl
+import py_sec_edgar.feeds as py_sec_edgar_feeds
+import py_sec_edgar.etl as py_sec_edgar_etl
 
 def main():
 
