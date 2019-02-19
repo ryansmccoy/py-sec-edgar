@@ -56,7 +56,7 @@ py-sec-edgar/refdata/tickers.csv
 
 #### Run Example:
 
-    python py_sec_edgar/example.py
+    python py_sec_edgar/download_filings.py
 
 #### Output Example:
     2019-02-16 01:20:03,136 INFO proxy:
@@ -83,6 +83,8 @@ py-sec-edgar/refdata/tickers.csv
     2019-02-16 01:21:08,377 INFO root:
     
             Completed Index Download
+            
+#### Run Example:
             
     Starting Filings Download:
 
