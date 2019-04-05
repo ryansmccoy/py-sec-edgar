@@ -1,7 +1,8 @@
 
 """Console script for py_sec_edgar."""
 
-import sys
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import py_sec_edgar.feeds as py_sec_edgar_feeds
 import py_sec_edgar.etl as py_sec_edgar_etl
