@@ -142,7 +142,7 @@ def convert_idx_to_csv(filepath):
 # https://www.sec.gov/Archives/edgar/full-index/
 # "./{YEAR}/QTR{NUMBER}/"
 
-def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=True):
+def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=False):
 
     dates_quarters = generate_folder_names_years_quarters(CONFIG.index_start_date, CONFIG.index_end_date)
 
@@ -163,8 +163,17 @@ def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=True):
         for i, file in enumerate(CONFIG.index_files):
 
             filepath = os.path.join(CONFIG.FULL_INDEX_DIR, year, qtr, file)
+            csv_filepath = filepath.replace('.idx', '.csv')
 
-            if not os.path.exists(filepath) or skip_if_exists == False:
+            if os.path.exists(filepath) and skip_if_exists == False:
+
+                os.remove(filepath)
+
+            if os.path.exists(csv_filepath) and skip_if_exists == False:
+
+                os.remove(csv_filepath)
+
+            if not os.path.exists(filepath):
 
                 if not os.path.exists(os.path.dirname(filepath)):
                     os.makedirs(os.path.dirname(filepath))
@@ -173,10 +182,10 @@ def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=True):
 
                 g.GET_FILE(url, filepath)
 
-            if save_idx_as_csv == True and skip_if_exists == False:
+                if save_idx_as_csv == True:
 
-                logging.info('\n\n\tConverting idx to csv\n\n')
-                convert_idx_to_csv(filepath)
+                    logging.info('\n\n\tConverting idx to csv\n\n')
+                    convert_idx_to_csv(filepath)
 
     logging.info('\n\n\n\tMerging IDX files\n\n\n\t')
     merge_idx_files()
