@@ -13,7 +13,9 @@ from collections import defaultdict
 from py_sec_edgar.utilities import file_size
 from py_sec_edgar.utilities import format_filename
 from py_sec_edgar.utilities import uudecode
+import logging
 
+logger = logging.getLogger(__name__)
 import re
 re10k = re.compile('10-K')
 regex_no_rfiles = re.compile(r'R.+\.htm')
@@ -162,162 +164,106 @@ def parse_filing(filepath):
 
     return file_metadata
 
-def complete_submission_filing(filepath, output_directory=None, file_ext=None, extraction_override=False):
-
-    FOLDER_PATH = True
+def complete_submission_filing(filepath, output_directory=None):
 
     elements_list = [('FILENAME', './/filename'), ('TYPE', './/type'),
                      ('SEQUENCE', './/sequence'), ('DESCRIPTION', './/description')]
 
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    else:
+        logger.info(f"Folder Already Exists {output_directory}")
+
+        return
+
+    logger.info("extracting documents to {}".format(output_directory))
+
+    xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
+    xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
+
     try:
-        if not os.path.exists(output_directory):
-            folder_exists = False
-        else:
-            folder_exists = True
+        # or codecs.open on Python 2
+        raw_text = open(filepath, "rb").read()
+        result = chardet.detect(raw_text)
+        charenc = result['encoding']
+
+        with io.open(filepath, "r", encoding=charenc) as f:
+            raw_text = f.read()
 
     except:
-        FOLDER_PATH = False
-        folder_exists = False
-        print("failed")
+        with io.open(filepath, "rb") as f:
+            raw_text = f.read()
 
-    if folder_exists == False or extraction_override == True:
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
+    sec_filing_header = parse_filing_header(raw_text)
 
-        print("extracting documents from {}".format(filepath))
+    header_filepath = os.path.join(output_directory, f"{os.path.basename(output_directory)}_FILING_HEADER.csv")
 
-        xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
-        xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
+    sec_filing_header.to_csv(header_filepath)
 
-        try:
-            # or codecs.open on Python 2
-            raw_text = open(filepath, "rb").read()
-            result = chardet.detect(raw_text)
-            charenc = result['encoding']
+    documents = xbrl_doc.findall(raw_text)
 
-            with io.open(filepath, "r", encoding=charenc) as f:
-                raw_text = f.read()
+    filing_documents = {}
 
-        except:
-            with io.open(filepath, "rb") as f:
-                raw_text = f.read()
+    for i, document in enumerate(documents, start=1):
+        uue_filepath = None
+        filing_document = {}
 
-        sec_filing_header = parse_filing_header(raw_text)
+        lxml_html = lxml.html.fromstring(document)
+        root = lxml_html.getroottree()
 
-        if not FOLDER_PATH:
-            CIK_KEY = sec_filing_header[sec_filing_header['KEY'].isin(['CENTRAL INDEX KEY'])]['VALUE']
-            cik_folder_path = os.path.join(output_directory, CIK_KEY.tolist()[0].lstrip("0"))
-            output_directory = os.path.join(cik_folder_path, os.path.basename(filepath.replace(".txt", "").replace("-", "")))
+        for (element, element_path) in elements_list:
+            try:
+                filing_document[f"{element}"] = root.xpath(f"{element_path}")[0].text.strip()
+            except:
+                filing_document[f"{element}"] = ""
 
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
+        raw_text = xbrl_text.findall(document)
+        raw_text = raw_text[0][1].replace("<XBRL>", "").replace("</XBRL>", "").strip()
+        raw_text = raw_text.replace("<XML>", "").replace("</XML>", "").strip()
 
-        header_filepath = os.path.join(output_directory, "{}_FILING_HEADER.csv".format(os.path.basename(output_directory)))
+        if raw_text.lower().startswith("begin") or document.lower().startswith("begin"):
 
-        sec_filing_header.to_csv(header_filepath)
+            uue_filepath = os.path.join(output_directory, filing_document['FILENAME'] + ".uue")
+            output_filepath = os.path.join(output_directory, uue_filepath.replace(".uue", ""))
+            output_filename = os.path.basename(output_filepath)
 
-        documents = xbrl_doc.findall(raw_text)
+            with open(uue_filepath, 'w', encoding=charenc) as f:
+                f.write(raw_text)
 
-        sec_filing_documents = {}
-        debug_sec_filing_documents = {}
+            uudecode(uue_filepath,out_file=output_filepath)
 
-        for i, document in enumerate(documents, start=1):
-            uue_file = False
-            file_metadata = {}
+        else:
+            doc_num = f"{int(filing_document['SEQUENCE'])}".zfill(4)
 
-            lxml_html = lxml.html.fromstring(document)
-            root = lxml_html.getroottree()
+            try:
+                output_filename = f"{doc_num}-({filing_document['TYPE']}) {filing_document['DESCRIPTION']} {filing_document['FILENAME']}"
+            except:
+                output_filename = f"{doc_num}-({filing_document['TYPE']}) {filing_document['FILENAME']}".replace(" ", "_").replace(":", "").replace("__", "_")
 
-            # (key, value) = elements_list[0]
-            for (key, value) in elements_list:
-                try:
-                    file_metadata["{}".format(key)] = root.xpath(
-                        "{}".format(value))[0].text.strip()
-                except:
-                    file_metadata["{}".format(key)] = ""
+            output_filename = output_filename.replace(" ", "_").replace(":", "").replace("__", "_")
 
-            debug_sec_filing_documents[i] = file_metadata
+            output_filename = format_filename(output_filename)
+            output_filepath = os.path.join(output_directory, output_filename)
 
-            raw_text = xbrl_text.findall(document)
-            raw_text = raw_text[0][1].replace(
-                "<XBRL>", "").replace("</XBRL>", "").strip()
-            raw_text = raw_text.replace(
-                "<XML>", "").replace("</XML>", "").strip()
+            with open(output_filepath, 'w', encoding=charenc) as f:
+                f.write(raw_text)
 
-            if raw_text.lower().startswith("begin"):
+        filing_document['RELATIVE_FILEPATH'] = os.path.join(os.path.basename(output_directory), output_filepath)
+        filing_document['DESCRIPTIVE_FILEPATH'] = output_filename
 
-                output_document = os.path.join(
-                    output_directory, file_metadata['FILENAME'] + ".uue")
-                with open(output_document, 'w', encoding=charenc) as f:
-                    f.write(raw_text)
+        filing_document['FILE_SIZE'] = file_size(output_filepath)
+        filing_document['FILE_SIZE_BYTES'] = os.stat(output_filepath).st_size
 
-                uudecode(output_document,
-                         out_file=output_document.replace(".uue", ""))
+        filing_documents[i] = filing_document
 
-                uue_file = True
+        if uue_filepath:
+            os.remove(uue_filepath)
 
-            elif document.lower().startswith("begin"):
+    df_sec_filing_contents = pd.DataFrame.from_dict(filing_documents, orient='index')
+    df_sec_filing_contents.to_csv(os.path.join(output_directory, f"{os.path.basename(output_directory)}_FILING_CONTENTS.csv"))
+    logger.info(df_sec_filing_contents)
 
-                output_document = os.path.join(
-                    output_directory, file_metadata['FILENAME'] + ".uue")
-
-                with open(output_document, 'w', encoding=charenc) as f:
-                    f.write(raw_text)
-
-                uudecode(output_document,
-                         out_file=output_document.replace(".uue", ""))
-
-                os.remove(output_document)
-                uue_file = True
-
-            else:
-
-                try:
-
-                    output_filepath = '{:04d}-({}) {} {}'.format(int(file_metadata['SEQUENCE']),
-                                                                 file_metadata['TYPE'],
-                                                                 file_metadata['DESCRIPTION'],
-                                                                 file_metadata['FILENAME']
-                                                                 ).replace(" ", "_").replace(":", "").replace("__", "_")
-
-                    output_filepath = format_filename(output_filepath)
-                    output_document = os.path.join(
-                        output_directory, output_filepath)
-
-                    with open(output_document, 'w', encoding=charenc) as f:
-                        f.write(raw_text)
-                except:
-
-                    output_filepath = '{:04d}-({}) {}'.format(int(file_metadata['SEQUENCE']),
-                                                                 file_metadata['TYPE'],
-                                                                 file_metadata['FILENAME']).replace(" ", "_").replace(":", "").replace("__", "_")
-
-                    output_filepath = format_filename(output_filepath)
-                    output_document = os.path.join(
-                        output_directory, output_filepath)
-
-                    with open(output_document, 'w', encoding=charenc) as f:
-                        f.write(raw_text)
-
-            debug_sec_filing_documents[i]['OUTPUT_FILEPATH'] = output_document
-
-            file_metadata['RELATIVE_FILEPATH'] = os.path.join(os.path.basename(output_directory), 'FILES', output_filepath)
-            file_metadata['DESCRIPTIVE_FILEPATH'] = output_filepath
-
-            file_metadata['FILE_SIZE'] = file_size(output_document)
-            file_metadata['FILE_SIZE_BYTES'] = os.stat(output_document).st_size
-
-            sec_filing_documents[i] = file_metadata
-
-            if uue_file == True:
-                os.remove(output_document)
-
-        df_sec_filing_contents = pd.DataFrame.from_dict(sec_filing_documents, orient='index')
-        df_sec_filing_contents.to_csv(os.path.join(output_directory, "{}_FILING_CONTENTS.csv".format(os.path.basename(output_directory))))
-        return df_sec_filing_contents
-    else:
-        print("already extracted")
-        return output_directory
+    return df_sec_filing_contents
 
 
 if __name__ == '__main__':
@@ -333,6 +279,6 @@ if __name__ == '__main__':
 
     if len(sys.argv[1:]) >= 1:
         args = parser.parse_args()
-        complete_submission_filing(filepath=None, output_directory=None, file_ext=None, extraction_override=False)
+        complete_submission_filing(filepath=None, output_directory=None, extraction_override=False)
     else:
         sys.exit(parser.print_help())

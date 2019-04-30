@@ -1,4 +1,4 @@
-
+from pprint import pprint
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ def broker(filing, extract_filing_contents=False):
     """
 
     feed_item = prepare_filepaths(filing)
-
+    pprint(feed_item)
     feed_item = download_filing(feed_item)
 
     if extract_filing_contents:
