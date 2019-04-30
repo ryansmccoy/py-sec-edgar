@@ -187,9 +187,9 @@ def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=False):
                     logging.info('\n\n\tConverting idx to csv\n\n')
                     convert_idx_to_csv(filepath)
 
-    logging.info('\n\n\n\tMerging IDX files\n\n\n\t')
+    logging.info('\n\n\tMerging IDX files\n\n')
     merge_idx_files()
-    logging.info('\n\n\n\tCompleted Index Download\n\n\n\t')
+    logging.info('\n\n\tCompleted Index Download\n\n\t')
 
 
 def download_edgar_filings_xbrl_rss_files():

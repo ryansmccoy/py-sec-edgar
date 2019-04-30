@@ -12,3 +12,4 @@ numpy
 pytest
 click
 pyarrow
+sphinx

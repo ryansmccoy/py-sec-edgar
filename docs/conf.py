@@ -21,6 +21,14 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+from recommonmark.parser import CommonMarkParser
+
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'markdown',
+    '.md': CommonMarkParser,
+}
 
 import py_sec_edgar
 
@@ -32,7 +40,7 @@ import py_sec_edgar
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',    'recommonmark']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -41,14 +49,15 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+# source_suffix = ['.rst', '.md']
+
 
 # The master toctree document.
 master_doc = 'index'
 
 # General information about the project.
-project = u'Python SEC Edgar Data'
-copyright = u"2018, Ryan S. McCoy"
+project = u'Python SEC Edgar'
+copyright = u"2019, Ryan S. McCoy"
 author = u"Ryan S. McCoy"
 
 # The version info for the project you're documenting, acts as replacement
@@ -101,7 +110,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'py-sec-edgardoc'
+htmlhelp_basename = 'py-sec-edgar'
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -129,7 +138,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'py_sec_edgar.tex',
-     u'Python SEC Edgar Data Documentation',
+     u'Python SEC Edgar Documentation',
      u'Ryan S. McCoy', 'manual'),
 ]
 
@@ -140,7 +149,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'py_sec_edgar',
-     u'Python SEC Edgar Data Documentation',
+     u'Python SEC Edgar Documentation',
      [author], 1)
 ]
 
@@ -152,10 +161,10 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'py_sec_edgar',
-     u'Python SEC Edgar Data Documentation',
+     u'Python SEC Edgar Documentation',
      author,
      'py_sec_edgar',
-     'One line description of project.',
+     'Python package used to download complete submission filings from the sec.gov/edgar website.',
      'Miscellaneous'),
 ]
 

@@ -64,7 +64,6 @@ class ProxyRequest(object):
 
         _headers = {'User-Agent': _user_agent}
 
-        # logger.info("\n\n\tSelected User-Agent:\t{}\n".format(_headers))
         return _headers
 
     def generate_random_header_and_proxy_host(self):
@@ -92,8 +91,6 @@ class ProxyRequest(object):
                 self.generate_random_header_and_proxy_host()
 
                 self.r = requests.get(url, stream=True, headers=self.random_header, proxies=self.random_proxy_host, timeout=(self.connect_timeout, self.read_timeout))
-
-                logger.info("\n\n\tDownload Complete\n")
 
                 logger.info("\n\n\tSaving to: \t{}\n".format(filepath))
 

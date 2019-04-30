@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = py_sec_edgar_data
+SPHINXPROJ    = py_sec_edgar
 SOURCEDIR     = .
 BUILDDIR      = _build
 

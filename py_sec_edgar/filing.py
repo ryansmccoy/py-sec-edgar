@@ -31,7 +31,7 @@ def parse_filing_header(raw_html):
         soup = BeautifulSoup(lxml.html.tostring(sec_header_element), 'lxml')
         sec_header = re.findall(
             r'<(SEC-HEADER|sec-header)>(.*?)</(SEC-HEADER|sec-header)>', soup.prettify(), re.DOTALL)[0][1]
-        # i, headerItem = list(enumerate(sec_header.split('\n')))[5]
+
         split_header = sec_header.split('\n')
         for i, headerItem in enumerate(split_header):
             if len(headerItem) > 0:
@@ -116,10 +116,10 @@ def identify_filing(sec_filing_documents, override=None):
     print("Parsing DOC {}".format(i))
     return i, document
 
-def parse_filing(complete_submission_filing_filepath):
+def parse_filing(filepath):
     """
     Parses html file
-    :param complete_submission_filing_filepath: html file
+    :param filepath: html file
     :return: dictionary of file_contents including lxml_dict
     """
     # complete_submission_filing_filepath = filing[0]
@@ -128,13 +128,13 @@ def parse_filing(complete_submission_filing_filepath):
 
     try:
         # or codecs.open on Python 2
-        raw_text = open(complete_submission_filing_filepath, "rb").read()
+        raw_text = open(filepath, "rb").read()
         result = chardet.detect(raw_text)
         charenc = result['encoding']
         raw_text = raw_text.decode(charenc)
     except:
         charenc = ""
-        with io.open(complete_submission_filing_filepath, "rb") as f:
+        with io.open(filepath, "rb") as f:
             raw_text = f.read()
 
     lxml_html = lxml.html.fromstring(raw_text)
@@ -143,7 +143,7 @@ def parse_filing(complete_submission_filing_filepath):
 
     file_metadata = {}
 
-    file_metadata['FILEPATH'] = complete_submission_filing_filepath
+    file_metadata['FILEPATH'] = filepath
 
     for ii, element in enumerate(root.xpath("//*/body/*")):
         lxml_dict[ii] = element
@@ -162,8 +162,7 @@ def parse_filing(complete_submission_filing_filepath):
 
     return file_metadata
 
-
-def complete_submission_filing(complete_submission_filing_filepath=None, output_directory=None, file_ext=None, extraction_override=False):
+def complete_submission_filing(filepath, output_directory=None, file_ext=None, extraction_override=False):
 
     FOLDER_PATH = True
 
@@ -185,27 +184,22 @@ def complete_submission_filing(complete_submission_filing_filepath=None, output_
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
 
-        print("extracting documents from {}".format(complete_submission_filing_filepath))
-
-        try:
-            file_ext
-        except:
-            file_ext = ['.']
+        print("extracting documents from {}".format(filepath))
 
         xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
         xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
 
         try:
             # or codecs.open on Python 2
-            raw_text = open(complete_submission_filing_filepath, "rb").read()
+            raw_text = open(filepath, "rb").read()
             result = chardet.detect(raw_text)
             charenc = result['encoding']
 
-            with io.open(complete_submission_filing_filepath, "r", encoding=charenc) as f:
+            with io.open(filepath, "r", encoding=charenc) as f:
                 raw_text = f.read()
 
         except:
-            with io.open(complete_submission_filing_filepath, "rb") as f:
+            with io.open(filepath, "rb") as f:
                 raw_text = f.read()
 
         sec_filing_header = parse_filing_header(raw_text)
@@ -213,7 +207,7 @@ def complete_submission_filing(complete_submission_filing_filepath=None, output_
         if not FOLDER_PATH:
             CIK_KEY = sec_filing_header[sec_filing_header['KEY'].isin(['CENTRAL INDEX KEY'])]['VALUE']
             cik_folder_path = os.path.join(output_directory, CIK_KEY.tolist()[0].lstrip("0"))
-            output_directory = os.path.join(cik_folder_path, os.path.basename(complete_submission_filing_filepath.replace(".txt", "").replace("-", "")))
+            output_directory = os.path.join(cik_folder_path, os.path.basename(filepath.replace(".txt", "").replace("-", "")))
 
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
@@ -339,6 +333,6 @@ if __name__ == '__main__':
 
     if len(sys.argv[1:]) >= 1:
         args = parser.parse_args()
-        complete_submission_filing(complete_submission_filing_filepath=None, output_directory=None, file_ext=None, extraction_override=False)
+        complete_submission_filing(filepath=None, output_directory=None, file_ext=None, extraction_override=False)
     else:
         sys.exit(parser.print_help())

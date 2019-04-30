@@ -118,3 +118,5 @@ py_sec_edgar/celery.py
 py_sec_edgar/celery_schedule.py
 py_sec_edgar/celery_tasks.py
 py_sec_edgar/start_celery.sh
+database.py
+docs/_static/
