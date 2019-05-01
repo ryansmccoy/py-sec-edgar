@@ -47,7 +47,7 @@ setup(
     description="Python package used to download SEC Edgar filings",
     entry_points={
         'console_scripts': [
-            'py-sec-edgar=py_sec_edgar.download_filings:main',
+            'py-sec-edgar=py_sec_edgar.run:main',
         ],
     },
     install_requires=requirements,

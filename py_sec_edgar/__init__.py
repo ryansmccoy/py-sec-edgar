@@ -120,7 +120,10 @@ class Folders(Config):
         if not os.path.exists(_):
             print("{} Doesn't Exists".format(_))
             print("Creating Directory {}".format(SEC_DIR))
-            os.makedirs(_)
+            try:
+                os.makedirs(_)
+            except:
+                print("Error Creating Directory")
 
     edgar_Archives_url = r'https://www.sec.gov/Archives/'
     edgar_full_index = urljoin(edgar_Archives_url, 'edgar/full-index/')
