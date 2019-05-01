@@ -12,8 +12,6 @@ from bs4 import UnicodeDammit  # BeautifulSoup 4
 import feedparser
 import pandas as pd
 
-from py_sec_edgar import CONFIG
-from urllib.parse import urljoin
 
 class Error(Exception):
     pass
@@ -321,12 +319,12 @@ def generate_folder_names_years_quarters(start_date, end_date):
 
     return dates_quarters
 
-def prepare_filepaths(filing):
+from py_sec_edgar.settings import Config as CONFiG
+
+def prepare_message(filing):
     """
     Sets parameters needed for various aspects.
 
-    feed_item['year_dir'] = '2019'
-    feed_item['quarter_dir'] = 'QTR1'
     feed_item['output_folderpath'] = 'C:\\sec_gov\\Archives\\edgar\\filings\\2019\\QTR1'
     feed_item['filing_filepath'] = 'C:\\sec_gov\\Archives\\edgar\\filings\\2019\\QTR1\\0001694665-19-000013.txt'
     feed_item['cik_directory'] = 'C:\\sec_gov\\Archives\\edgar\\data\\1694665\\'

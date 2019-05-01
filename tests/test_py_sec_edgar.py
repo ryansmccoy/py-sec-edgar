@@ -6,8 +6,7 @@
 import pytest
 
 from click.testing import CliRunner
-
-import py_sec_edgar.run
+import py_sec_edgar
 
 
 @pytest.fixture
@@ -21,7 +20,7 @@ def response():
 
 
 def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
+    """Sample pytest tests function with the pytest fixture as an argument."""
     # from bs4 import BeautifulSoup
     # assert 'GitHub' in BeautifulSoup(response.content).title.string
     feed_item = {

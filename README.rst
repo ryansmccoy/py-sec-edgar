@@ -1,8 +1,7 @@
 Python SEC Edgar
 ================
 
-A Python package used to download complete submission filings from the
-sec.gov/edgar website.
+A Python package used to download complete submission filings from the sec.gov/edgar website.  The goal for this project is to allow for
 
 Features
 --------
@@ -37,7 +36,7 @@ Setup Environment (Linux):
    sudo chown -R $USER:$USER /sec_gov
    pip install -r requirements.txt
 
-Configure Settings (Optional):
+Configure Settings (Optional)
 -------------------------------
 
 Specify Form Types, Start, and End Dates:
@@ -73,7 +72,7 @@ Specify Tickers:
    WFC
 
 
-Run Example:
+Run Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
@@ -95,75 +94,76 @@ Output:
     Selected User-Agent:	{'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36'}
     Success!	Saved to filepath:	C:\sec_gov\Archives\edgar\full-index\master.idx
 
-    Completed Index Download
-
-    Starting Filings Download:
-
-    CIK                                                         80424
-    Company Name                                  PROCTER & GAMBLE Co
+        Completed Index Download
+    CIK                                                         72971
+    Company Name                             WELLS FARGO & COMPANY/MN
     Form Type                                                    10-K
-    Date Filed                                             2018-08-07
-    Filename                edgar/data/80424/0000080424-18-000055.txt
-    published                                              2018-08-07
-    url             https://www.sec.gov/Archives/edgar/data/80424/...
+    Date Filed                                             2019-02-27
+    Filename                edgar/data/72971/0000072971-19-000227.txt
+    published                                              2019-02-27
+    url             https://www.sec.gov/Archives/edgar/data/72971/...
+    Name: 103670, dtype: object
+    2019-05-01 14:14:49,841 ERROR py_sec_edgar.filing: Filing Already Exists
+    2019-05-01 14:14:51,844 INFO py_sec_edgar.filing: Filing Loaded
+    2019-05-01 14:14:55,613 INFO py_sec_edgar.filing: Filing Lxml
 
-    Downloading: 	https://www.sec.gov/Archives/edgar/data/80424/0000080424-18-000055.txt
-    Saving to: 	C:\sec_gov\Archives\edgar\data\80424\000008042418000055\0000080424-18-000055.txt
-    Success!
+                   GROUP                                 KEY                             VALUE
+    1       COMPANY DATA      0000072971-19-000227.hdr.sgml                           20190227
+    2       COMPANY DATA               <acceptance-datetime>                    20190227152351
+    4       COMPANY DATA                    ACCESSION NUMBER              0000072971-19-000227
+    5       COMPANY DATA           CONFORMED SUBMISSION TYPE                              10-K
+    6       COMPANY DATA               PUBLIC DOCUMENT COUNT                               211
+    7       COMPANY DATA          CONFORMED PERIOD OF REPORT                          20181231
+    8       COMPANY DATA                    FILED AS OF DATE                          20190227
+    9       COMPANY DATA                   DATE AS OF CHANGE                          20190227
+    14      COMPANY DATA              COMPANY CONFORMED NAME          WELLS FARGO & COMPANY/MN
+    15      COMPANY DATA                   CENTRAL INDEX KEY                        0000072971
+    16      COMPANY DATA  STANDARD INDUSTRIAL CLASSIFICATION  NATIONAL COMMERCIAL BANKS [6021]
+    17      COMPANY DATA                          IRS NUMBER                         410449260
+    18      COMPANY DATA              STATE OF INCORPORATION                                DE
+    19      COMPANY DATA                     FISCAL YEAR END                              1231
+    22     FILING VALUES                           FORM TYPE                              10-K
+    23     FILING VALUES                             SEC ACT                          1934 Act
+    24     FILING VALUES                     SEC FILE NUMBER                         001-02979
+    25     FILING VALUES                         FILM NUMBER                          19637386
+    28  BUSINESS ADDRESS                            STREET 1             420 MONTGOMERY STREET
+    29  BUSINESS ADDRESS                                CITY                     SAN FRANCISCO
+    30  BUSINESS ADDRESS                               STATE                                CA
+    31  BUSINESS ADDRESS                                 ZIP                             94163
+    32  BUSINESS ADDRESS                      BUSINESS PHONE                        6126671234
+    35      MAIL ADDRESS                            STREET 1             420 MONTGOMERY STREET
+    36      MAIL ADDRESS                                CITY                     SAN FRANCISCO
+    37      MAIL ADDRESS                               STATE                                CA
+    38      MAIL ADDRESS                                 ZIP                             94163
+    41    FORMER COMPANY               FORMER CONFORMED NAME               WELLS FARGO & CO/MN
+    42    FORMER COMPANY                 DATE OF NAME CHANGE                          19981103
+    45    FORMER COMPANY               FORMER CONFORMED NAME                      NORWEST CORP
+    46    FORMER COMPANY                 DATE OF NAME CHANGE                          19920703
+    49    FORMER COMPANY               FORMER CONFORMED NAME          NORTHWEST BANCORPORATION
+    50    FORMER COMPANY                 DATE OF NAME CHANGE                          19830516
+    51    FORMER COMPANY              </acceptance-datetime>
+    2019-05-01 14:14:59,984 INFO py_sec_edgar.filing:
 
-    Extracting Filing Documents:
+            Extracting Filing Documents:
 
-    Path:  C:\sec_gov\Archives\edgar\data\80424\000008042418000055
+    2019-05-01 14:15:07,547 INFO py_sec_edgar.filing:                           FILENAME        TYPE SEQUENCE                                        DESCRIPTION                                  RELATIVE_FILEPATH
+    1             wfc-12312018x10k.htm        10-K        1                                          FORM 10-K  000007297119000227\0001-(10...         0001-(10-K)_FORM_10-K_wfc-12312018x10k.htm
+    2           wfc-12312018xex10a.htm     EX-10.A        2                                       EXHIBIT 10.A  000007297119000227\0002-(EX...  0002-(EX-10.A)_EXHIBIT_10.A_wfc-12312018xex10a...
+    3           wfc-12312018xex10c.htm     EX-10.C        3                                       EXHIBIT 10.C  000007297119000227\0003-(EX...  0003-(EX-10.C)_EXHIBIT_10.C_wfc-12312018xex10c...
+    4           wfc-12312018xex10i.htm     EX-10.I        4                                       EXHIBIT 10.I  000007297119000227\0004-(EX...  0004-(EX-10.I)_EXHIBIT_10.I_wfc-12312018xex10i...
+    5           wfc-12312018xex10j.htm     EX-10.J        5                                       EXHIBIT 10.J  000007297119000227\0005-(EX...  0005-(EX-10.J)_EXHIBIT_10.J_wfc-12312018xex10j...
+    204                       R183.htm         XML      204                                IDEA: XBRL DOCUMENT  000007297119000227\0204-(XM...             0204-(XML)_IDEA_XBRL_DOCUMENT_R183.htm
+    205                       R184.htm         XML      205                                IDEA: XBRL DOCUMENT  000007297119000227\0205-(XM...             0205-(XML)_IDEA_XBRL_DOCUMENT_R184.htm
+    206                       R185.htm         XML      206                                IDEA: XBRL DOCUMENT  000007297119000227\0206-(XM...             0206-(XML)_IDEA_XBRL_DOCUMENT_R185.htm
+    207          Financial_Report.xlsx       EXCEL      207                                IDEA: XBRL DOCUMENT  000007297119000227\00000729...                              Financial_Report.xlsx
+    208                        Show.js         XML      208                                IDEA: XBRL DOCUMENT  000007297119000227\0208-(XM...              0208-(XML)_IDEA_XBRL_DOCUMENT_Show.js
+    209                     report.css         XML      209                                IDEA: XBRL DOCUMENT  000007297119000227\0209-(XM...           0209-(XML)_IDEA_XBRL_DOCUMENT_report.css
+    210              FilingSummary.xml         XML      211                                IDEA: XBRL DOCUMENT  000007297119000227\0211-(XM...    0211-(XML)_IDEA_XBRL_DOCUMENT_FilingSummary.xml
+    211  0000072971-19-000227-xbrl.zip         ZIP      213                                IDEA: XBRL DOCUMENT  000007297119000227\00000729...                      0000072971-19-000227-xbrl.zip
 
-                GROUP                                 KEY                                              VALUE
-    1       COMPANY DATA      0000080424-18-000055.hdr.sgml                                            20180807
-    2       COMPANY DATA               <acceptance-datetime>                                     20180807161922
-    4       COMPANY DATA                    ACCESSION NUMBER                               0000080424-18-000055
-    5       COMPANY DATA           CONFORMED SUBMISSION TYPE                                               10-K
-    6       COMPANY DATA               PUBLIC DOCUMENT COUNT                                                136
-    7       COMPANY DATA          CONFORMED PERIOD OF REPORT                                           20180630
-    8       COMPANY DATA                    FILED AS OF DATE                                           20180807
-    9       COMPANY DATA                   DATE AS OF CHANGE                                           20180807
-    14      COMPANY DATA              COMPANY CONFORMED NAME                                PROCTER & GAMBLE Co
-    15      COMPANY DATA                   CENTRAL INDEX KEY                                         0000080424
-    16      COMPANY DATA  STANDARD INDUSTRIAL CLASSIFICATION  SOAP, DETERGENT, CLEANING PREPARATIONS, PERFUM...
-    17      COMPANY DATA                          IRS NUMBER                                          310411980
-    18      COMPANY DATA              STATE OF INCORPORATION                                                 OH
-    19      COMPANY DATA                     FISCAL YEAR END                                               0630
-    22     FILING VALUES                           FORM TYPE                                               10-K
-    23     FILING VALUES                             SEC ACT                                           1934 Act
-    24     FILING VALUES                     SEC FILE NUMBER                                          001-00434
-    25     FILING VALUES                         FILM NUMBER                                           18998362
-    28  BUSINESS ADDRESS                            STREET 1                         ONE PROCTER & GAMBLE PLAZA
-    29  BUSINESS ADDRESS                                CITY                                         CINCINNATI
-    30  BUSINESS ADDRESS                               STATE                                                 OH
-    31  BUSINESS ADDRESS                                 ZIP                                              45202
-    32  BUSINESS ADDRESS                      BUSINESS PHONE                                         5139831100
-    35      MAIL ADDRESS                            STREET 1                         ONE PROCTER & GAMBLE PLAZA
-    36      MAIL ADDRESS                                CITY                                         CINCINNATI
-    37      MAIL ADDRESS                               STATE                                                 OH
-    38      MAIL ADDRESS                                 ZIP                                              45202
-    41    FORMER COMPANY               FORMER CONFORMED NAME                                PROCTER & GAMBLE CO
-    42    FORMER COMPANY                 DATE OF NAME CHANGE                                           19920703
+    [211 rows x 6 columns]
+    2019-05-01 14:15:07,690 INFO py_sec_edgar.filing:
 
-                            FILENAME        TYPE SEQUENCE                                        DESCRIPTION                                    OUTPUT_FILEPATH                                  RELATIVE_FILEPATH                               DESCRIPTIVE_FILEPATH FILE_SIZE  FILE_SIZE_BYTES
-    1             fy171810-kreport.htm        10-K        1                                        FY1718 10-K  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0001-(10-K)_FY1718_10...       0001-(10-K)_FY1718_10-K_fy171810-kreport.htm    3.8 MB          4026348
-    2        fy171810-kexhibit10x1.htm     EX-10.1        2  THE P&G 2001 STOCK AND INCENTIVE COMPENSATION ...  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0002-(EX-10.1)_THE_PG...  0002-(EX-10.1)_THE_PG_2001_STOCK_AND_INCENTIVE...   98.1 KB           100409
-    3        fy171810-kexhibit10x2.htm     EX-10.2        3                            THE P&G 1992 STOCK PLAN  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0003-(EX-10.2)_THE_PG...  0003-(EX-10.2)_THE_PG_1992_STOCK_PLAN_fy171810...   82.9 KB            84925
-    4        fy171810-kexhibit10x3.htm     EX-10.3        4      THE P&G EXECUTIVE GROUP LIFE INSURANCE POLICY  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0004-(EX-10.3)_THE_PG...  0004-(EX-10.3)_THE_PG_EXECUTIVE_GROUP_LIFE_INS...  194.9 KB           199603
-    5        fy171810-kexhibit10x5.htm     EX-10.5        5    THE P&G 1993 NON-EMPLOYEE DIRECTORS' STOCK PLAN  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0005-(EX-10.5)_THE_PG...  0005-(EX-10.5)_THE_PG_1993_NON-EMPLOYEE_DIRECT...   35.0 KB            35863
-    6        fy171810-kexhibit10x8.htm     EX-10.8        6    THE P&G 2003 NON-EMPLOYEE DIRECTORS' STOCK PLAN  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0006-(EX-10.8)_THE_PG...  0006-(EX-10.8)_THE_PG_2003_NON-EMPLOYEE_DIRECT...   83.9 KB            85907
-    7       fy171810-kexhibit10x10.htm    EX-10.10        7  SUMMARY OF THE COMPANY'S SHORT TERM ACHIEVEMEN...  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0007-(EX-10.10)_SUMMA...  0007-(EX-10.10)_SUMMARY_OF_THE_COMPANYS_SHORT_...   27.0 KB            27625
-    ...
-    ...
-    129                       R105.htm         XML      129                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0129-(XML)_IDEA_XBRL_...             0129-(XML)_IDEA_XBRL_DOCUMENT_R105.htm   31.4 KB            32107
-    130                       R106.htm         XML      130                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0130-(XML)_IDEA_XBRL_...             0130-(XML)_IDEA_XBRL_DOCUMENT_R106.htm   40.0 KB            41005
-    131          Financial_Report.xlsx       EXCEL      131                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0130-(XML)_IDEA_XBRL_...             0130-(XML)_IDEA_XBRL_DOCUMENT_R106.htm  205.9 KB           210825
-    132                        Show.js         XML      132                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0132-(XML)_IDEA_XBRL_...              0132-(XML)_IDEA_XBRL_DOCUMENT_Show.js    1.3 KB             1366
-    133                     report.css         XML      133                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0133-(XML)_IDEA_XBRL_...           0133-(XML)_IDEA_XBRL_DOCUMENT_report.css    2.8 KB             2866
-    134              FilingSummary.xml         XML      135                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0135-(XML)_IDEA_XBRL_...    0135-(XML)_IDEA_XBRL_DOCUMENT_FilingSummary.xml   69.1 KB            70718
-    135                 MetaLinks.json        JSON      137                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0137-(JSON)_IDEA_XBRL...      0137-(JSON)_IDEA_XBRL_DOCUMENT_MetaLinks.json    1.0 MB          1054848
-    136  0000080424-18-000055-xbrl.zip         ZIP      138                                IDEA: XBRL DOCUMENT  C:\sec_gov\Archives\edgar\data\80424\000008042...  000008042418000055\FILES\0137-(JSON)_IDEA_XBRL...      0137-(JSON)_IDEA_XBRL_DOCUMENT_MetaLinks.json  912.6 KB           934458
 
     Extraction Complete
 

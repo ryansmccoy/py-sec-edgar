@@ -1,49 +1,33 @@
-import os
-import shutil
-import logging
+# -*- coding: utf-8 -*-
+from pprint import pprint
+import os, sys
+import click
 
-logger = logging.getLogger(__name__)
+import pandas as pd
+pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.max_rows', 100)
+pd.set_option('display.width', 600)
 
-from py_sec_edgar.proxy import ProxyRequest
-import zipfile
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def download_filing(feed_item, zip_filing=False):
-    """
-    {'CIK': 104169,
-     'Company Name': 'Walmart Inc.',
-     'Date Filed': '2019-03-28',
-     'Filename': 'edgar/data/104169/0000104169-19-000016.txt',
-     'Form Type': '10-K',
-     'cik_directory': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\',
-     'extracted_filing_directory': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\000010416919000016',
-     'filing_filepath': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\0000104169-19-000016.txt',
-     'filing_folder': '000010416919000016',
-     'filing_url': 'https://www.sec.gov/Archives/edgar/data/104169/0000104169-19-000016.txt',
-     'filing_zip_filepath': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\0000104169-19-000016.zip',
-     'published': '2019-03-28',
-     'url': 'https://www.sec.gov/Archives/edgar/data/104169/0000104169-19-000016.txt'}
-    """
-    if not os.path.exists(feed_item['cik_directory']):
+import py_sec_edgar.feeds as py_sec_edgar_feeds
+import py_sec_edgar.broker as py_sec_edgar_etl
 
-        os.makedirs(feed_item['cik_directory'])
+@click.command()
+@click.option('--ticker_list_filter', default=True)
+@click.option('--form_list_filter', default=True)
+@click.option('--save_output', default=False)
+def main(ticker_list_filter, form_list_filter, save_output):
 
-    if not os.path.exists(feed_item['filing_filepath']):
+    py_sec_edgar_feeds.update_full_index_feed(skip_if_exists=True)
 
-        g = ProxyRequest()
+    df_filings_idx = py_sec_edgar_feeds.load_filings_feed(ticker_list_filter=ticker_list_filter, form_list_filter=form_list_filter)
 
-        g.GET_FILE(feed_item['filing_url'], feed_item['filing_filepath'])
+    for i, filing in df_filings_idx.iterrows():
 
-        # todo: celery version of download full
-        # consume_complete_submission_filing_txt.delay(feed_item, filepath_cik)
+        py_sec_edgar_etl.broker(filing)
 
-    elif os.path.exists(feed_item['filing_filepath']) or os.path.exists(feed_item['filing_zip_filepath']):
-        logger.info(f"\n\nFile Already exists\t {feed_item['filing_filepath']}\n\n")
-    else:
-        logger.info(f"\n\nSomething Might be wrong\t {feed_item['filing_filepath']}\n\n")
+if __name__ == "__main__":
 
-    if zip_filing:
-
-        zipfile.ZipFile(feed_item['filing_zip_filepath'], mode='w', compression=zipfile.ZIP_DEFLATED).write(feed_item['filing_filepath'])
-        os.remove(feed_item['filing_filepath'])
-
-    return feed_item
+    main()

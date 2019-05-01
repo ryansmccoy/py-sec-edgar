@@ -19,8 +19,6 @@ Once you have a copy of the source, you can install it with:
 
 .. code-block:: console
 
-    $ python setup.py install
-
+    $ pip install -r requirements.txt
 
 .. _Github repo: https://github.com/ryansmccoy/py_sec_edgar
-.. _tarball: https://github.com/ryansmccoy/py_sec_edgar/tarball/master
