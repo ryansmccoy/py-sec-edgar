@@ -3,8 +3,8 @@ Python SEC Edgar
 
 A Python package used to download complete submission filings from the sec.gov/edgar website.  The goal for this project is to make it easy to get filings from the SEC website onto your computer for the companies and forms you desire.  A few hurdles that I've tried to ease with this project: 
 
-    CIK to Ticker Equivalent - probably the biggest hurdle is just figuring out the CIK for the company you want.  I've tried to bypass this via a reference file mapping CIK to tickers.  I'm sure there is a better way, but for now it seems to work.
-    Organizing the Data - I decided to keep it simple and organize the data similar to the SEC Edgar website (which is explained below)
+* CIK to Ticker Equivalent - probably the biggest hurdle is just figuring out the CIK for the company you want.  I've tried to bypass this via a reference file mapping CIK to tickers.  I'm sure there is a better way, but for now it seems to work.
+* Organizing the Data - I decided to keep it simple and organize the data similar to the SEC Edgar website (which is explained below)
 
 Features
 --------
