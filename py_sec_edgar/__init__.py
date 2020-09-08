@@ -8,6 +8,11 @@ from urllib.parse import urljoin
 
 import pandas as pd
 
+pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.max_rows', 100)
+pd.set_option('display.width', 600)
+
 __author__ = """Ryan S. McCoy"""
 __email__ = '18177650+ryansmccoy@users.noreply.github.com'
 __version__ = '0.1.0'
@@ -87,9 +92,7 @@ def SetupLogger():
 
     logger.addHandler(console)
 
-from py_sec_edgar.settings import Config
-
-class Folders(Config):
+class Folders:
 
     ROOT_DIR = os.path.abspath(os.sep)
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -137,7 +140,7 @@ class Folders(Config):
     sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day ==
                                           sec_dates_weekdays[0].day]
 
-CONFIG = Folders()
+# CONFIG = Folders()
 
 config = {
     'disable_existing_loggers': False,

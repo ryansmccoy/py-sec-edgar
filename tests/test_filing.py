@@ -11,12 +11,12 @@ filing = {
     'Date Filed': '2019-03-28',
     'Filename': 'edgar/data/104169/0000104169-19-000016.txt',
     'Form Type': '10-K',
-    'cik_directory': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\',
-    'extracted_filing_directory': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\000010416919000016',
-    'filing_filepath': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\0000104169-19-000016.txt',
+    'cik_directory': 'sec_gov\\Archives\\edgar\\data\\104169\\',
+    'extracted_filing_directory': 'sec_gov\\Archives\\edgar\\data\\104169\\000010416919000016',
+    'filing_filepath': 'sec_gov\\Archives\\edgar\\data\\104169\\0000104169-19-000016.txt',
     'filing_folder': '000010416919000016',
     'filing_url': 'https://www.sec.gov/Archives/edgar/data/104169/0000104169-19-000016.txt',
-    'filing_zip_filepath': 'C:\\sec_gov\\Archives\\edgar\\data\\104169\\0000104169-19-000016.zip',
+    'filing_zip_filepath': 'sec_gov\\Archives\\edgar\\data\\104169\\0000104169-19-000016.zip',
     'published': '2019-03-28',
     'url': 'https://www.sec.gov/Archives/edgar/data/104169/0000104169-19-000016.txt'
 }

@@ -15,9 +15,9 @@ import pyarrow.parquet as pq
 import requests
 from bs4 import BeautifulSoup
 
-from py_sec_edgar import CONFIG
-from py_sec_edgar.proxy import ProxyRequest
-from py_sec_edgar.utilities import determine_if_sec_edgar_feed_and_local_files_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict
+from py_sec_edgar.settings import CONFIG
+from py_sec_edgar.download import ProxyRequest
+from py_sec_edgar.utilities import edgar_and_local_differ, walk_dir_fullpath, generate_folder_names_years_quarters, read_xml_feedparser, flattenDict
 
 def load_filings_feed(ticker_list_filter=True, form_list_filter=True):
 
@@ -82,7 +82,7 @@ def update_daily_files():
         for daily_url, daily_local_filepath in daily_files:
 
             if consecutive_days_same < 5 and os.path.exists(daily_local_filepath):
-                status = determine_if_sec_edgar_feed_and_local_files_differ(
+                status = edgar_and_local_differ(
                     daily_url, daily_local_filepath)
                 consecutive_days_same = 0
             elif consecutive_days_same > 5 and os.path.exists(daily_local_filepath):
@@ -338,7 +338,7 @@ def parse_monthly():
             monthly_url, monthly_local_filepath = generate_monthly_index_url_and_filepaths(
                 day)
 
-            status = determine_if_sec_edgar_feed_and_local_files_differ(monthly_url, monthly_local_filepath)
+            status = edgar_and_local_differ(monthly_url, monthly_local_filepath)
 
             feed = read_xml_feedparser(monthly_local_filepath)
 

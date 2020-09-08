@@ -16,8 +16,6 @@ import pandas as pd
 class Error(Exception):
     pass
 
-
-
 def decode_html(html_string):
     converted = UnicodeDammit(html_string)
     if not converted.unicode_markup:
@@ -286,7 +284,7 @@ def read_xml_feedparser(source_file):
 
 desired_width = 600
 
-def determine_if_sec_edgar_feed_and_local_files_differ(url, local_filepath):
+def edgar_and_local_differ(url, local_filepath):
     temp_filepath = os.path.join(os.path.dirname(
         local_filepath), "temp_{}".format(os.path.basename(local_filepath)))
 
@@ -319,29 +317,4 @@ def generate_folder_names_years_quarters(start_date, end_date):
 
     return dates_quarters
 
-from py_sec_edgar.settings import Config as CONFiG
 
-def prepare_message(filing):
-    """
-    Sets parameters needed for various aspects.
-
-    feed_item['output_folderpath'] = 'C:\\sec_gov\\Archives\\edgar\\filings\\2019\\QTR1'
-    feed_item['filing_filepath'] = 'C:\\sec_gov\\Archives\\edgar\\filings\\2019\\QTR1\\0001694665-19-000013.txt'
-    feed_item['cik_directory'] = 'C:\\sec_gov\\Archives\\edgar\\data\\1694665\\'
-    feed_item['filing_path'] = 'C:\\sec_gov\\Archives\\edgar\\data\\1694665\\0001694665-19-000013.txt'
-    feed_item['cik_folder_dir'] = '000169466519000013'
-    feed_item['extracted_filing_directory'] = 'C:\\sec_gov\\Archives\\edgar\\data\\1694665\\000169466519000013'
-
-    :param feed_item:
-    :return: feed_item:
-    """
-
-    feed_item = dict(filing)
-    feed_item['cik_directory'] = CONFIG.TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", "")
-    feed_item['filing_filepath'] = os.path.join(feed_item['cik_directory'], os.path.basename(feed_item['Filename']))
-    feed_item['filing_zip_filepath'] = os.path.join(feed_item['cik_directory'], os.path.basename(feed_item['Filename']).replace('.txt', '.zip'))
-    feed_item['filing_folder'] = os.path.basename(feed_item['Filename']).split('.')[0].replace("-", "")
-    feed_item['extracted_filing_directory'] = CONFIG.TXT_FILING_DIR.replace("CIK", str(feed_item['CIK'])).replace("FOLDER", feed_item['filing_folder'])
-    feed_item['filing_url'] = urljoin(CONFIG.edgar_Archives_url, feed_item['Filename'])
-
-    return feed_item

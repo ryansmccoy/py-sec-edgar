@@ -1,6 +1,7 @@
 from datetime import datetime
+from py_sec_edgar import Folders
 
-class Config():
+class Config(Folders):
 
     # extract all contents from txt file
     extract_filing_contents = False
@@ -13,7 +14,7 @@ class Config():
     # so need to download these index files
     # below just says download all of them
     # index_start_date = "1/1/1993"
-    index_start_date = "1/1/2016"
+    index_start_date = "1/1/2019"
 
     index_end_date = datetime.now().strftime("%m/%d/%Y")
 
@@ -25,5 +26,6 @@ class Config():
     # if going to use proxy, please only download on the weekends
     VPN_PROVIDER = "PP"
 
-    THROTTLE = False
 
+
+CONFIG = Config()

@@ -2,6 +2,9 @@
 
 import io
 import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import sys
 from collections import defaultdict
@@ -13,26 +16,25 @@ import lxml.html
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from py_sec_edgar import CONFIG
-from py_sec_edgar.proxy import ProxyRequest
+from py_sec_edgar.settings import CONFIG
 from py_sec_edgar.utilities import file_size
 from py_sec_edgar.utilities import format_filename
 from py_sec_edgar.utilities import uudecode
 import os
-import logging
 
-logger = logging.getLogger(__name__)
-
-from py_sec_edgar.proxy import ProxyRequest
+from py_sec_edgar.download import ProxyRequest
 import zipfile
 
-logger = logging.getLogger(__name__)
 import re
 
 re10k = re.compile('10-K')
 regex_no_rfiles = re.compile(r'R.+\.htm')
 
-prop = ['filing_url', 'filing_folder', 'cik_directory', 'filing_filepath', 'filing_zip_filepath', 'extracted_filing_directory', 'filing_basename', 'header_directory', 'header_filepath', 'is_downloaded', 'is_loaded',
+prop = ['filing_url', 'filing_folder', 'cik_directory',
+        'filing_filepath', 'filing_zip_filepath',
+        'extracted_filing_directory', 'filing_basename',
+        'header_directory', 'header_filepath',
+        'is_downloaded', 'is_loaded',
         'is_parsed_header', 'is_processed']
 
 
@@ -121,6 +123,7 @@ class SecEdgar:
             self.ENCODING = self.charenc
 
     def download(self):
+        logger.info("Downloading Filing..")
         self._download(filing_url=self.filing_url, filing_filepath=self.filing_filepath, overwrite_if_exists=True)
 
     def _download(self, filing_url=None, filing_filepath=None, overwrite_if_exists=False):
@@ -592,7 +595,7 @@ def complete_submission_filing(filepath, output_directory=None):
 
     return df_sec_filing_contents
 
-def extract_contents(feed_item):
+def extract_filing(feed_item):
     """
     Extracts the contents of a complete submission filing
     """

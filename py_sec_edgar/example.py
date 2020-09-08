@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
 from pprint import pprint
-
+import os, sys
 import click
-import pandas as pd
-
-pd.set_option('display.float_format', lambda x: '%.5f' % x)  # pandas
-pd.set_option('display.max_columns', 100)
-pd.set_option('display.max_rows', 100)
-pd.set_option('display.width', 600)
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -26,11 +18,11 @@ def main(ticker_list_filter, form_list_filter, save_output):
 
     df_filings_idx = py_sec_edgar_feeds.load_filings_feed(ticker_list_filter=ticker_list_filter, form_list_filter=form_list_filter)
 
-    for i, filing in df_filings_idx.iterrows():
+    for i, filing_json in df_filings_idx.iterrows():
 
-        pprint(filing)
+        pprint(filing_json)
 
-        sec_filing = SecEdgar(filing)
+        sec_filing = SecEdgar(filing_json)
         sec_filing.download()
         sec_filing.load()
         sec_filing.parse_header(save_output=save_output)
