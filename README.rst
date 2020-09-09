@@ -1,7 +1,9 @@
 Python SEC Edgar
 ================
 
-A Python application used to download and parse complete submission filings from the sec.gov/edgar website.  The goal for this project is to make it easy to get filings from the SEC website onto your computer for the companies and forms you desire.  A few hurdles that I've tried to ease with this project:
+A Python application used to download and parse complete submission filings from the sec.gov/edgar website.  The goal for this project is to make it easy to get filings from the SEC website onto your computer for the companies and forms you desire.
+
+A few hurdles that I've tried to ease with this project:
 
 * CIK to Ticker Equivalent - probably the biggest hurdle is just figuring out the CIK for the company you want.  I've tried to bypass this via a reference file mapping CIK to tickers.  I'm sure there is a better way, but for now it seems to work.
 * Organizing the Data - I decided to keep it simple and organize the data similar to the SEC Edgar website (which is explained below)
@@ -13,7 +15,7 @@ Features
 * Extract contents of Complete Submission Filing
 
 Quick Start Guide
------------------
+--------------------
 
 Setup Environment (Windows)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,7 +24,7 @@ Setup Environment (Windows)
 
    git clone https://github.com/ryansmccoy/py-sec-edgar.git
    cd py-sec-edgar
-   conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
+   conda create -n py-sec-edgar python=3.8 pandas numpy lxml -y
    activate py-sec-edgar
    pip install -r requirements.txt
 
@@ -33,7 +35,7 @@ Setup Environment (Linux):
 
    git clone https://github.com/ryansmccoy/py-sec-edgar.git
    cd py-sec-edgar
-   conda create -n py-sec-edgar python=3.6 pandas numpy lxml -y
+   conda create -n py-sec-edgar python=3.8 pandas numpy lxml -y
    source activate py-sec-edgar
    sudo mkdir /sec_gov
    sudo chown -R $USER:$USER /sec_gov
@@ -42,12 +44,24 @@ Setup Environment (Linux):
 Configure Settings (Optional)
 -------------------------------
 
+    # py-sec-edgar/py_sec_edgar/settings.py
+
+Extracting Contents from Complete Submission Filing:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    # extract all contents from txt file
+    # Set this to True and everything will be extracted from Complete Submission Filing
+    # Note:  There is a lot of content in these filings, so be prepared
+
+    extract_filing_contents = False
+
 Specify Form Types, Start, and End Dates:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   # py-sec-edgar/py_sec_edgar/settings.py
 
    # complete list @ py-sec-edgar/refdata/filing_types.xlsx
 
@@ -58,7 +72,7 @@ Specify Form Types, Start, and End Dates:
    # below just says download all of them
 
    start_date = "1/1/2018"
-   end_date = "1/1/2020"
+   end_date = "1/1/2025"
 
 Specify Tickers:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,13 +83,12 @@ Specify Tickers:
 
    AAPL
    MSFT
-   BRK.B
    XOM
    GOOGL
    WFC
 
 
-Run Example
+Run Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: console
@@ -83,7 +96,7 @@ Run Example
     $ cd py-sec-edgar
     $ python py_sec_edgar
 
-OR
+Above, is the same as running (See notes at top of __main__.py file for explanation):
 
 .. code-block:: console
 
@@ -228,6 +241,13 @@ local folder equivalent:
 
     c:\sec_gov\Archives\edgar\data\<CIK>\<ACCESSION_NUMBER_WITHOUT_DASHES>\<ACCESSION_NUMBER>.txt <-  follow this format
 
+Why download the Complete Submission Filing?
+----------------------------------------------
+
+* Most Efficient and Courteous way of getting data from SEC website
+    * Contains everything the company filed in filing in one file
+    * Not making multiple download requests per filing
+
 Central Index Key (CIK)
 -----------------------
 
@@ -274,7 +294,7 @@ Todo
    -  Make Full-Index more efficient
    -  Incorporate RSS Feed
 
--  Add Celery
+-  Add Multi-Threading
 -  need to figure out way to quickly access downloaded content
 -  extract earnings data from 8-K
 -  setup proper logging instead of print

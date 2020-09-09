@@ -32,7 +32,7 @@ test_requirements = ['pytest', ]
 
 setup(
     author="Ryan S. McCoy",
-    author_email='18177650+ryansmccoy@users.noreply.github.com',
+    author_email='github@ryansmccoy.com',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -41,13 +41,14 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
-    description="Python package used to download SEC Edgar filings",
+    description="Python application used to download SEC Edgar filings",
     entry_points={
         'console_scripts': [
-            'py-sec-edgar=py_sec_edgar.run:main',
+            'py-sec-edgar=py_sec_edgar.__main__:main',
         ],
     },
     install_requires=requirements,

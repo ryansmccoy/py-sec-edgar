@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """Top-level package for Python SEC Edgar Data."""
+
+__author__ = """Ryan S. McCoy"""
+__email__ = 'github@ryansmccoy.com'
+__version__ = '0.1.0'
+import logging
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 import os
 import time
 from datetime import datetime, timedelta
@@ -13,12 +21,6 @@ pd.set_option('display.max_columns', 100)
 pd.set_option('display.max_rows', 100)
 pd.set_option('display.width', 600)
 
-__author__ = """Ryan S. McCoy"""
-__email__ = '18177650+ryansmccoy@users.noreply.github.com'
-__version__ = '0.1.0'
-
-import logging
-logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 header_list = ["ACCESSION NUMBER", "CONFORMED SUBMISSION TYPE", "PUBLIC DOCUMENT COUNT",
                "CONFORMED PERIOD OF REPORT", "FILED AS OF DATE", "DATE AS OF CHANGE", "FILER", "COMPANY data",
@@ -109,9 +111,9 @@ class Folders:
     DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
     FILING_DIR = os.path.join(EDGAR_DIR, "filings")
 
-    MERGED_IDX_FILE = os.path.join(REF_DIR, 'merged_idx_files.pq')
-    TICKER_LIST = os.path.join(REF_DIR, "tickers.csv")
-    TICKER_CIK = os.path.join(REF_DIR, "cik_tickers.csv")
+    MERGED_IDX_FILEPATH = os.path.join(REF_DIR, 'merged_idx_files.pq')
+    TICKER_LIST_FILEPATH = os.path.join(REF_DIR, "tickers.csv")
+    TICKER_CIK_FILEPATH = os.path.join(REF_DIR, "cik_tickers.csv")
 
     # used as template
     TXT_FILING_DIR = os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
@@ -119,10 +121,12 @@ class Folders:
     dirs_all = [SEC_DIR, DATA_DIR, EDGAR_DIR,
                 MONTHLY_DIR, FULL_INDEX_DIR, DAILY_INDEX_DIR]
 
+    print("Checking for Output Folders")
+
     for _ in dirs_all:
         if not os.path.exists(_):
-            print("{} Doesn't Exists".format(_))
-            print("Creating Directory {}".format(SEC_DIR))
+            print(f"{_} Doesn't Exists")
+            print(f"Creating Directory {SEC_DIR}")
             try:
                 os.makedirs(_)
             except:

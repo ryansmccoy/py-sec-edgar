@@ -26,6 +26,7 @@ class Config(Folders):
     # if going to use proxy, please only download on the weekends
     VPN_PROVIDER = "PP"
 
+    TEST_MODE = False
 
 
 CONFIG = Config()

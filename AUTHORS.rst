@@ -5,7 +5,7 @@ Credits
 Development Lead
 ----------------
 
-* Ryan S. McCoy <18177650+ryansmccoy@users.noreply.github.com>
+* Ryan S. McCoy <github@ryansmccoy.com>
 
 Contributors
 ------------

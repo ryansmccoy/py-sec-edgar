@@ -21,15 +21,15 @@ from py_sec_edgar.utilities import edgar_and_local_differ, walk_dir_fullpath, ge
 
 def load_filings_feed(ticker_list_filter=True, form_list_filter=True):
 
-    df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK)
+    df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK_FILEPATH)
 
     logging.info('\n\n\n\tLoaded IDX files\n\n\n')
 
-    df_merged_idx_filings = pq.read_table(CONFIG.MERGED_IDX_FILE).to_pandas().sort_values("Date Filed", ascending=False)
-    # df_merged_idx_filings = pd.read_csv(CONFIG.MERGED_IDX_FILE, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
+    df_merged_idx_filings = pq.read_table(CONFIG.MERGED_IDX_FILEPATH).to_pandas().sort_values("Date Filed", ascending=False)
+    # df_merged_idx_filings = pd.read_csv(CONFIG.MERGED_IDX_FILEPATH, index_col=0,  dtype={"CIK": int}, encoding='latin-1')
 
     if ticker_list_filter:
-        ticker_list = pd.read_csv(CONFIG.TICKER_LIST, header=None).iloc[:, 0].tolist()
+        ticker_list = pd.read_csv(CONFIG.TICKER_LIST_FILEPATH, header=None).iloc[:, 0].tolist()
         df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
 
     if form_list_filter:
@@ -393,3 +393,11 @@ def parse_monthly():
                         # consume_complete_submission_filing.delay(basename, item, ticker)
                         logging.info('yes')
 
+
+def cik_column_to_list(df):
+
+    df_cik_tickers = df.dropna(subset=['CIK'])
+
+    df_cik_tickers['CIK'] = df_cik_tickers['CIK'].astype(int)
+
+    return df_cik_tickers['CIK'].tolist()

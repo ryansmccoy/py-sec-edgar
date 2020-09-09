@@ -6,24 +6,23 @@ logger = logging.getLogger(__name__)
 
 from py_sec_edgar.filing import download_filing, extract_filing
 
-class BrokerManager:
+class FilingBroker:
 
-    def __init__(self, CONFIG=None):
+    def __init__(self, CONFIG):
 
-        if CONFIG == None:
-            from py_sec_edgar.settings import CONFIG
+        logger.info("Initalizing Broker...")
 
         self.CONFIG = CONFIG
-        self.extract_filing_contents = CONFIG.extract_filing_contents
+        self.CONFIG.BEGIN_PROCESS_FILINGS = True
 
         self.download_filing = download_filing
         self.extract_filing = extract_filing
 
-        logger.info("Initalizing Broker...")
+        self.filings_processed = 0
 
-    def prepare_message(self, sec_filing):
+    def pre_process(self, sec_filing):
         """
-        Sets parameters needed for various aspects.
+        Sets up the filepaths for the filing
 
         :param feed_item:
         :return: feed_item:
@@ -42,13 +41,25 @@ class BrokerManager:
 
         return feed_item
 
-    def process_filing(self, sec_filing):
+    def process(self, sec_filing):
         """
         Manages the individual filing extraction process
         """
 
-        broker_message = self.prepare_message(sec_filing)
+        filing_json = self.pre_process(sec_filing)
 
-        broker_message = self.download_filing(broker_message)
+        filing_json = self.download_filing(filing_json)
 
-        filing_content = self.extract_filing(broker_message)
+        filing_content = self.extract_filing(filing_json)
+
+        self.post_process(filing_content)
+
+    def post_process(self, filing_contents):
+        """
+        Insert Custom Processing here
+
+        :param filing_contents:
+        :return:
+        """
+        pass
+
