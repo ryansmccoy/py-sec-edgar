@@ -17,6 +17,8 @@ Features
 Quick Start Guide
 --------------------
 
+Documentation: http://py-sec-edgar.readthedocs.io
+
 Setup Environment (Windows)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
