@@ -3,7 +3,7 @@ import pytest
 from click.testing import CliRunner
 import py_sec_edgar
 
-from py_sec_edgar.filing import SecEdgar
+from py_sec_edgar.edgar_filing import SecEdgarFiling
 
 filing = {
     'CIK': 104169,
@@ -22,7 +22,7 @@ filing = {
 }
 
 def test_filing():
-    sec_filing = SecEdgar(filing, download=False, load=False, parse_header=False, process_filing=False)
+    sec_filing = SecEdgarFiling(filing, download=False, load=False, parse_header=False, process_filing=False)
     sec_filing.download()
     assert sec_filing.is_downloaded == True
     sec_filing.load()

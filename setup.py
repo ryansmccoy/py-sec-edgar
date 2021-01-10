@@ -46,6 +46,7 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     description="Python application used to download SEC Edgar filings",
+    data_files=[('refdata', ['refdata/*.csv.zip'])],
     entry_points={
         'console_scripts': [
             'py-sec-edgar=py_sec_edgar.__main__:main',
@@ -55,13 +56,13 @@ setup(
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='py-sec-edgar',
+    keywords=['py-sec-edgar','sec-edgar', '10-K','financial', 'public'],
     name='py-sec-edgar',
     packages=find_packages(include=['py_sec_edgar']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/ryansmccoy/py-sec-edgar',
-    version='0.1.0',
+    version='1.0',
     zip_safe=False,
 )
