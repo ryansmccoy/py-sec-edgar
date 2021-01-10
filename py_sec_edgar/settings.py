@@ -15,7 +15,7 @@ class BaseConfig:
     REF_DIR = os.path.join(BASE_DIR, r'refdata')
     MERGED_IDX_FILEPATH = os.path.join(REF_DIR, 'merged_idx_files.pq')
     TICKER_LIST_FILEPATH = os.path.join(REF_DIR, "tickers.csv")
-    TICKER_CIK_FILEPATH = os.path.join(REF_DIR, "cik_tickers.csv")
+    TICKER_CIK_FILEPATH = os.path.join(REF_DIR, "cik_tickers.csv.zip")
 
     # sec data directories
     SEC_DATA_DIR = os.path.join(ROOT_DIR, "sec_gov")

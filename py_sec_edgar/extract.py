@@ -17,19 +17,22 @@ def extract(filing_json):
     """
     Extracts the contents of a complete submission filing
     """
+    filing_contents = {}
 
     if not os.path.exists(filing_json['extracted_filing_directory']) and not os.path.exists(filing_json['extracted_filing_directory'] + ".zip"):
 
         logger.info("\n\n\n\n\tExtracting Filing Documents:\n")
 
         try:
+
             filing_contents = extract_complete_submission_filing(filing_json['filing_filepath'], output_directory=filing_json['extracted_filing_directory'])
 
-            logger.info(filing_contents)
         except UnicodeDecodeError as E:
             logger.error(f"\n\n\n\nError Decoding \n\n{E}")
 
         logger.info("\n\n\n\n\tExtraction Complete\n")
+
+    return filing_contents
 
 
 def extract_complete_submission_filing(filepath, output_directory=None):
