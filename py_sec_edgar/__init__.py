@@ -11,8 +11,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 import os
 import time
-from datetime import datetime, timedelta
-from urllib.parse import urljoin
+from datetime import datetime
 
 import pandas as pd
 
@@ -94,57 +93,8 @@ def SetupLogger():
 
     logger.addHandler(console)
 
-class Folders:
 
-    ROOT_DIR = os.path.abspath(os.sep)
-    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    APP_DIR = os.path.abspath(os.path.dirname(__file__))
-
-    REF_DIR = os.path.join(BASE_DIR, r'refdata')
-
-    CONFIG_DIR = os.path.join(BASE_DIR, "config")
-    SEC_DIR = os.path.join(ROOT_DIR, "sec_gov")
-    EDGAR_DIR = os.path.join(SEC_DIR, "Archives", "edgar")
-    DATA_DIR = os.path.join(EDGAR_DIR, r'data')
-    MONTHLY_DIR = os.path.join(EDGAR_DIR, "monthly")
-    FULL_INDEX_DIR = os.path.join(EDGAR_DIR, "full-index")
-    DAILY_INDEX_DIR = os.path.join(EDGAR_DIR, "daily-index")
-    FILING_DIR = os.path.join(EDGAR_DIR, "filings")
-
-    MERGED_IDX_FILEPATH = os.path.join(REF_DIR, 'merged_idx_files.pq')
-    TICKER_LIST_FILEPATH = os.path.join(REF_DIR, "tickers.csv")
-    TICKER_CIK_FILEPATH = os.path.join(REF_DIR, "cik_tickers.csv")
-
-    # used as template
-    TXT_FILING_DIR = os.path.join(EDGAR_DIR, "data", "CIK", "FOLDER")
-
-    dirs_all = [SEC_DIR, DATA_DIR, EDGAR_DIR,
-                MONTHLY_DIR, FULL_INDEX_DIR, DAILY_INDEX_DIR]
-
-    print("Checking for Output Folders")
-
-    for _ in dirs_all:
-        if not os.path.exists(_):
-            print(f"{_} Doesn't Exists")
-            print(f"Creating Directory {SEC_DIR}")
-            try:
-                os.makedirs(_)
-            except:
-                print("Error Creating Directory")
-
-    edgar_Archives_url = r'https://www.sec.gov/Archives/'
-    edgar_full_index = urljoin(edgar_Archives_url, 'edgar/full-index/')
-    edgar_full_master_url = urljoin(edgar_full_index, 'master.idx')
-    edgar_monthly_index = urljoin(edgar_Archives_url, 'edgar/monthly/')
-
-    sec_dates = pd.date_range(
-        datetime.now() - timedelta(days=365 * 22), datetime.now())
-    sec_dates_weekdays = sec_dates[sec_dates.weekday < 5]
-    sec_dates_weekdays = sec_dates_weekdays.sort_values(ascending=False)
-    sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day ==
-                                          sec_dates_weekdays[0].day]
-
-# CONFIG = Folders()
+# CONFIG = BaseConfig()
 
 config = {
     'disable_existing_loggers': False,

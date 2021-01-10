@@ -25,15 +25,19 @@ import click
 import pandas as pd
 import pyarrow.parquet as pq
 
-import py_sec_edgar.feeds as py_sec_edgar_feeds
-from py_sec_edgar.broker import FilingBroker
-from py_sec_edgar.feeds import cik_column_to_list
+import py_sec_edgar.feeds.full_index
+from py_sec_edgar.process import FilingProcessor
+from py_sec_edgar.utilities import cik_column_to_list
+
+from py_sec_edgar.settings import CONFIG
 
 @click.command()
-def main(CONFIG):
+@click.option('--ticker-list', default=True)
+@click.option('--form-list', default=True)
+def main(ticker_list, form_list):
 
     # Downloads the list of filings on the SEC Edgar website
-    py_sec_edgar_feeds.update_full_index_feed(skip_if_exists=True)
+    py_sec_edgar.feeds.full_index.update_full_index_feed(skip_if_exists=True)
 
     # Used to convert CIK to Tickers
     df_cik_tickers = pd.read_csv(CONFIG.TICKER_CIK_FILEPATH)
@@ -43,27 +47,27 @@ def main(CONFIG):
 
     # If you specified tickers in py-sec-edgar/py_sec_edgar/settings.py
     # Then load the file and filter out only the companies specified
-    if CONFIG.ticker_list_filter is True:
+    if ticker_list:
         ticker_list = pd.read_csv(CONFIG.TICKER_LIST_FILEPATH, header=None).iloc[:, 0].tolist()
         df_cik_tickers = df_cik_tickers[df_cik_tickers['SYMBOL'].isin(ticker_list)]
 
     # If you specified forms in py-sec-edgar/py_sec_edgar/settings.py
     # Then Filter the URL list to only the forms specified
-    if CONFIG.form_list_filter is True:
+    if form_list:
         logging.info('\n\n\n\tLoading Forms Filter\n\n\n')
         df_merged_idx = df_merged_idx[df_merged_idx['Form Type'].isin(CONFIG.forms_list)]
 
     # return only list of CIK tickers for companies and forms specified
     cik_list = cik_column_to_list(df_cik_tickers)
 
-    if CONFIG.ticker_list_filter:
+    if ticker_list:
         df_merged_idx = df_merged_idx[df_merged_idx['CIK'].isin(cik_list)]
 
     # Create a new column in the dataframe of filings with the Output Filepaths
     df_filings = df_merged_idx.assign(url=df_merged_idx['Filename'].apply(lambda x: urljoin(CONFIG.edgar_Archives_url, x)))
 
-    # Initialize the Broker which will oversee the Extraction process
-    filing_broker = FilingBroker(CONFIG)
+    # Initialize the FilingProcessor which will oversee the Extraction process
+    filing_broker = FilingProcessor(filing_data_dir=CONFIG.TXT_FILING_DATA_DIR, edgar_Archives_url=CONFIG.edgar_Archives_url)
 
     for i, sec_filing in df_filings.iterrows():
 
@@ -75,6 +79,4 @@ def main(CONFIG):
 
 if __name__ == "__main__":
 
-    from py_sec_edgar.settings import CONFIG
-
-    main(CONFIG)
+    main()

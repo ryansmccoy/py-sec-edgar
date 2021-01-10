@@ -3,6 +3,8 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
+include refdata/cik_tickers.csv.zip
+include refdata/filing_types.csv.zip
 
 recursive-include tests *
 recursive-exclude * __pycache__
