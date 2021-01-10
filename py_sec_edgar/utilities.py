@@ -1,17 +1,29 @@
-
+import time
+import zipfile
 from datetime import datetime
 import os
 import os.path
+import logging
+
+logger = logging.getLogger(__name__)
+
+import re
+
+re10k = re.compile('10-K')
+regex_no_rfiles = re.compile(r'R.+\.htm')
+
+logger = logging.getLogger(__name__)
 
 import binascii
 import string
 import sys
+
+import requests
 import unicodedata
 from bs4 import UnicodeDammit  # BeautifulSoup 4
 
 import feedparser
 import pandas as pd
-
 
 class Error(Exception):
     pass
@@ -309,7 +321,7 @@ def generate_folder_names_years_quarters(start_date, end_date):
     date_range = pd.date_range(datetime.strptime(start_date, "%m/%d/%Y"), datetime.strptime(end_date, "%m/%d/%Y"), freq="Q")
 
     for i, values in enumerate(date_range):
-        quarter = '{}'.format(values.year), "QTR{}".format(int(values.month / 3))
+        quarter = f'{values.year}', "QTR{}".format(int(values.month / 3))
         dates_data.append(quarter)
 
     dates_quarters = list(set(dates_data))
@@ -317,4 +329,121 @@ def generate_folder_names_years_quarters(start_date, end_date):
 
     return dates_quarters
 
+class RetryRequest(object):
+    def __init__(self):
 
+        self.retry_counter = 3
+        self.pause_for_courtesy = False
+        self.connect_timeout, self.read_timeout = 10.0, 30.0
+
+    def get(self, url, filepath):
+
+        logger.info(f"\n\n\tDownloading: \t{url}\n")
+
+        retry_counter = 0
+
+        while retry_counter < self.retry_counter:
+            try:
+                r = requests.get(url, stream=True, timeout=(self.connect_timeout, self.read_timeout))
+
+                logger.info(f"\n\n\tSaving to: \t{filepath}\n")
+
+                with open(filepath, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=1024):
+                        if chunk:  # filter out keep-alive new chunks
+                            f.write(chunk)
+
+                logger.info(f'\n\n\tSuccess!\tSaved to filepath:\t{filepath}\n\n')
+                return
+
+            except Exception as e:
+                logger.error(f" \n\n\t {e} \n\nRetrying:", retry_counter)
+                time.sleep(3)
+                retry_counter -= 1
+                if retry_counter == 0:
+                    logger.info("Failed to Download " + url)
+                    return
+
+
+def identify_filing(sec_filing_documents, override=None):
+    max_doc = 0
+    seq_no = 1
+    f10_k = 0
+    num_10k = 0
+    f10_size = 0
+    max_doc_size = 0
+    size_seq_no = 0
+
+    for i, document in sec_filing_documents.items():
+        try:
+            print("\t DOC ", i, " ", document['DESCRIPTION'], " Elements = ",
+                  document['NUMBER_OF_ELEMENTS'], 'size: ', document['FILE_SIZE'])
+
+            search_desc = re10k.search(document['DESCRIPTION'])
+
+            if document['FILE_SIZE_BYTES'] > max_doc_size:
+                size_seq_no, max_doc_size = i, document['FILE_SIZE_BYTES']
+
+            if search_desc:
+                f10_k, num_10k = i, document['NUMBER_OF_ELEMENTS']
+                f10_size = document['FILE_SIZE_BYTES']
+            if i == 1:
+                seq_no, max_doc = i, document['NUMBER_OF_ELEMENTS']
+            else:
+                if document['NUMBER_OF_ELEMENTS'] > max_doc:
+                    seq_no, max_doc = i, document['NUMBER_OF_ELEMENTS']
+        except:
+            pass
+
+    try:
+        if override:
+            print('override in effect... returning DOC #', seq_no - 1)
+            seq_no = override
+    except:
+        pass
+
+    if f10_k != seq_no != size_seq_no:
+
+        if max_doc / (num_10k + 1) > 10 and max_doc_size < f10_size:
+            i, document = list(sec_filing_documents.items())[seq_no - 1]
+        else:
+            # print(f"10-K found on {f10_k}")
+            if max_doc_size > f10_size:
+                i, document = list(sec_filing_documents.items())[
+                    size_seq_no - 1]
+            else:
+                i, document = list(sec_filing_documents.items())[f10_k - 1]
+    else:
+        i, document = list(sec_filing_documents.items())[seq_no - 1]
+    print("Parsing DOC {}".format(i))
+    return i, document
+
+
+def cik_column_to_list(df):
+
+    df_cik_tickers = df.dropna(subset=['CIK'])
+
+    df_cik_tickers['CIK'] = df_cik_tickers['CIK'].astype(int)
+
+    return df_cik_tickers['CIK'].tolist()
+
+
+def download(filing_json, zip_filing=False):
+
+    if not os.path.exists(filing_json['cik_directory']):
+        os.makedirs(filing_json['cik_directory'])
+
+    if not os.path.exists(filing_json['filing_filepath']):
+
+        g = RetryRequest()
+
+        g.get(filing_json['filing_url'], filing_json['filing_filepath'])
+
+    elif os.path.exists(filing_json['filing_filepath']) or os.path.exists(filing_json['filing_zip_filepath']):
+        logger.info(f"\n\nFile Already exists\t {filing_json['filing_filepath']}\n\n")
+
+    if zip_filing:
+        zipfile.ZipFile(filing_json['filing_zip_filepath'], mode='w', compression=zipfile.ZIP_DEFLATED).write(filing_json['filing_filepath'])
+        os.remove(filing_json['filing_filepath'])
+
+    return filing_json

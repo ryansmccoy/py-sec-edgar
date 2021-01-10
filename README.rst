@@ -6,6 +6,7 @@ A Python application used to download and parse complete submission filings from
 A few hurdles that I've tried to ease with this project:
 
 * CIK to Ticker Equivalent - probably the biggest hurdle is just figuring out the CIK for the company you want.  I've tried to bypass this via a reference file mapping CIK to tickers.  I'm sure there is a better way, but for now it seems to work.
+
 * Organizing the Data - I decided to keep it simple and organize the data similar to the SEC Edgar website (which is explained below)
 
 Features

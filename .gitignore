@@ -120,3 +120,4 @@ py_sec_edgar/celery_tasks.py
 py_sec_edgar/start_celery.sh
 database.py
 docs/_static/
+refdata/cik_tickers.csv
