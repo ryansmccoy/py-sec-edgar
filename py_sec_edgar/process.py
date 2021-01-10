@@ -4,8 +4,6 @@ logger = logging.getLogger(__name__)
 import os
 from urllib.parse import urljoin
 
-import pandas as pd
-
 from py_sec_edgar.utilities import download
 from py_sec_edgar.extract import extract
 
@@ -19,12 +17,8 @@ class FilingProcessor:
         self.filing_data_dir = filing_data_dir
         self.edgar_Archives_url = edgar_Archives_url
 
-        self.BEGIN_PROCESS_FILINGS = True
-
         self.download = download
         self.extract = extract
-
-        self.filings_processed = 0
 
     def generate_filepaths(self, sec_filing):
         """
@@ -45,12 +39,12 @@ class FilingProcessor:
 
         return feed_item
 
-    def process(self, sec_filing):
+    def process(self, filing_meta):
         """
         Manages the individual filing extraction process
         """
 
-        filing_filepaths = self.generate_filepaths(sec_filing)
+        filing_filepaths = self.generate_filepaths(filing_meta)
 
         filing_filepaths = self.download(filing_filepaths)
 
