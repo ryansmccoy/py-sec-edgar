@@ -106,12 +106,6 @@ Above, is the same as running (See notes at top of __main__.py file for explanat
     $ cd py-sec-edgar
     $ python py_sec_edgar/__main__.py
 
-OR
-
-.. code-block:: console
-
-    $ cd py-sec-edgar
-    $ python py_sec_edgar/example.py
 
 Output:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -243,6 +237,30 @@ local folder equivalent:
     c:\sec_gov\Archives\edgar\data\1041588\000104158818000005\0001041588-18-000005.txt <- these are the complete submission file
 
     c:\sec_gov\Archives\edgar\data\<CIK>\<ACCESSION_NUMBER_WITHOUT_DASHES>\<ACCESSION_NUMBER>.txt <-  follow this format
+
+Alright, what can I do now that I have this data?
+------------------------------------------------------------------------------------------------------------------
+
+How about we extract the sections of a 10-K Filing and perform some NLP?
+
+.. code-block:: console
+
+    $ cd py-sec-edgar
+    $ python examples/extract_sections.py
+
+Or, how about we extract financial data from the Financial Reports.xlsx file:
+
+https://www.sec.gov/Archives/edgar/data/320193/000032019320000096/Financial_Report.xlsx
+
+^ fyi, this financial report file is is contained in most complete submission 10-K/Q filings
+
+Output:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    AAPL 10-k Sections Saved: C:\sec_gov\Archives\edgar\data\320193\000032019320000096
+
 
 Why download the Complete Submission Filing?
 ----------------------------------------------
