@@ -25,8 +25,8 @@ def generate_monthly_index_url_and_filepaths(day):
     return monthly_url, monthly_local_filepath
 
 def download_and_flatten_monthly_xbrl_filings_list():
-
-    r = requests.get(CONFIG.edgar_monthly_index)
+    http_headers = {'User-Agent': CONFIG.USER_AGENT}
+    r = requests.get(CONFIG.edgar_monthly_index, headers=http_headers)
 
     html = lxml.html.fromstring(r.text)
     html.make_links_absolute(CONFIG.edgar_monthly_index)
@@ -56,7 +56,7 @@ def download_and_flatten_monthly_xbrl_filings_list():
             if not os.path.isfile(os.path.join(CONFIG.SEC_MONTHLY_DIR, filename)) or url == urls[0]:
                 logging.info("\n\n\n\nDownloading " + fullfilepath)
 
-                r = requests.get(url)
+                r = requests.get(url, headers=http_headers)
 
                 with open(fullfilepath, 'wb') as f:
                     for chunk in r.iter_content(chunk_size=1024):

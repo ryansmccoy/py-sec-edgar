@@ -56,6 +56,8 @@ class BaseConfig:
     sec_dates_months = sec_dates_weekdays[sec_dates_weekdays.day ==
                                           sec_dates_weekdays[0].day]
 
+    #HTTP config
+    USER_AGENT = "Sample Company Name AdminContact@<sample company domain>.com"
 
 class Config(BaseConfig):
 
