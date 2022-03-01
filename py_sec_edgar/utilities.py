@@ -24,6 +24,7 @@ from bs4 import UnicodeDammit  # BeautifulSoup 4
 
 import feedparser
 import pandas as pd
+from py_sec_edgar.settings import CONFIG
 
 class Error(Exception):
     pass
@@ -339,12 +340,12 @@ class RetryRequest(object):
     def get(self, url, filepath):
 
         logger.info(f"\n\n\tDownloading: \t{url}\n")
-
         retry_counter = 0
-
+        http_headers = {'User-Agent': CONFIG.USER_AGENT}
         while retry_counter < self.retry_counter:
             try:
-                r = requests.get(url, stream=True, timeout=(self.connect_timeout, self.read_timeout))
+                r = requests.get(url, stream=True, headers=http_headers, \
+                                 timeout=(self.connect_timeout, self.read_timeout))
 
                 logger.info(f"\n\n\tSaving to: \t{filepath}\n")
 

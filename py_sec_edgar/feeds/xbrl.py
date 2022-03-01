@@ -15,6 +15,7 @@ def download_edgar_filings_xbrl_rss_files():
     end_date = datetime.now()
     dates = [x for x in pd.date_range(start_date, end_date, freq='MS')]
     dates.reverse()
+    http_headers = {'User-Agent': CONFIG.USER_AGENT}
     for date in dates:
         try:
 
@@ -24,7 +25,7 @@ def download_edgar_filings_xbrl_rss_files():
             edgarFilingsFeed = parse.urljoin(
                 'https://www.sec.gov/Archives/edgar/monthly/', basename)
             if not os.path.exists(edgarFilingsFeed):
-                r = requests.get(CONFIG.edgar_monthly_index)
+                r = requests.get(CONFIG.edgar_monthly_index, headers=http_headers)
                 g.get(edgarFilingsFeed, filepath)
 
         except Exception as e:
