@@ -48,7 +48,15 @@ Configure Settings (Optional)
 -------------------------------
 
     # py-sec-edgar/py_sec_edgar/settings.py
-    update USER_AGENT, SEC EDGAR will return an error if not set correctly. 
+    
+Set USER_AGENT email
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    # update USER_AGENT, SEC EDGAR will return an error if not set correctly.          
+
+    USER_AGENT = "Sample Company Name AdminContact@<sample company domain>.com"
 
 Extracting Contents from Complete Submission Filing:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
