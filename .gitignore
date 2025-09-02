@@ -1,3 +1,6 @@
+# UV lock file
+uv.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -118,6 +121,9 @@ py_sec_edgar/celery.py
 py_sec_edgar/celery_schedule.py
 py_sec_edgar/celery_tasks.py
 py_sec_edgar/start_celery.sh
-database.py
 docs/_static/
 refdata/cik_tickers.csv
+sec_data/
+.vscode/
+archive/
+data/

@@ -1,0 +1,175 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "py-sec-edgar"
+version = "1.1.0"
+description = "Python application used to download SEC Edgar filings"
+readme = "README.rst"
+license = "MIT"
+authors = [
+    { name = "Ryan S. McCoy", email = "github@ryansmccoy.com" },
+]
+maintainers = [
+    { name = "Ryan S. McCoy", email = "github@ryansmccoy.com" },
+]
+keywords = ["py-sec-edgar", "sec-edgar", "10-K", "financial", "public"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4>=4.12.0",
+    "feedparser>=6.0.0",
+    "html5lib>=1.1",
+    "openpyxl>=3.1.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "pandas>=2.0.0",
+    "lxml>=4.9.0",
+    "chardet>=5.0.0",
+    "numpy>=1.24.0",
+    "click>=8.1.0",
+    "pyarrow>=12.0.0",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.1.0",
+    "aiohttp>=3.9.0",
+    "aiofiles>=23.0.0",
+    "ruff>=0.12.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.3.0",
+    "ruff>=0.5.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.4.0",
+    "tox>=4.11.0",
+]
+docs = [
+    "sphinx>=7.1.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=2.0.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ryansmccoy/py-sec-edgar"
+Repository = "https://github.com/ryansmccoy/py-sec-edgar"
+Documentation = "https://py-sec-edgar.readthedocs.io"
+Issues = "https://github.com/ryansmccoy/py-sec-edgar/issues"
+
+[project.scripts]
+py-sec-edgar = "py_sec_edgar.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/py_sec_edgar"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"refdata" = "py_sec_edgar/refdata"
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*" = ["S101", "D"]
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.10"
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "feedparser.*",
+    "beautifulsoup4.*",
+    "openpyxl.*",
+    "xlrd.*",
+]
+ignore_missing_imports = true
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=py_sec_edgar",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["py_sec_edgar"]
+omit = [
+    "tests/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.10.3",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "pytest-cov>=6.2.1",
+]
