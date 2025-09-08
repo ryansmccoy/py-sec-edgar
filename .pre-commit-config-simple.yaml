@@ -10,4 +10,6 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.8
     hooks:
+      - id: ruff
+        args: [--fix, --extend-ignore=E402,B007,F841,E741,UP031,UP038,B904]
       - id: ruff-format

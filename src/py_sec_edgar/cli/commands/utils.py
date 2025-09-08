@@ -7,6 +7,8 @@ from pathlib import Path
 
 import click
 
+from ...core.path_utils import safe_join
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,7 +41,7 @@ def status() -> None:
         ("Full Index", settings.full_index_data_dir),
         ("Daily Index", settings.daily_index_data_dir),
         ("Monthly Data", settings.monthly_data_dir),
-        ("Reference Data", settings.ref_dir)
+        ("Reference Data", settings.ref_dir),
     ]
 
     for name, path in directories:
@@ -52,7 +54,7 @@ def status() -> None:
         ("Company Tickers", settings.company_tickers_json),
         ("CIK Tickers", settings.cik_tickers_csv),
         ("Ticker List", settings.ticker_list_filepath),
-        ("Merged Index", settings.merged_idx_filepath)
+        ("Merged Index", settings.merged_idx_filepath),
     ]
 
     for name, path in files:
@@ -62,14 +64,10 @@ def status() -> None:
 
 @utils_group.command("clean")
 @click.option(
-    "--cache-only",
-    is_flag=True,
-    help="Only clean cache files, not downloaded data"
+    "--cache-only", is_flag=True, help="Only clean cache files, not downloaded data"
 )
 @click.option(
-    "--confirm/--no-confirm",
-    default=True,
-    help="Confirm before deleting files"
+    "--confirm/--no-confirm", default=True, help="Confirm before deleting files"
 )
 def clean(cache_only: bool, confirm: bool) -> None:
     """Clean downloaded data and cache files."""
@@ -81,27 +79,28 @@ def clean(cache_only: bool, confirm: bool) -> None:
         click.echo("Cleaning cache files only...")
         # Clean Python cache files and temporary data
         cache_dirs_cleaned = 0
-        
+
         # Clean __pycache__ directories
         import os
+
         for root, dirs, files in os.walk(settings.base_dir):
-            if '__pycache__' in dirs:
-                pycache_path = os.path.join(root, '__pycache__')
+            if "__pycache__" in dirs:
+                pycache_path = safe_join(root, "__pycache__")
                 shutil.rmtree(pycache_path)
                 cache_dirs_cleaned += 1
-        
+
         # Clean pytest cache if exists
-        pytest_cache = settings.base_dir / '.pytest_cache'
+        pytest_cache = settings.base_dir / ".pytest_cache"
         if pytest_cache.exists():
             shutil.rmtree(pytest_cache)
             cache_dirs_cleaned += 1
-            
+
         # Clean ruff cache if exists
-        ruff_cache = settings.base_dir / '.ruff_cache'
+        ruff_cache = settings.base_dir / ".ruff_cache"
         if ruff_cache.exists():
             shutil.rmtree(ruff_cache)
             cache_dirs_cleaned += 1
-            
+
         click.echo(f"✅ Cleaned {cache_dirs_cleaned} cache directories")
     else:
         click.echo("This will delete ALL downloaded SEC data!")
@@ -127,7 +126,7 @@ def clean(cache_only: bool, confirm: bool) -> None:
 @click.option(
     "--data-dir",
     type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
-    help="Custom data directory location"
+    help="Custom data directory location",
 )
 def init(data_dir: Path | None) -> None:
     """Initialize the SEC EDGAR data environment."""
@@ -145,14 +144,15 @@ def init(data_dir: Path | None) -> None:
 
         # Create default ticker list if it doesn't exist
         if not settings.ticker_list_filepath.exists():
-            with open(settings.ticker_list_filepath, 'w') as f:
-                f.write('\n'.join(settings.default_tickers))
+            with open(settings.ticker_list_filepath, "w") as f:
+                f.write("\n".join(settings.default_tickers))
             click.echo(f"Created default ticker list: {settings.ticker_list_filepath}")
 
         click.echo("✅ Environment initialized successfully")
 
         # Show status
         from py_sec_edgar.cli.commands.utils import status
+
         click.echo()
         ctx = click.get_current_context()
         ctx.invoke(status)
@@ -173,8 +173,15 @@ def validate() -> None:
 
     # Check dependencies
     required_modules = [
-        'pandas', 'requests', 'bs4', 'lxml',
-        'feedparser', 'pyarrow', 'chardet', 'pydantic', 'click'
+        "pandas",
+        "requests",
+        "bs4",
+        "lxml",
+        "feedparser",
+        "pyarrow",
+        "chardet",
+        "pydantic",
+        "click",
     ]
 
     missing_modules = []

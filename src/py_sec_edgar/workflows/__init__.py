@@ -13,21 +13,22 @@ Workflows:
 Example Usage:
     from py_sec_edgar.workflows.full_index_workflow import run_full_index_workflow
     from py_sec_edgar.workflows.daily_workflow import run_daily_workflow
-    
+
     # Run individual workflows
     run_full_index_workflow(config)
     run_daily_workflow(config)
 """
 
-from .full_index_workflow import run_full_index_workflow, FullIndexConfig
-from .daily_workflow import main as run_daily_workflow  
+from .daily_workflow import DailyConfig, run_daily_workflow
+from .full_index_workflow import FullIndexConfig, run_full_index_workflow
 from .monthly_workflow import main as run_monthly_workflow
 from .rss_workflow import main as run_rss_workflow
 
 __all__ = [
-    'run_full_index_workflow',
-    'FullIndexConfig',
-    'run_daily_workflow', 
-    'run_monthly_workflow',
-    'run_rss_workflow',
+    "run_full_index_workflow",
+    "FullIndexConfig",
+    "run_daily_workflow",
+    "DailyConfig",
+    "run_monthly_workflow",
+    "run_rss_workflow",
 ]

@@ -71,7 +71,7 @@ uv run python -m py_sec_edgar workflows daily --tickers AAPL --days-back 7 --for
 # When ready, download Apple's latest 10-K annual report (includes 2025Q3 data)
 uv run python -m py_sec_edgar workflows full-index --tickers AAPL --forms "10-K" --download --extract
 
-# Process the latest quarterly data (2025Q3) 
+# Process the latest quarterly data (2025Q3)
 uv run python -m py_sec_edgar workflows full-index --quarter 2025Q3 --download --extract
 
 # Monitor recent filings for your portfolio (explore first, then download)
@@ -153,6 +153,35 @@ py-sec-edgar provides four specialized workflows, each optimized for different u
 | **📡 RSS** | Real-time monitoring | Live RSS feeds | Real-time updates | **[📖 Complete Guide](docs/workflows/RSS_WORKFLOW.md)** |
 
 </div>
+
+### 📅 **SEC Data Availability & Update Schedule**
+
+Understanding when SEC data is available helps you choose the right workflow for your needs:
+
+<div align="center">
+
+| Data Type | Update Frequency | Availability | Best Workflow | Notes |
+|-----------|------------------|--------------|---------------|--------|
+| **🔴 Live Filings** | Real-time | As filed | **RSS** | Immediate access to new filings |
+| **📊 Daily Index** | Nightly at 10 PM ET | Previous business day | **Daily** | Complete daily filing lists |
+| **📈 Full Index** | Updated throughout quarter | Current quarter + historical | **Full Index** | Comprehensive quarterly data |
+| **📋 Quarterly Index** | End of quarter | Complete quarter (static) | **Full Index** | Final quarterly archives |
+| **🔄 Weekly Rebuild** | Saturday mornings | All corrected data | **All workflows** | Post-acceptance corrections included |
+
+</div>
+
+**Key Update Schedule Details:**
+- **🌙 Daily Index Files**: Updated nightly starting around 10:00 PM ET with the previous business day's filings
+- **📊 Full Index Files**: Updated continuously throughout the current quarter, including all filings from quarter start through the previous business day
+- **📅 Quarterly Index Files**: Static archives created at quarter-end containing the complete, final quarterly data
+- **🔧 Weekly Rebuilds**: Every Saturday morning, all full and quarterly index files are rebuilt to incorporate post-acceptance corrections and amendments
+- **⚡ Real-time RSS**: Live feed updated immediately as filings are accepted by the SEC
+
+**📖 Data Currency Best Practices:**
+- **For current events**: Use RSS workflow for immediate access to breaking filings
+- **For recent activity**: Use Daily workflow for systematic monitoring of the last 1-90 days
+- **For historical research**: Use Full Index workflow for comprehensive quarterly archives
+- **For completeness**: Wait until Saturday morning rebuild for the most accurate quarterly data
 
 > 💡 **Pro Tip**: Each workflow documentation contains 20+ practical examples, from basic usage to advanced enterprise patterns. Start with the [Workflow Documentation Hub](docs/workflows/) for complete coverage!
 

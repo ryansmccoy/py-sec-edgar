@@ -1,9 +1,12 @@
+import asyncio
 import logging
 import os
 import sys
-from urllib.parse import urljoin
 
-sys.path.append(r'b:\github\sec-edgar-app\packages')
+from py_sec_edgar.core.path_utils import ensure_file_directory, safe_join
+
+from ..core.downloader import FilingDownloader
+from ..core.url_utils import generate_full_index_url
 
 # Now you can import
 from ..logging_utils import (
@@ -13,8 +16,8 @@ from ..logging_utils import (
     setup_logging,
 )
 from ..settings import settings
-from ..utilities import RetryRequest, generate_folder_names_years_quarters
-from .idx import convert_idx_to_csv, merge_idx_files
+from ..utilities import generate_folder_names_years_quarters
+from .idx import convert_idx_to_csv, merge_idx_files  # Re-enabled merge functionality
 
 #######################
 # FULL-INDEX FILINGS FEEDS (TXT)
@@ -22,78 +25,273 @@ from .idx import convert_idx_to_csv, merge_idx_files
 # "./{YEAR}/QTR{NUMBER}/"
 
 
-def update_full_index_feed(save_idx_as_csv=True, skip_if_exists=False):
+def update_full_index_feed(
+    save_idx_as_csv=True,
+    skip_if_exists=False,
+    custom_start_date=None,
+    custom_end_date=None,
+    merge_index=True,
+):
+    """
+    Update SEC EDGAR full index files.
+
+    Args:
+        save_idx_as_csv: Whether to save index as CSV format
+        skip_if_exists: Whether to skip if files already exist
+        custom_start_date: Custom start date (MM/DD/YYYY format), overrides settings
+        custom_end_date: Custom end date (MM/DD/YYYY format), overrides settings
+        merge_index: Whether to merge all CSV files into unified search index
+    """
+    logger = logging.getLogger(__name__)
+    logger.info("Starting full index feed update...")
+    logger.info(
+        f"Parameters: save_idx_as_csv={save_idx_as_csv}, skip_if_exists={skip_if_exists}"
+    )
+
+    # Use custom dates if provided, otherwise use settings
+    start_date = custom_start_date or settings.index_start_date
+    end_date = custom_end_date or settings.index_end_date
+
+    if custom_start_date or custom_end_date:
+        logger.info(f"Using custom date range: {start_date} to {end_date}")
+
+    try:
+        # Direct implementation to avoid recursion
+        downloader = FilingDownloader()
+
+        # Get date ranges for processing
+        dates_quarters = generate_folder_names_years_quarters(start_date, end_date)
+
+        files_updated = 0
+
+        # Process each quarter with progress tracking
+        total_quarters = len(dates_quarters)
+        logger.info(
+            f"📊 Processing {total_quarters} quarters from {start_date} to {end_date}..."
+        )
+
+        quarters_processed = 0
+        files_skipped = 0
+        files_failed = 0
+
+        for year, qtr in dates_quarters:
+            # Extract quarter number from QTR format (e.g., "QTR2" -> 2)
+            qtr_num = int(qtr.replace("QTR", ""))
+            quarters_processed += 1
+
+            # Log progress every 5 quarters or at start/end
+            if (
+                quarters_processed == 1
+                or quarters_processed % 5 == 0
+                or quarters_processed == total_quarters
+            ):
+                logger.info(
+                    f"📈 Progress: {quarters_processed}/{total_quarters} quarters ({quarters_processed / total_quarters * 100:.1f}%) - Current: {year} Q{qtr_num}"
+                )
+
+            for file in settings.index_files:
+                url, filepath = generate_full_index_url(int(year), qtr_num, file)
+
+                # Skip if file exists and skip_if_exists is True
+                if skip_if_exists and os.path.exists(filepath):
+                    files_skipped += 1
+                    logger.debug(f"Skipping existing file: {filepath}")
+                    continue
+
+                # Ensure directory exists
+                ensure_file_directory(filepath)
+
+                # Download the file using modern FilingDownloader
+                logger.debug(f"⬇️ Downloading {year} Q{qtr_num} {file}: {url}")
+                success = _download_file_sync(downloader, url, filepath)
+                if success:
+                    files_updated += 1
+                    # Log file size for significant downloads
+                    if os.path.exists(filepath):
+                        file_size = os.path.getsize(filepath) / 1024 / 1024  # MB
+                        if file_size > 1:  # Only log if > 1MB
+                            logger.debug(
+                                f"✅ Downloaded {year} Q{qtr_num} {file} ({file_size:.1f}MB)"
+                            )
+                else:
+                    files_failed += 1
+                    logger.warning(
+                        f"❌ Failed to download {year} Q{qtr_num} {file} from {url}"
+                    )
+
+        # Log comprehensive completion statistics
+        logger.info("✅ Full index feed update completed successfully!")
+        logger.info(
+            f"📊 Summary: {files_updated} files updated, {files_skipped} skipped, {files_failed} failed"
+        )
+        logger.info(
+            f"📅 Processed {quarters_processed} quarters from {start_date} to {end_date}"
+        )
+        if files_failed > 0:
+            logger.warning(
+                f"⚠️ {files_failed} files failed to download - some data may be incomplete"
+            )
+
+        # Handle CSV conversion if requested
+        if save_idx_as_csv:
+            logger.info("🔄 Converting index files to CSV format...")
+            logger.info(
+                "ℹ️ Note: CSV conversion enables fast local searching and merging"
+            )
+            _convert_legacy_full_index_to_csv(
+                skip_if_exists=skip_if_exists, start_date=start_date, end_date=end_date
+            )
+
+        # Handle index merging if requested
+        if merge_index and save_idx_as_csv:
+            logger.info("🔗 Merging CSV files into unified search index...")
+            logger.info("ℹ️ Note: Merged index enables fast search across all quarters")
+            merge_success = merge_idx_files(force_rebuild=True)
+            if merge_success:
+                logger.info(
+                    "✅ Index merge completed successfully - search index is now current"
+                )
+            else:
+                logger.warning("⚠️ Index merge failed - search may use outdated data")
+
+    except Exception as e:
+        logger.error(f"Failed to update full index feed: {e}")
+        raise
+
+
+async def _download_file_async(
+    downloader: FilingDownloader, url: str, filepath: str
+) -> bool:
+    """
+    Download a file using the modern FilingDownloader.
+
+    Args:
+        downloader: FilingDownloader instance
+        url: URL to download from
+        filepath: Local path to save the file
+
+    Returns:
+        True if download successful, False otherwise
+    """
+    try:
+        # Use fetch_content to get the data
+        content = await downloader.fetch_content(url)
+
+        # Write content to file
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
+
+        return True
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to download {url} to {filepath}: {e}")
+        return False
+
+
+def _download_file_sync(downloader: FilingDownloader, url: str, filepath: str) -> bool:
+    """
+    Synchronous wrapper for downloading files using FilingDownloader.
+
+    Args:
+        downloader: FilingDownloader instance
+        url: URL to download from
+        filepath: Local path to save the file
+
+    Returns:
+        True if download successful, False otherwise
+    """
+    return asyncio.run(_download_file_async(downloader, url, filepath))
+
+
+def _convert_legacy_full_index_to_csv(
+    skip_if_exists=True, start_date=None, end_date=None
+):
+    """Legacy CSV conversion for backward compatibility.
+
+    Args:
+        skip_if_exists: If True, skip conversion if CSV already exists
+        start_date: Custom start date, if None uses settings default
+        end_date: Custom end date, if None uses settings default
+    """
     logger = logging.getLogger(__name__)
 
-    logger.info("Starting full index feed update...")
-    logger.info(f"Parameters: save_idx_as_csv={save_idx_as_csv}, skip_if_exists={skip_if_exists}")
+    # Use custom dates if provided, otherwise fall back to settings
+    conversion_start_date = start_date or settings.index_start_date
+    conversion_end_date = end_date or settings.index_end_date
 
-    dates_quarters = generate_folder_names_years_quarters(settings.index_start_date, settings.index_end_date)
-    logger.info(f"Processing {len(dates_quarters)} quarters: {dates_quarters}")
+    dates_quarters = generate_folder_names_years_quarters(
+        conversion_start_date, conversion_end_date
+    )
+    latest_full_index_master = safe_join(
+        str(settings.full_index_data_dir), "master.idx"
+    )
 
-    latest_full_index_master = os.path.join(str(settings.full_index_data_dir), "master.idx")
-    logger.info(f"Master index file path: {latest_full_index_master}")
+    files_converted = 0
+    files_skipped = 0
+    total_files_to_check = (
+        len(dates_quarters) * len(settings.index_files) + 1
+    )  # +1 for master
+
+    logger.info(f"📋 Checking {total_files_to_check} index files for CSV conversion...")
 
     if os.path.exists(latest_full_index_master):
-        logger.info(f"Removing existing master index file: {latest_full_index_master}")
-        os.remove(latest_full_index_master)
+        csv_path = str(latest_full_index_master).replace(".idx", ".csv")
+        if (
+            not skip_if_exists
+            or not os.path.exists(csv_path)
+            or os.path.getmtime(csv_path) < os.path.getmtime(latest_full_index_master)
+        ):
+            logger.debug("🔄 Converting master index to CSV...")
+            convert_idx_to_csv(latest_full_index_master, skip_if_exists=False)
+            files_converted += 1
+        else:
+            files_skipped += 1
+            logger.debug("⏭️ Skipping master index - CSV already exists and is current")
 
-    g = RetryRequest()
-    logger.info(f"Downloading master index from: {settings.edgar_full_master_url}")
-
-    g.download_file(settings.edgar_full_master_url, latest_full_index_master)
-    logger.info(f"Master index downloaded successfully to: {latest_full_index_master}")
-
-    logger.info("Converting master index to CSV...")
-    convert_idx_to_csv(latest_full_index_master)
-    logger.info("Master index CSV conversion completed")
-
+    files_processed = 0
     for year, qtr in dates_quarters:
-        logger.info(f"Processing quarter: {year}/{qtr}")
+        for file in settings.index_files:
+            files_processed += 1
+            # Extract quarter number from QTR format (e.g., "QTR2" -> 2)
+            qtr_num = int(qtr.replace("QTR", ""))
+            url, filepath = generate_full_index_url(int(year), qtr_num, file)
+            if os.path.exists(filepath):
+                csv_path = str(filepath).replace(".idx", ".csv")
+                if (
+                    not skip_if_exists
+                    or not os.path.exists(csv_path)
+                    or os.path.getmtime(csv_path) < os.path.getmtime(filepath)
+                ):
+                    logger.debug(f"🔄 Converting {year} Q{qtr_num} {file} to CSV...")
+                    convert_idx_to_csv(filepath, skip_if_exists=False)
+                    files_converted += 1
 
-        # settings.index_files = ['master.idx']
-        for i, file in enumerate(settings.index_files):
-            logger.info(f"Processing file {i+1}/{len(settings.index_files)}: {file}")
-
-            filepath = os.path.join(str(settings.full_index_data_dir), year, qtr, file)
-            csv_filepath = filepath.replace('.idx', '.csv')
-
-            logger.info(f"Target file path: {filepath}")
-            logger.info(f"Target CSV path: {csv_filepath}")
-
-            if os.path.exists(filepath) and skip_if_exists == False:
-                logger.info(f"Removing existing idx file: {filepath}")
-                os.remove(filepath)
-
-            if os.path.exists(csv_filepath) and skip_if_exists == False:
-                logger.info(f"Removing existing CSV file: {csv_filepath}")
-                os.remove(csv_filepath)
-
-            if not os.path.exists(filepath):
-                logger.info("File doesn't exist, proceeding with download...")
-
-                if not os.path.exists(os.path.dirname(filepath)):
-                    logger.info(f"Creating directory: {os.path.dirname(filepath)}")
-                    os.makedirs(os.path.dirname(filepath))
-
-                url = urljoin(settings.edgar_archives_url, f'edgar/full-index/{year}/{qtr}/{file}')
-                logger.info(f"Downloading from URL: {url}")
-
-                g.download_file(url, filepath)
-                logger.info(f"Downloaded successfully to: {filepath}")
-
-                if save_idx_as_csv == True:
-                    logger.info(f'Converting idx to csv: {filepath} -> {csv_filepath}')
-                    convert_idx_to_csv(filepath)
-                    logger.info(f'CSV conversion completed: {csv_filepath}')
+                    # Log progress every 10 conversions
+                    if files_converted % 10 == 0:
+                        logger.info(
+                            f"📈 CSV conversion progress: {files_converted} files converted"
+                        )
+                else:
+                    files_skipped += 1
+                    logger.debug(
+                        f"⏭️ Skipping {year} Q{qtr_num} {file} - CSV already current"
+                    )
             else:
-                logger.info(f"Skipping existing file: {filepath}")
+                logger.debug(f"⚠️ IDX file not found: {filepath}")
 
-    logger.info('Starting to merge IDX files...')
-    merge_idx_files()
-    logger.info('IDX files merge completed successfully')
-    logger.info('Full index download process completed!')
-    logger.info(f'All files saved to: {settings.full_index_data_dir}')
+    # Log comprehensive CSV conversion summary
+    total_processed = files_converted + files_skipped
+    if files_converted == 0:
+        logger.info(
+            f"✅ All {total_processed} CSV files are already up to date - no conversion needed"
+        )
+    else:
+        logger.info(
+            f"✅ CSV conversion completed: {files_converted} files converted, {files_skipped} skipped"
+        )
+        logger.info(
+            f"📊 Total processed: {total_processed} files checked for conversion"
+        )
 
 
 def display_configuration():
@@ -111,7 +309,9 @@ def display_configuration():
 
     # Also log the configuration
     logger.info("Configuration Settings:")
-    logger.info(f"   Date Range: {settings.index_start_date} to {settings.index_end_date}")
+    logger.info(
+        f"   Date Range: {settings.index_start_date} to {settings.index_end_date}"
+    )
     logger.info(f"   Output Directory: {settings.full_index_data_dir}")
     logger.info(f"   Index Files: {settings.index_files}")
     logger.info(f"   Edgar Archives URL: {settings.edgar_archives_url}")
@@ -121,15 +321,15 @@ def display_configuration():
 def run_full_index_update(save_as_csv=True, skip_existing=False, dry_run=False):
     """
     Run the full index update with proper error handling.
-    
+
     Args:
         save_as_csv: Whether to convert .idx files to .csv
         skip_existing: Whether to skip existing files
         dry_run: If True, only show what would be done without executing
-        
+
     Returns:
         bool: True if successful, False otherwise
-        
+
     Raises:
         Exception: Re-raises any unexpected exceptions after logging
     """
@@ -150,8 +350,7 @@ def run_full_index_update(save_as_csv=True, skip_existing=False, dry_run=False):
 
             # Show what quarters would be processed
             dates_quarters = generate_folder_names_years_quarters(
-                settings.index_start_date,
-                settings.index_end_date
+                settings.index_start_date, settings.index_end_date
             )
             print(f"📊 Would process {len(dates_quarters)} quarters:")
             for year, qtr in dates_quarters:
@@ -162,8 +361,7 @@ def run_full_index_update(save_as_csv=True, skip_existing=False, dry_run=False):
 
         # Actual execution
         update_full_index_feed(
-            save_idx_as_csv=save_as_csv,
-            skip_if_exists=skip_existing
+            save_idx_as_csv=save_as_csv, skip_if_exists=skip_existing
         )
 
         logger.info("✅ Full index feed update completed successfully!")
@@ -203,12 +401,12 @@ def run_full_index_update(save_as_csv=True, skip_existing=False, dry_run=False):
 def main():
     """
     Main function with comprehensive error handling and logging setup.
-    
+
     Returns:
         int: Exit code (0 for success, 1 for failure)
     """
     # Configuration
-    LOG_FILE = 'full_index_update.log'
+    LOG_FILE = "full_index_update.log"
 
     try:
         # Set up logging using the utility function
@@ -222,7 +420,7 @@ def main():
         success = run_full_index_update(
             save_as_csv=True,
             skip_existing=False,
-            dry_run=False  # Change to True for testing
+            dry_run=False,  # Change to True for testing
         )
 
         if success:
@@ -250,7 +448,7 @@ def main():
 if __name__ == "__main__":
     """
     Test runner for update_full_index_feed function.
-    
+
     Run this script directly to test the full index update:
     python full_index.py
     """

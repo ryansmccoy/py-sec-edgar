@@ -2,7 +2,7 @@
 REM Windows batch script to run py-sec-edgar examples
 REM Usage:
 REM   run_examples.bat                    - Interactive menu
-REM   run_examples.bat --list             - List all examples  
+REM   run_examples.bat --list             - List all examples
 REM   run_examples.bat --run basic_processing  - Run specific example
 REM   run_examples.bat --run-all          - Run all examples
 

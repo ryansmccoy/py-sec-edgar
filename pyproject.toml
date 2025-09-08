@@ -4,9 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "py-sec-edgar"
-version = "1.1.0"
+version = "1.2.0"
 description = "Python application used to download SEC Edgar filings"
-readme = "README.rst"
+readme = "README.md"
 license = "MIT"
 authors = [
     { name = "Ryan S. McCoy", email = "github@ryansmccoy.com" },
@@ -30,23 +30,39 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
+    # Core SEC filing processing
     "beautifulsoup4>=4.12.0",
     "feedparser>=6.0.0",
     "html5lib>=1.1",
-    "openpyxl>=3.1.0",
     "requests>=2.31.0",
-    "python-dotenv>=1.0.0",
-    "pandas>=2.0.0",
     "lxml>=4.9.0",
     "chardet>=5.0.0",
+    "lxml-html-clean>=0.4.2",
+    "html2text>=2020.1.16",
+
+    # Data processing
+    "pandas>=2.0.0",
     "numpy>=1.24.0",
-    "click>=8.1.0",
     "pyarrow>=12.0.0",
-    "pydantic>=2.11.7",
-    "pydantic-settings>=2.1.0",
+
+    # Configuration and validation
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+
+    # Async operations
     "aiohttp>=3.9.0",
     "aiofiles>=23.0.0",
-    "ruff>=0.12.9",
+
+    # CLI and UI
+    "click>=8.1.0",
+    "rich>=13.0.0",
+
+    # AI integration (optional but included for core functionality)
+    "openai>=1.0.0",
+
+    # Excel support (commonly needed for SEC data)
+    "openpyxl>=3.1.0",
 ]
 
 [project.optional-dependencies]
@@ -77,10 +93,13 @@ Documentation = "https://py-sec-edgar.readthedocs.io"
 Issues = "https://github.com/ryansmccoy/py-sec-edgar/issues"
 
 [project.scripts]
-py-sec-edgar = "py_sec_edgar.main:main"
+py-sec-edgar = "py_sec_edgar.main:cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/py_sec_edgar"]
+exclude = [
+    "src/py_sec_edgar/parse/**",
+]
 
 [tool.hatch.build.targets.wheel.force-include]
 "refdata" = "py_sec_edgar/refdata"
@@ -101,9 +120,13 @@ select = [
     "UP", # pyupgrade
 ]
 ignore = [
-    "E501",  # line too long, handled by black
+    "E501",  # line too long, handled by ruff format
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
+    "E722",  # bare except (legacy code)
+    "B904",  # raise without from (legacy code)
+    "B007",  # unused loop variables (legacy code)
+    "F841",  # unused variables (legacy code)
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -114,14 +137,15 @@ ignore = [
 [tool.mypy]
 python_version = "3.10"
 check_untyped_defs = true
-disallow_any_generics = true
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
+disallow_any_generics = false  # Too strict for current codebase
+disallow_incomplete_defs = false  # Legacy code compatibility
+disallow_untyped_defs = false  # Legacy code compatibility
 no_implicit_optional = true
 warn_redundant_casts = true
-warn_unused_ignores = true
+warn_unused_ignores = false  # Avoid noise from legacy code
 warn_unreachable = true
 strict_equality = true
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -129,6 +153,12 @@ module = [
     "beautifulsoup4.*",
     "openpyxl.*",
     "xlrd.*",
+    "aiofiles.*",
+    "aiohttp.*",
+    "pandas.*",
+    "numpy.*",
+    "openai.*",
+    "rich.*",
 ]
 ignore_missing_imports = true
 
@@ -166,10 +196,42 @@ exclude_lines = [
     "if __name__ == .__main__.:",
 ]
 
+# Advanced parsing and ML dependencies (optional)
+# Uncomment and install with: uv sync --group advanced-parsers
+# [dependency-groups]
+# advanced-parsers = [
+#     "beautifulsoup4>=4.13.4",
+#     "gensim>=4.3.2",
+#     "jinja2>=3.1.6",
+#     "matplotlib>=3.9.0",
+#     "networkx>=3.4.0",
+#     "nltk>=3.9.0",
+#     "pillow>=10.0.0",
+#     "plotly>=5.17.0",
+#     "python-docx>=1.1.0",
+#     "pyyaml>=6.0.0",
+#     "scikit-learn>=1.4.0",
+#     "seaborn>=0.13.0",
+#     "sentence-transformers>=2.2.0",
+#     "spacy>=3.7.0",
+#     "torch>=2.1.0",
+#     "tqdm>=4.66.0",
+#     "transformers>=4.35.0",
+#     "wordcloud>=1.9.0",
+# ]
+
 [dependency-groups]
+visualization = [
+    "matplotlib>=3.9.0",
+    "seaborn>=0.13.0",
+    "plotly>=5.17.0",
+]
 dev = [
-    "coverage>=7.10.3",
-    "pytest>=8.4.1",
-    "pytest-asyncio>=1.1.0",
-    "pytest-cov>=6.2.1",
+    "coverage>=7.4.0",
+    "pre-commit>=3.6.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
 ]

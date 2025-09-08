@@ -1,145 +1,286 @@
+"""
+SEC Filing Content Extraction
+
+Simplified extraction module that provides essential filing content extraction
+functionality while the comprehensive parse module is being redesigned.
+
+This module replaces the complex parse module dependencies with streamlined
+extraction capabilities for the current release.
+"""
+
 import logging
-
-logger = logging.getLogger(__name__)
-
 import os
 import re
 
 import chardet
-import lxml.html
 
-from .parse.header import header_parser
+from .core.path_utils import ensure_directory, safe_join
 from .utilities import file_size, format_filename, uudecode
 
+logger = logging.getLogger(__name__)
 
-def extract(filing_json):
+
+def extract(filing_json: dict, force: bool = False) -> dict:
     """
-    Extracts the contents of a complete submission filing
+    Extract filing contents from complete submission files.
+
+    Simplified version of the parse module extract functionality for
+    essential filing processing workflows.
+
+    Args:
+        filing_json: Dictionary with filing information including:
+            - extracted_filing_directory: Target directory
+            - filing_filepath: Path to submission file
+        force: If True, re-extract even if directory already exists
+
+    Returns:
+        Dictionary with filing contents (legacy format)
     """
     filing_contents = {}
 
-    if not os.path.exists(filing_json['extracted_filing_directory']) and not os.path.exists(filing_json['extracted_filing_directory'] + ".zip"):
+    if not os.path.exists(filing_json["extracted_filing_directory"]) or force:
+        if force and os.path.exists(filing_json["extracted_filing_directory"]):
+            logger.info("FORCE: Re-extraction enabled - overwriting existing directory")
 
-        logger.info("\n\n\n\n\tExtracting Filing Documents:\n")
+        logger.info("Extracting Filing Documents")
 
         try:
+            filing_contents = extract_complete_submission_filing(
+                filing_json["filing_filepath"],
+                output_directory=filing_json["extracted_filing_directory"],
+            )
+        except UnicodeDecodeError as e:
+            logger.error(f"Error Decoding: {e}")
+        except Exception as e:
+            logger.error(f"Extraction failed: {e}")
 
-            filing_contents = extract_complete_submission_filing(filing_json['filing_filepath'], output_directory=filing_json['extracted_filing_directory'])
-
-        except UnicodeDecodeError as E:
-            logger.error(f"\n\n\n\nError Decoding \n\n{E}")
-
-        logger.info("\n\n\n\n\tExtraction Complete\n")
+        logger.info("Extraction Complete")
+    else:
+        logger.info(
+            f"WARNING: Extraction directory already exists - skipping extraction: {filing_json['extracted_filing_directory']}"
+        )
 
     return filing_contents
 
 
-def extract_complete_submission_filing(filepath, output_directory=None):
+def extract_complete_submission_filing(
+    filepath: str, output_directory: str = None
+) -> dict:
     """
-    Given a filepath
-    :param filepath:
-    :param output_directory:
-    :return:
+    Extract documents from SEC complete submission filing.
+
+    Simplified version of complete submission processing that handles
+    basic document extraction without advanced parsing features.
+
+    Args:
+        filepath: Path to complete submission file
+        output_directory: Directory to save extracted documents
+
+    Returns:
+        Dictionary with extracted documents (legacy format)
     """
-
-    elements_list = [('FILENAME', './/filename'), ('TYPE', './/type'),
-                     ('SEQUENCE', './/sequence'), ('DESCRIPTION', './/description')]
-
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-    else:
-        logger.info(f"Folder Already Exists {output_directory}")
-        return
-
-    logger.info(f"extracting documents to {output_directory}")
-
-    xbrl_doc = re.compile(r'<DOCUMENT>(.*?)</DOCUMENT>', re.DOTALL)
-    xbrl_text = re.compile(r'<(TEXT|text)>(.*?)</(TEXT|text)>', re.MULTILINE | re.DOTALL)
+    if not os.path.exists(filepath):
+        logger.error(f"Filing file not found: {filepath}")
+        return {}
 
     try:
-        # or codecs.open on Python 2
-        raw_text = open(filepath, "rb").read()
-        result = chardet.detect(raw_text)
-        charenc = result['encoding']
-
-        with open(filepath, encoding=charenc) as f:
-            raw_text = f.read()
-
-    except:
+        # Load and decode file
         with open(filepath, "rb") as f:
             raw_bytes = f.read()
-            # Decode bytes to string for regex processing
-            try:
-                raw_text = raw_bytes.decode('utf-8')
-            except UnicodeDecodeError:
-                try:
-                    raw_text = raw_bytes.decode('latin-1')
-                except UnicodeDecodeError:
-                    raw_text = raw_bytes.decode('utf-8', errors='ignore')
 
-    filing_header = header_parser(raw_text)
+        # Detect encoding
+        encoding_result = chardet.detect(raw_bytes)
+        encoding = encoding_result.get("encoding", "utf-8")
 
-    header_filepath = os.path.join(output_directory, f"{os.path.basename(output_directory)}_FILING_HEADER.csv")
+        try:
+            content = raw_bytes.decode(encoding)
+        except UnicodeDecodeError:
+            logger.warning(f"Failed to decode with {encoding}, trying UTF-8")
+            content = raw_bytes.decode("utf-8", errors="replace")
 
-    filing_header.to_csv(header_filepath)
+        # Create output directory if specified
+        if output_directory:
+            ensure_directory(output_directory)
 
-    documents = xbrl_doc.findall(raw_text)
+        # Extract documents using simplified regex approach
+        filing_documents = _extract_documents_simple(
+            content, output_directory, encoding
+        )
 
+        logger.info(f"Extracted {len(filing_documents)} documents")
+        return filing_documents
+
+    except Exception as e:
+        logger.error(f"Failed to extract complete submission filing: {e}")
+        return {}
+
+
+def _extract_documents_simple(
+    content: str, output_directory: str = None, encoding: str = "utf-8"
+) -> dict:
+    """
+    Simple document extraction using regex patterns.
+
+    Args:
+        content: Complete submission content
+        output_directory: Directory to save files (optional)
+        encoding: Text encoding
+
+    Returns:
+        Dictionary with document information
+    """
     filing_documents = {}
 
-    for i, document in enumerate(documents, start=1):
-        uue_filepath = None
-        filing_document = {}
+    # Document boundary patterns
+    document_pattern = re.compile(
+        r"<DOCUMENT>\s*<TYPE>([^<\n]+)\s*<SEQUENCE>([^<\n]+)\s*<FILENAME>([^<\n]+)(?:\s*<DESCRIPTION>([^<\n]+))?",
+        re.IGNORECASE | re.MULTILINE,
+    )
 
-        lxml_html = lxml.html.fromstring(document)
-        root = lxml_html.getroottree()
+    # Text content pattern
+    text_pattern = re.compile(
+        r"<(TEXT|text)>(.*?)</(TEXT|text)>", re.MULTILINE | re.DOTALL
+    )
 
-        for (element, element_path) in elements_list:
-            try:
-                filing_document[f"{element}"] = root.xpath(f"{element_path}")[0].text.strip()
-            except:
-                filing_document[f"{element}"] = ""
+    # Find all document matches
+    doc_matches = list(document_pattern.finditer(content))
 
-        raw_text = xbrl_text.findall(document)
-        raw_text = raw_text[0][1].replace("<XBRL>", "").replace("</XBRL>", "").strip()
-        raw_text = raw_text.replace("<XML>", "").replace("</XML>", "").strip()
+    for i, match in enumerate(doc_matches, start=1):
+        try:
+            # Extract document metadata
+            doc_type = match.group(1).strip()
+            sequence = match.group(2).strip()
+            filename = match.group(3).strip()
+            description = match.group(4).strip() if match.group(4) else ""
 
-        if raw_text.lower().startswith("begin") or document.lower().startswith("begin"):
+            # Find document content boundaries
+            start_pos = match.end()
 
-            uue_filepath = os.path.join(output_directory, filing_document['FILENAME'] + ".uue")
-            output_filepath = os.path.join(output_directory, uue_filepath.replace(".uue", ""))
-            output_filename = os.path.basename(output_filepath)
+            # Find next document or end of content
+            if i < len(doc_matches):
+                end_pos = doc_matches[i].start()
+            else:
+                # Look for end document tag or end of content
+                end_match = re.search(
+                    r"</DOCUMENT>", content[start_pos:], re.IGNORECASE
+                )
+                if end_match:
+                    end_pos = start_pos + end_match.start()
+                else:
+                    end_pos = len(content)
 
-            with open(uue_filepath, 'w', encoding=charenc) as f:
-                f.write(raw_text)
+            # Extract document content
+            doc_content = content[start_pos:end_pos].strip()
 
-            uudecode(uue_filepath, out_file=output_filepath)
+            # Extract text content if present
+            text_match = text_pattern.search(doc_content)
+            if text_match:
+                processed_content = text_match.group(2)
+            else:
+                processed_content = doc_content
 
-        else:
-            doc_num = f"{int(filing_document['SEQUENCE'])}".zfill(4)
+            # Save document if output directory specified
+            output_filepath = None
+            if output_directory and processed_content:
+                output_filepath = _save_document_simple(
+                    processed_content,
+                    doc_type,
+                    sequence,
+                    filename,
+                    description,
+                    output_directory,
+                    encoding,
+                )
 
-            try:
-                output_filename = f"{doc_num}-({filing_document['TYPE']}) {filing_document['DESCRIPTION']} {filing_document['FILENAME']}"
-            except:
-                output_filename = f"{doc_num}-({filing_document['TYPE']}) {filing_document['FILENAME']}".replace(" ", "_").replace(":", "").replace("__", "_")
+            # Create document entry
+            filing_documents[i] = {
+                "TYPE": doc_type,
+                "SEQUENCE": sequence,
+                "FILENAME": filename,
+                "DESCRIPTION": description,
+                "RELATIVE_FILEPATH": output_filepath,
+                "DESCRIPTIVE_FILEPATH": os.path.basename(output_filepath)
+                if output_filepath
+                else filename,
+                "FILE_SIZE": file_size(output_filepath) if output_filepath else "N/A",
+                "FILE_SIZE_BYTES": len(processed_content),
+            }
 
-            output_filename = output_filename.replace(" ", "_").replace(":", "").replace("__", "_")
+            logger.debug(f"Extracted document {sequence}: {doc_type} - {filename}")
 
-            output_filename = format_filename(output_filename)
-            output_filepath = os.path.join(output_directory, output_filename)
-
-            with open(output_filepath, 'w', encoding=charenc) as f:
-                f.write(raw_text)
-
-        filing_document['RELATIVE_FILEPATH'] = os.path.join(os.path.basename(output_directory), output_filepath)
-        filing_document['DESCRIPTIVE_FILEPATH'] = output_filename
-
-        filing_document['FILE_SIZE'] = file_size(output_filepath)
-        filing_document['FILE_SIZE_BYTES'] = os.stat(output_filepath).st_size
-
-        filing_documents[i] = filing_document
-
-        if uue_filepath:
-            os.remove(uue_filepath)
+        except Exception as e:
+            logger.error(f"Error processing document {i}: {e}")
+            continue
 
     return filing_documents
+
+
+def _save_document_simple(
+    content: str,
+    doc_type: str,
+    sequence: str,
+    filename: str,
+    description: str,
+    output_directory: str,
+    encoding: str,
+) -> str:
+    """
+    Save document content to file with simplified approach.
+
+    Args:
+        content: Document content
+        doc_type: Document type
+        sequence: Document sequence number
+        filename: Original filename
+        description: Document description
+        output_directory: Output directory
+        encoding: Text encoding
+
+    Returns:
+        Path to saved file
+    """
+    try:
+        # Handle UUE encoded files
+        if content.lower().startswith("begin"):
+            uue_filepath = safe_join(output_directory, filename + ".uue")
+            output_filepath = safe_join(output_directory, filename)
+
+            # Save UUE content
+            with open(uue_filepath, "w", encoding=encoding) as f:
+                f.write(content)
+
+            # Try to decode UUE file
+            try:
+                uudecode(str(uue_filepath), out_file=str(output_filepath))
+                os.remove(uue_filepath)  # Clean up UUE file
+                return output_filepath
+            except Exception as e:
+                logger.error(f"UUE decoding failed for {filename}: {e}")
+                return uue_filepath
+
+        # Handle regular text files
+        else:
+            # Create descriptive filename
+            doc_num = f"{int(sequence):04d}"
+
+            if description:
+                output_filename = f"{doc_num}-({doc_type}) {description} {filename}"
+            else:
+                output_filename = f"{doc_num}-({doc_type}) {filename}"
+
+            # Clean filename
+            output_filename = format_filename(output_filename)
+            output_filepath = safe_join(output_directory, output_filename)
+
+            # Save content
+            with open(output_filepath, "w", encoding=encoding) as f:
+                f.write(content)
+
+            return output_filepath
+
+    except Exception as e:
+        logger.error(f"Failed to save document {filename}: {e}")
+        return None
+
+
+# Legacy compatibility functions removed - functionality moved to parse module

@@ -5,11 +5,17 @@ This module provides a unified command-line interface for all SEC EDGAR operatio
 """
 
 import logging
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import click
 
+from py_sec_edgar.cli.commands.feeds import feeds_group
+from py_sec_edgar.cli.commands.filters import filters_group
+from py_sec_edgar.cli.commands.process import process_group
+from py_sec_edgar.cli.commands.search import search_group
+from py_sec_edgar.cli.commands.utils import utils_group
+from py_sec_edgar.cli.commands.workflows import workflows_group
 from py_sec_edgar.logging_utils import setup_logging
 from py_sec_edgar.settings import settings
 
@@ -22,23 +28,23 @@ logger = logging.getLogger(__name__)
 
 
 @click.group(name="py-sec-edgar")
-@click.version_option(version="1.1.0")
+@click.version_option(version="1.2.0")
 @click.option(
     "--log-level",
     type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False),
     default="INFO",
-    help="Set logging level"
+    help="Set logging level",
 )
 @click.option(
     "--data-dir",
     type=click.Path(exists=False, file_okay=False, dir_okay=True, path_type=Path),
-    help="Override default data directory"
+    help="Override default data directory",
 )
 @click.pass_context
 def cli(ctx: click.Context, log_level: str, data_dir: Path | None) -> None:
     """
     SEC EDGAR Filing Processor
-    
+
     A comprehensive tool for downloading, processing, and analyzing SEC EDGAR filings.
     """
     # Ensure that ctx.obj exists and is a dict (used for passing data between commands)
@@ -49,19 +55,14 @@ def cli(ctx: click.Context, log_level: str, data_dir: Path | None) -> None:
 
     # Override data directory if provided
     if data_dir:
-        settings.sec_data_dir = data_dir
+        settings.sec_data_dir = str(data_dir)
         settings.ensure_directories()
 
-    ctx.obj['settings'] = settings
+    ctx.obj["settings"] = settings
     logger.info(f"py-sec-edgar v1.1.0 - Log level: {log_level}")
 
 
-# Import command groups
-from py_sec_edgar.cli.commands.feeds import feeds_group
-from py_sec_edgar.cli.commands.filters import filters_group
-from py_sec_edgar.cli.commands.process import process_group
-from py_sec_edgar.cli.commands.utils import utils_group
-from py_sec_edgar.cli.commands.workflows import workflows_group
+# Register command groups
 
 # Register command groups
 cli.add_command(feeds_group)
@@ -69,6 +70,7 @@ cli.add_command(filters_group)
 cli.add_command(process_group)
 cli.add_command(workflows_group)
 cli.add_command(utils_group)
+cli.add_command(search_group)
 
 
 def main() -> None:
