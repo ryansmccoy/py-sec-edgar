@@ -1,13 +1,43 @@
-include AUTHORS.rst
-include CONTRIBUTING.rst
-include HISTORY.rst
 include LICENSE
-include README.rst
+include README.md
+include pyproject.toml
+include uv.lock
+include .env.example
+
+# Reference data files
 include refdata/cik_tickers.csv.zip
 include refdata/filing_types.csv.zip
+include refdata/company_tickers.json
+include refdata/company_tickers_exchange.json
 
-recursive-include tests *
+# Requirements files
+recursive-include requirements *.txt
+
+# Documentation
+recursive-include docs *.md *.rst conf.py Makefile make.bat *.jpg *.png *.gif
+
+# Examples and scripts
+recursive-include examples *.py *.csv *.json *.md *.ipynb
+recursive-include scripts *.py *.bat
+
+# Tests
+recursive-include tests *.py
+
+# Exclude development artifacts
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
-
-recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
+recursive-exclude * .DS_Store
+recursive-exclude * *.egg-info
+exclude .coverage
+exclude .env
+prune .venv
+prune .git
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache
+prune htmlcov
+prune logs
+prune downloads
+prune sec_data
+prune data
+prune archive
