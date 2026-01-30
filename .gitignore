@@ -1,6 +1,21 @@
 # UV lock file
 uv.lock
 
+# Ecosystem subprojects (separate git repos)
+entityspine/
+feedspine/
+spine-core/
+capture-spine/
+capture-spine-basic/
+market-spine/
+spine/
+factset-dataset/
+py_sec_edgar/
+
+# Temporary/local files
+.vite/
+recent_files.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
