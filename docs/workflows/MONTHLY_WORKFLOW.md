@@ -7,7 +7,7 @@ The Monthly workflow processes SEC EDGAR's monthly XBRL data archives, providing
 The Monthly workflow downloads and processes monthly XBRL (eXtensible Business Reporting Language) archives from SEC EDGAR. XBRL provides structured, standardized financial data that's perfect for quantitative analysis, financial modeling, automated data processing, and building financial datasets for machine learning.
 
 **Key Capabilities:**
-- 🔢 **Structured Data**: Access machine-readable XBRL financial data  
+- 🔢 **Structured Data**: Access machine-readable XBRL financial data
 - 📊 **Standardized Format**: Consistent data structure across all companies
 - 🎯 **Quantitative Analysis**: Perfect for financial modeling and analytics
 - 📈 **Time Series Data**: Build comprehensive historical financial datasets

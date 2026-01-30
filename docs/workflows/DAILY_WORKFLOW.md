@@ -113,7 +113,7 @@ $ uv run python -m py_sec_edgar workflows daily \
     --days-back 2 \
     --extract
 
-# Perfect for capturing: earnings announcements, M&A activity, 
+# Perfect for capturing: earnings announcements, M&A activity,
 # regulatory updates, management changes
 ```
 
@@ -204,7 +204,7 @@ $ uv run python -m py_sec_edgar workflows daily \
 
 **Filtering Options:**
 - `--tickers` - Specify ticker symbols directly (space-separated)
-- `--ticker-file` - Path to CSV file containing ticker symbols  
+- `--ticker-file` - Path to CSV file containing ticker symbols
 - `--no-ticker-filter` - Process all companies (no ticker filtering)
 - `--forms` - Specify form types to process (space-separated)
 - `--form` - Specify single form type

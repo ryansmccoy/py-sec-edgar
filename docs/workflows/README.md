@@ -119,7 +119,7 @@ uv run python -m py_sec_edgar workflows full-index --tickers AAPL --forms "10-K"
 - **Time**: Hours for comprehensive processing
 - **Use**: One-time historical collection, periodic updates
 
-### Daily Workflow  
+### Daily Workflow
 - **Scale**: Hundreds to thousands of filings per day
 - **Storage**: Moderate (MB to GB range)
 - **Time**: Minutes to hours depending on range
@@ -144,7 +144,7 @@ uv run python -m py_sec_edgar workflows full-index --tickers AAPL --forms "10-K"
 # 1. Foundation: Historical data collection
 uv run python -m py_sec_edgar workflows full-index --ticker-file universe.csv --forms "10-K" "10-Q"
 
-# 2. Updates: Daily systematic processing  
+# 2. Updates: Daily systematic processing
 uv run python -m py_sec_edgar workflows daily --ticker-file universe.csv --days-back 1
 
 # 3. Alerts: RSS monitoring for specific events
