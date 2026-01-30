@@ -12,9 +12,19 @@ spine/
 factset-dataset/
 py_sec_edgar/
 
+# Development/Session files (not for release)
+prompts/
+archive/
+docs/sessions/
+docs/archive/
+**/sessions/
+**/archive/
+RELEASE_PLANNING.md
+
 # Temporary/local files
 .vite/
 recent_files.txt
+*.backup
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
