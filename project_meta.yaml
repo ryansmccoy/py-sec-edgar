@@ -1,0 +1,41 @@
+# py-sec-edgar - Ecosystem Metadata
+# Auto-consumed by scripts/generate_ecosystem_docs.py
+
+name: py-sec-edgar
+tagline: "Professional SEC EDGAR Filing Processor"
+status: public
+pypi: py-sec-edgar
+github: ryansmccoy/py-sec-edgar
+
+categories:
+  - sec-filings
+  - data-collection
+  - financial-data
+
+key_features:
+  - "Professional workflow system (4 specialized workflows)"
+  - "High-performance bulk download and processing"
+  - "Advanced filtering (ticker, form type, date range)"
+  - "Real-time RSS feed monitoring"
+  - "Structured data extraction"
+  - "FeedSpine adapter integration"
+
+key_docs:
+  - README.md
+  - py_sec_edgar/docs/
+
+key_models:
+  - py_sec_edgar/src/py_sec_edgar/
+
+integration_points:
+  entityspine: "Entity resolution for SEC filers"
+  feedspine: "SEC feed adapters (RSS, daily index, quarterly index)"
+  capture-spine: "SEC filing capture pipeline"
+
+recent_features:
+  - date: 2026-01-15
+    feature: "FeedSpine adapter entry points"
+    version: v1.2.0
+  - date: 2026-01-10
+    feature: "Workflow system with 4 specialized workflows"
+    version: v1.1.0

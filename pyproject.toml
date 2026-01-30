@@ -39,30 +39,23 @@ dependencies = [
     "chardet>=5.0.0",
     "lxml-html-clean>=0.4.2",
     "html2text>=2020.1.16",
-
     # Data processing
     "pandas>=2.0.0",
     "numpy>=1.24.0",
     "pyarrow>=12.0.0",
-
-    # Configuration and validation
-    "pydantic>=2.0.0",
-    "pydantic-settings>=2.0.0",
     "python-dotenv>=1.0.0",
-
     # Async operations
     "aiohttp>=3.9.0",
     "aiofiles>=23.0.0",
-
     # CLI and UI
     "click>=8.1.0",
     "rich>=13.0.0",
-
     # AI integration (optional but included for core functionality)
     "openai>=1.0.0",
-
     # Excel support (commonly needed for SEC data)
     "openpyxl>=3.1.0",
+    "orjson>=3.11.5",
+    "regex>=2026.1.15",
 ]
 
 [project.optional-dependencies]
@@ -94,6 +87,12 @@ Issues = "https://github.com/ryansmccoy/py-sec-edgar/issues"
 
 [project.scripts]
 py-sec-edgar = "py_sec_edgar.main:cli"
+
+# Entry points for FeedSpine adapter discovery
+[project.entry-points."feedspine.adapters"]
+sec-rss = "py_sec_edgar.adapters.sec_feeds:SecRssFeedAdapter"
+sec-daily = "py_sec_edgar.adapters.sec_feeds:SecDailyIndexAdapter"
+sec-quarterly = "py_sec_edgar.adapters.sec_feeds:SecQuarterlyIndexAdapter"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/py_sec_edgar"]
@@ -234,4 +233,8 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.1.0",
     "mypy>=1.8.0",
+    "vulture>=2.14",
+    "radon>=6.0.1",
+    "lizard>=1.17.31",
+    "psycopg2-binary>=2.9.11",
 ]

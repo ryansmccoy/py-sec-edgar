@@ -556,6 +556,53 @@ GOOGL
 
 ### 🔧 Programmatic Usage
 
+py-sec-edgar provides two Python APIs for programmatic usage:
+
+#### Simple API (`SEC` class) - Quick Downloads
+```python
+from py_sec_edgar import SEC, Forms
+
+async with SEC(data_dir="./sec_data") as sec:
+    # Download filings for specific companies
+    result = await sec.download(
+        tickers=["AAPL", "MSFT"],
+        forms=[Forms.FORM_10K],
+        days=365
+    )
+    print(f"Downloaded {result.file_count} files")
+
+    # List downloaded filings
+    filings = await sec.list_filings(ticker="AAPL")
+```
+
+#### Advanced API (`SECFeed` class) - Full FeedSpine Integration
+```python
+from py_sec_edgar import SECFeed, SECFeedConfig
+from py_sec_edgar.reporters import RichProgressReporter
+
+# SECFeed provides: DuckDB storage, blob storage, search, caching
+async with SECFeed(
+    tickers=["AAPL", "MSFT"],
+    forms=["10-K", "10-Q"],
+    days=365,
+    enable_search=True,
+    enable_cache=True,
+) as feed:
+    # Collect with progress reporting
+    await feed.collect(progress=RichProgressReporter())
+
+    # Typed access to filings
+    async for filing in feed.filings(form_type="10-K"):
+        print(f"{filing.content.company_name}: {filing.content.accession_number}")
+
+    # Full-text search
+    results = await feed.search("revenue growth", limit=10)
+
+    # Download documents (cached in blob storage)
+    doc = await feed.download_document(filing_url)
+```
+
+#### Workflow Functions
 ```python
 from py_sec_edgar.workflows import (
     run_full_index_workflow,
@@ -564,23 +611,16 @@ from py_sec_edgar.workflows import (
     run_rss_workflow
 )
 
-# Configure and run workflows programmatically
-config = {
-    "tickers": ["AAPL", "MSFT"],
-    "forms": ["10-K", "10-Q"],
-    "extract": True
-}
-
 # Run full index workflow
 run_full_index_workflow(
-    tickers=config["tickers"],
-    forms=config["forms"],
-    extract=config["extract"]
+    tickers=["AAPL", "MSFT"],
+    forms=["10-K", "10-Q"],
+    extract=True
 )
 
 # Monitor recent filings
 run_daily_workflow(
-    tickers=config["tickers"],
+    tickers=["AAPL", "MSFT"],
     days_back=7,
     forms=["8-K"],
     extract=True
