@@ -78,19 +78,27 @@ The architecture follows consistent patterns:
 
 | Feature | Projects Involved | Status | Doc |
 |---------|-------------------|--------|-----|
-| **Copilot Chat Ingestion** | entityspine → feedspine → capture-spine | 🟡 In Progress | [copilot-chat-ingestion.md](copilot-chat-ingestion.md) |
-| **Modern Earnings** | feedspine → entityspine → trading-desktop | 🟡 Planning | [modern-earnings.md](modern-earnings.md) |
-| **8-K Release Capture** | py-sec-edgar → feedspine → capture-spine | 🟡 Planning | [8k-release-capture.md](8k-release-capture.md) |
-| **Trading Desktop Integration** | feedspine → trading-desktop | 🟡 Planning | [trading-desktop-integration.md](trading-desktop-integration.md) |
-| **CI/CD & PyPI** | all packages | 🟡 Planning | [cicd-pypi.md](cicd-pypi.md) |
+| **Copilot Chat Ingestion** | entityspine → capture-spine | ✅ Working | [copilot-chat-ingestion.md](copilot-chat-ingestion.md) |
+| **Chat Storage Architecture** | feedspine ↔ capture-spine | ✅ Analyzed | [CHAT_STORAGE_ARCHITECTURE_ANALYSIS.md](CHAT_STORAGE_ARCHITECTURE_ANALYSIS.md) |
+| **GenAI Service Integration** | genai-spine → capture-spine | 🟡 In Progress | [genai-capture-integration.md](genai-capture-integration.md) |
+| **Package Release (PyPI)** | entityspine, spine-core, feedspine | 🔴 Priority | [PACKAGE_RELEASE_PLAN.md](PACKAGE_RELEASE_PLAN.md) |
+| **Productivity Features** | capture-spine + genai-spine | 🟡 In Progress | [productivity-features.md](productivity-features.md) |
+
+### Architecture Analysis
+
+| Topic | Decision | Doc |
+|-------|----------|-----|
+| Chat dedup ownership | Capture Spine direct (hybrid future) | [CHAT_STORAGE_ARCHITECTURE_ANALYSIS.md](CHAT_STORAGE_ARCHITECTURE_ANALYSIS.md) |
+| LLM service design | Centralized GenAI Spine | [../../genai-spine/docs/ECOSYSTEM_INTEGRATION.md](../../genai-spine/docs/ECOSYSTEM_INTEGRATION.md) |
+| Domain model location | entityspine (stdlib-only) | [../architecture/ECOSYSTEM.md](../architecture/ECOSYSTEM.md) |
 
 ### Data Flow Examples
 
 | Flow | Description | Doc |
 |------|-------------|-----|
-| SEC → Trading | 8-K filing to trading alert | [sec-to-trading-flow.md](flows/sec-to-trading-flow.md) |
-| Chat → Productivity | VS Code chat to TODO tracking | [chat-to-productivity-flow.md](flows/chat-to-productivity-flow.md) |
-| Earnings → Alert | Earnings beat/miss to notification | [earnings-alert-flow.md](flows/earnings-alert-flow.md) |
+| Chat → Productivity | VS Code chat to TODO tracking | [copilot-chat-ingestion.md](copilot-chat-ingestion.md) |
+| Message → Enrichment | Chat message to LLM rewrite | [genai-capture-integration.md](genai-capture-integration.md) |
+| Files → Commit | Work session to commit message | [genai-capture-integration.md](genai-capture-integration.md) |
 
 ---
 

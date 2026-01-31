@@ -53,6 +53,15 @@
 │  │   Status: ✅ Public on GitHub                                                     │    │
 │  └─────────────────────────────────────────────┬───────────────────────────────────┘    │
 │                                                │                                         │
+│  ┌─────────────────────────────────────────────────────────────────────────────────┐    │
+│  │                       LLM LAYER - GENAI-SPINE                                    │    │
+│  │   • Centralized LLM services (OpenAI, Anthropic, Local)                          │    │
+│  │   • /v1/rewrite, /v1/infer-title, /v1/generate-commit, /v1/execute-prompt        │    │
+│  │   • Cost tracking and execution logging                                          │    │
+│  │   • Provider abstraction (swap LLM without code changes)                         │    │
+│  │   Status: 🔄 Private → Plan 1.0.0 release                                         │    │
+│  └─────────────────────────────────────────────┬───────────────────────────────────┘    │
+│                                                │                                         │
 │          ┌─────────────────────────────────────┴────────────────────────────┐           │
 │          ▼                                                                  ▼           │
 │  ┌──────────────────────────────────┐        ┌──────────────────────────────────────┐  │
@@ -60,7 +69,7 @@
 │  │   • FastAPI + React UI           │        │   • Bloomberg-style React SPA        │  │
 │  │   • PostgreSQL + Elasticsearch   │  ◄───► │   • Portfolio/Trading/Research       │  │
 │  │   • Celery workers               │        │   • Real-time market data            │  │
-│  │   • LLM enrichment (Bedrock)     │        │   • Vite + TailwindCSS               │  │
+│  │   • GenAI enrichment (via API)   │        │   • Vite + TailwindCSS               │  │
 │  │   • Productivity features (new!) │        │   • Zustand + React Query            │  │
 │  │   Status: 🔒 Private             │        │   Status: 🔒 Private                 │  │
 │  └──────────────────────────────────┘        └──────────────────────────────────────┘  │
@@ -226,7 +235,44 @@ Entity ≠ Security ≠ Listing
 
 ---
 
-### 6. trading-desktop (MarketSpine)
+### 6. genai-spine
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Centralized LLM/GenAI services |
+| **Language** | Python (FastAPI) |
+| **Status** | 🔄 Private → Plan 1.0.0 release |
+| **Location** | `b:\github\py-sec-edgar\genai-spine\` |
+| **Dependencies** | entityspine, openai, anthropic |
+| **Consumers** | capture-spine, trading-desktop |
+
+**Key modules (`src/genai_spine/`):**
+- `api/app.py` — FastAPI application (port 8100)
+- `api/routers/rewrite.py` — `/v1/rewrite`, `/v1/infer-title` endpoints
+- `api/routers/commit.py` — `/v1/generate-commit` endpoint
+- `api/routers/execute.py` — `/v1/execute-prompt` endpoint
+- `providers/` — LLM providers (OpenAI, Anthropic, Local)
+- `storage/` — Execution tracking, cost tracking
+
+**Key endpoints:**
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /v1/rewrite` | Clean up/reformat text |
+| `POST /v1/infer-title` | Generate titles from content |
+| `POST /v1/generate-commit` | Generate commit messages |
+| `POST /v1/execute-prompt` | Run arbitrary prompts |
+
+**Integration pattern:**
+```python
+from genai_spine.client import GenAIClient
+
+client = GenAIClient("http://localhost:8100")
+result = await client.infer_title(text="How do I parse JSON?")
+```
+
+---
+
+### 7. trading-desktop (MarketSpine)
 
 | Attribute | Value |
 |-----------|-------|
@@ -234,7 +280,7 @@ Entity ≠ Security ≠ Listing
 | **Language** | TypeScript, React 18, Vite |
 | **Status** | 🔒 Private (not for GitHub/PyPI) |
 | **Location** | `b:\github\py-sec-edgar\spine-core\trading-desktop\trading-desktop\` |
-| **Dependencies** | API backends (capture-spine, feedspine) |
+| **Dependencies** | API backends (capture-spine, feedspine, genai-spine) |
 | **Consumers** | End users |
 
 **Structure (`src/`):**
