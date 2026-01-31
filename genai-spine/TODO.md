@@ -133,35 +133,41 @@ GenAI Spine is the unified AI service for the Spine ecosystem. This TODO tracks 
    - [x] Add execute-prompt endpoint (`/v1/execute-prompt`)
    - [ ] Integration tests for API (remaining)
 
-### P1 — Required for Production (Next 2 Weeks)
+### P1 — Required for Production ✅ MOSTLY COMPLETE
 
-5. **Execution tracking**
-   - [ ] Record every LLM call to executions table
-   - [ ] Link to prompt_id and prompt_version
-   - [ ] Track tokens, cost, latency
-   - [ ] Add `/v1/executions` endpoint for history
+5. **~~Execution tracking~~** ✅ COMPLETE
+   - [x] Record every LLM call to executions table
+   - [x] Link to prompt_id and prompt_version
+   - [x] Track tokens, cost, latency
+   - [x] Tracking via `api/tracking.py`
 
-6. **Cost tracking**
-   - [ ] Aggregate daily costs by provider/model
-   - [ ] Add cost estimation before execution
-   - [ ] Budget enforcement (optional)
-   - [ ] Add `/v1/usage` endpoint for stats
+6. **~~Cost tracking~~** ✅ COMPLETE
+   - [x] `capabilities/cost.py` with MODEL_COSTS
+   - [x] `calculate_cost()` and `estimate_cost()` functions
+   - [x] `/v1/usage` endpoint for stats
+   - [x] `/v1/pricing` and `/v1/estimate-cost` endpoints
 
-7. **Additional providers**
-   - [ ] Anthropic provider (Claude)
-   - [ ] Bedrock provider (AWS)
-   - [ ] Provider health checks
+7. **~~Anthropic provider~~** ✅ COMPLETE
+   - [x] `providers/anthropic.py` - Claude 3 models
+   - [x] Uses httpx directly (no SDK dependency)
+   - [ ] Bedrock provider (AWS) - remaining
+   - [ ] Provider health checks - remaining
 
-8. **Pipeline execution** (for Enrichment Pipelines)
+8. **Pipeline execution** (for Enrichment Pipelines) 🔴 NOT STARTED
    - [ ] Pipeline data model (Pipeline, PipelineStep, PipelineRun)
    - [ ] Pipeline execution engine
    - [ ] Step registry with built-in steps
    - [ ] `/v1/pipelines` CRUD endpoints
    - [ ] `/v1/pipelines/{id}/execute` endpoint
 
-9. **Streaming**
+9. **Streaming** 🔴 NOT STARTED
    - [ ] SSE streaming for chat completions
    - [ ] Streaming for long-running capabilities
+
+10. **Alembic migrations** 🟡 IN PROGRESS
+    - [ ] Set up alembic configuration
+    - [ ] Initial migration from models
+    - [ ] Migration scripts for schema changes
 
 ### P2 — Nice to Have (Next Month)
 

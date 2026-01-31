@@ -23,12 +23,15 @@
 | Text Summarization | 1 | ✅ | Core |
 | Classification | 1 | ✅ | Core |
 | Entity Extraction (NER) | 1 | ✅ | Core |
-| Key Point Extraction | 1 | 🟡 | Core |
+| Key Point Extraction | 1 | ✅ | Core |
 | Template Rendering | 1 | ✅ | Core |
 | Prompt Management | 1 | ✅ | Core |
 | Prompt Versioning | 1 | ✅ | Core |
-| Cost Tracking | 1 | 🟡 | Core |
+| Cost Tracking | 1 | ✅ | Core |
 | Provider Abstraction | 1 | ✅ | Core |
+| **Content Rewriting** | 1 | ✅ | Core |
+| **Title Inference** | 1 | ✅ | Core |
+| **Commit Generation** | 1 | ✅ | Core |
 | Sentiment Analysis | 2 | 🔴 | Core |
 | Question Answering | 2 | 🔴 | Core |
 | Content Tagging | 2 | 🔴 | Core |
@@ -70,7 +73,9 @@ These aren't "AI capabilities" but essential infrastructure:
 | Provider Registry | Multi-provider support | 1 | ✅ |
 | Provider Routing | Intelligent model selection | 2 | 🔴 |
 | Provider Fallback | Automatic failover | 2 | 🔴 |
-| Cost Calculation | Per-request cost tracking | 1 | 🟡 |
+| Cost Calculation | Per-request cost tracking | 1 | ✅ |
+| Usage Statistics | Historical usage data | 1 | ✅ |
+| Cost Estimation | Pre-execution cost estimate | 1 | ✅ |
 | Cost Budgets | Daily/monthly limits | 2 | 🔴 |
 | Response Caching | Cache identical requests | 2 | 🔴 |
 | Semantic Caching | Cache similar requests | 3 | 🔴 |
