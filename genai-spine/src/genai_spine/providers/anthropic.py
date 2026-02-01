@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime
-from decimal import Decimal
-from typing import AsyncIterator
 
 import httpx
 

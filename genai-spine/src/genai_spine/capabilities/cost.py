@@ -7,8 +7,6 @@ tracking LLM usage costs across all providers.
 from __future__ import annotations
 
 from decimal import Decimal
-from enum import Enum
-
 
 # =============================================================================
 # Model Pricing (per 1M tokens)

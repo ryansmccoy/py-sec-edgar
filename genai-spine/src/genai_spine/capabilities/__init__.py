@@ -7,21 +7,21 @@ Reference: capture-spine/docs/features/productivity/
 """
 
 from genai_spine.capabilities.classification import classify_content
-from genai_spine.capabilities.extraction import extract_entities
-from genai_spine.capabilities.summarization import summarize_text
-
-# Message Enrichment support (02-message-enrichment/)
-from genai_spine.capabilities.rewrite import (
-    RewriteMode,
-    rewrite_content,
-    infer_title,
-)
 
 # Work Session support (08-work-sessions/)
 from genai_spine.capabilities.commit import (
     CommitStyle,
     generate_commit_message,
 )
+from genai_spine.capabilities.extraction import extract_entities
+
+# Message Enrichment support (02-message-enrichment/)
+from genai_spine.capabilities.rewrite import (
+    RewriteMode,
+    infer_title,
+    rewrite_content,
+)
+from genai_spine.capabilities.summarization import summarize_text
 
 __all__ = [
     # Core capabilities

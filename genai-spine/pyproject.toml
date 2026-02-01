@@ -6,7 +6,16 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
 authors = [{ name = "Ryan McCoy" }]
-
+keywords = ["genai", "llm", "openai", "anthropic", "ollama", "fastapi", "spine", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
@@ -20,6 +29,12 @@ dependencies = [
     "python-multipart>=0.0.12",
     "pyyaml>=6.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/mccoy-lab/py-sec-edgar"
+Repository = "https://github.com/mccoy-lab/py-sec-edgar"
+Documentation = "https://github.com/mccoy-lab/py-sec-edgar/tree/main/genai-spine"
+Changelog = "https://github.com/mccoy-lab/py-sec-edgar/blob/main/genai-spine/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [

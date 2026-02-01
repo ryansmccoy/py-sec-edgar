@@ -7,7 +7,6 @@ import uvicorn
 from genai_spine.api.app import create_app
 from genai_spine.settings import get_settings
 
-
 app = create_app()
 
 
