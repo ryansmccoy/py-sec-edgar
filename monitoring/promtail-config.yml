@@ -1,0 +1,167 @@
+# Promtail Configuration
+#
+# Promtail is the log collector that ships logs to Loki.
+# It can read from:
+# - Static file paths
+# - Docker containers via the Docker API
+# - Systemd journal
+# - Syslog
+#
+# Each log line gets labels attached for filtering in Grafana.
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+# Track what's been read
+positions:
+  filename: /tmp/positions.yaml
+
+# Where to send logs
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # ============================================
+  # py-sec-edgar main logs
+  # ============================================
+  - job_name: spine-main
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: spine-main
+          app: py-sec-edgar
+          __path__: /var/log/spine/*.log
+    pipeline_stages:
+      # Extract log level from lines like "ERROR:" or "INFO:"
+      - regex:
+          expression: '^(?P<level>INFO|WARNING|ERROR|DEBUG|CRITICAL)[\s:]'
+      - labels:
+          level:
+      # Drop debug logs in production (optional)
+      # - match:
+      #     selector: '{level="DEBUG"}'
+      #     action: drop
+
+  # ============================================
+  # capture-spine API logs
+  # ============================================
+  - job_name: capture-spine-api
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: capture-spine
+          app: capture-spine-api
+          __path__: /var/log/capture-spine/api*.log
+    pipeline_stages:
+      # Match uvicorn/FastAPI log format
+      - regex:
+          expression: '^(?P<level>INFO|WARNING|ERROR|DEBUG):\s+'
+      - labels:
+          level:
+      # Extract HTTP method and status for API logs
+      - regex:
+          expression: '"(?P<method>GET|POST|PUT|DELETE|PATCH)\s+(?P<path>[^\s]+)\s+HTTP/[^"]+"\s+(?P<status>\d+)'
+      - labels:
+          method:
+          status:
+      # Mark 4xx/5xx as errors
+      - match:
+          selector: '{status=~"[45].."}'
+          stages:
+            - labels:
+                level: error
+
+  # ============================================
+  # capture-spine Frontend logs
+  # ============================================
+  - job_name: capture-spine-frontend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: capture-spine
+          app: capture-spine-frontend
+          __path__: /var/log/capture-spine/frontend*.log
+
+  # ============================================
+  # entityspine logs
+  # ============================================
+  - job_name: entityspine
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: entityspine
+          app: entityspine
+          __path__: /var/log/entityspine/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<level>INFO|WARNING|ERROR|DEBUG|CRITICAL)[\s:]'
+      - labels:
+          level:
+
+  # ============================================
+  # Docker container logs
+  # ============================================
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          # Only collect from spine-related containers
+          - name: name
+            values:
+              - "spine-*"
+              - "capture-*"
+    relabel_configs:
+      # Use container name as a label
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/?(.*)'
+        target_label: container
+      # Use image name
+      - source_labels: ['__meta_docker_container_image']
+        target_label: image
+      # Log stream (stdout/stderr)
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: stream
+      # Mark stderr as potential errors
+      - source_labels: ['__meta_docker_container_log_stream']
+        regex: 'stderr'
+        target_label: level
+        replacement: error
+    pipeline_stages:
+      # Try to extract level from JSON logs
+      - json:
+          expressions:
+            level: level
+            msg: msg
+            message: message
+      - labels:
+          level:
+
+  # ============================================
+  # Multiline log handling (stack traces)
+  # ============================================
+  # The main scrape configs above will handle single lines.
+  # For multiline logs like Python tracebacks, add this:
+  - job_name: spine-multiline
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: spine-main
+          multiline: "true"
+          __path__: /var/log/spine/*.log
+    pipeline_stages:
+      - multiline:
+          # First line of a new log entry starts with timestamp or level
+          firstline: '^\d{4}-\d{2}-\d{2}|^INFO|^ERROR|^WARNING|^DEBUG|^CRITICAL'
+          max_wait_time: 3s
+          max_lines: 128
+      - regex:
+          expression: '^(?P<level>INFO|WARNING|ERROR|DEBUG|CRITICAL)'
+      - labels:
+          level:

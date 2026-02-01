@@ -1,0 +1,237 @@
+# Spine Ecosystem Monitoring Stack
+#
+# A lightweight, production-ready monitoring stack using:
+# - Loki: Log aggregation (like Elasticsearch but lighter)
+# - Promtail: Log shipper (collects logs from files and Docker)
+# - Grafana: Dashboards and alerting
+# - Uptime Kuma: Service health monitoring
+#
+# USAGE:
+#   docker compose -f monitoring/docker-compose.monitoring.yml up -d
+#
+# ACCESS:
+#   Grafana:         http://localhost:3100 (admin/admin)
+#   Uptime Kuma:     http://localhost:3001
+#   Loki:            http://localhost:3101 (internal API)
+#   EntitySpine API: http://localhost:8765
+#   EntitySpine Web: http://localhost:5173
+#   EntitySpine Docs: http://localhost:8123
+#
+# PROFILES:
+#   default     - Core stack (Loki + Promtail + Grafana + EntitySpine)
+#   full        - Add Uptime Kuma + Dozzle (health monitoring + log viewer)
+#
+# EXAMPLES:
+#   # Start core stack (includes EntitySpine)
+#   docker compose -f monitoring/docker-compose.monitoring.yml up -d
+#
+#   # Start everything including health monitoring
+#   docker compose -f monitoring/docker-compose.monitoring.yml --profile full up -d
+#
+#   # EntitySpine services are always included by default
+#
+#   # View logs
+#   docker compose -f monitoring/docker-compose.monitoring.yml logs -f
+#
+#   # Stop everything
+#   docker compose -f monitoring/docker-compose.monitoring.yml down
+
+name: spine-monitoring
+
+networks:
+  monitoring-net:
+    driver: bridge
+  # Connect to search network for Elasticsearch access
+  capture-spine_search-net:
+    external: true
+
+volumes:
+  loki-data:
+    name: spine-loki-data
+  grafana-data:
+    name: spine-grafana-data
+  uptime-kuma-data:
+    name: spine-uptime-data
+
+services:
+  # ============================================
+  # Loki - Log Aggregation Database
+  # ============================================
+  # Loki is like Elasticsearch but optimized for logs.
+  # It uses labels for indexing instead of full-text,
+  # making it much lighter on resources.
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: spine-loki
+    ports:
+      - "3101:3100"
+    volumes:
+      - loki-data:/loki
+      - ./loki-config.yml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================
+  # Promtail - Log Collector/Shipper
+  # ============================================
+  # Promtail reads log files and Docker container logs,
+  # then ships them to Loki with labels for filtering.
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: spine-promtail
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml:ro
+      # Mount log directories from the host
+      - ../logs:/var/log/spine:ro
+      - ../capture-spine/logs:/var/log/capture-spine:ro
+      - ../entityspine:/var/log/entityspine:ro
+      # Docker socket for container log collection
+      - //var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - monitoring-net
+    depends_on:
+      loki:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============================================
+  # Grafana - Dashboards & Alerting
+  # ============================================
+  # Grafana provides beautiful dashboards and alerting.
+  # Loki is pre-configured as a data source.
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: spine-grafana
+    ports:
+      - "3100:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - monitoring-net
+      - capture-spine_search-net  # Access Elasticsearch
+    depends_on:
+      loki:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============================================
+  # Uptime Kuma - Service Health Monitoring
+  # ============================================
+  # Beautiful status page and uptime monitoring.
+  # Can ping HTTP endpoints, TCP ports, Docker containers.
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: spine-uptime
+    profiles:
+      - full
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+      - //var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - monitoring-net
+    restart: unless-stopped
+
+  # ============================================
+  # Dozzle - Real-time Docker Log Viewer
+  # ============================================
+  # Zero-config real-time Docker log viewer.
+  # Great for quick debugging without going through Grafana.
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: spine-dozzle
+    profiles:
+      - full
+    ports:
+      - "9999:8080"
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - monitoring-net
+    restart: unless-stopped
+
+  # ============================================
+  # EntitySpine API - Entity Resolution Service
+  # ============================================
+  # FastAPI service for entity resolution, identifier
+  # crosswalks, and knowledge graph queries.
+  entityspine-api:
+    build:
+      context: ../entityspine
+      dockerfile: Dockerfile
+    container_name: spine-entityspine-api
+    ports:
+      - "8765:8080"
+    environment:
+      - ENTITYSPINE_DB_PATH=/data/entities.db
+      - ENTITYSPINE_AUTO_LOAD_SEC=true
+    volumes:
+      - ../entityspine/data:/data
+      - ../entityspine:/app
+    networks:
+      - monitoring-net
+      - capture-spine_search-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ============================================
+  # EntitySpine Docs - MkDocs Documentation
+  # ============================================
+  # Serves EntitySpine documentation with live reload.
+  # Access comprehensive guides, API docs, and examples.
+  entityspine-docs:
+    image: squidfunk/mkdocs-material:latest
+    container_name: spine-entityspine-docs
+    ports:
+      - "8123:8000"
+    volumes:
+      - ../entityspine:/docs
+    command: serve --dev-addr 0.0.0.0:8000
+    networks:
+      - monitoring-net
+    restart: unless-stopped
+
+  # ============================================
+  # EntitySpine Frontend - React Web App
+  # ============================================
+  # Interactive web interface for EntitySpine:
+  # - Entity search and exploration
+  # - Knowledge graph visualization
+  # - Identifier crosswalk queries
+  # - Database management
+  entityspine-frontend:
+    build:
+      context: ../entityspine/web
+      dockerfile: Dockerfile
+    container_name: spine-entityspine-web
+    ports:
+      - "5173:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8765
+      - REACT_APP_DOCS_URL=http://localhost:8123
+    networks:
+      - monitoring-net
+    depends_on:
+      entityspine-api:
+        condition: service_healthy
+    restart: unless-stopped

@@ -1,0 +1,86 @@
+# Loki Configuration
+#
+# Loki is a horizontally-scalable, highly-available log aggregation system.
+# This is a simple single-node configuration for local development.
+#
+# Key concepts:
+# - Labels: Indexed metadata (like job, container, level)
+# - Chunks: Compressed log data stored on disk
+# - Retention: How long to keep logs (default: 30 days)
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+# Index configuration
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+# Ingestion limits
+limits_config:
+  # Retention period (30 days)
+  retention_period: 720h
+
+  # Allow up to 15 labels per log line
+  max_label_name_length: 1024
+  max_label_value_length: 2048
+  max_label_names_per_series: 30
+
+  # Ingestion rate limits
+  ingestion_rate_mb: 10
+  ingestion_burst_size_mb: 20
+
+  # Query limits
+  max_entries_limit_per_query: 5000
+
+# Compactor for retention
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+
+# Table manager (for legacy index cleanup)
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 720h
+
+# Query settings
+query_range:
+  # Parallelism for queries
+  parallelise_shardable_queries: true
+
+# Frontend (for query splitting)
+frontend:
+  max_outstanding_per_tenant: 2048
+
+# Ruler (for alerting rules)
+ruler:
+  alertmanager_url: http://localhost:9093
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-temp
+  enable_api: true

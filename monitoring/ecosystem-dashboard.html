@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Spine Ecosystem Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e6ed;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #8b92a7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            max-width: 400px;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 1rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .service-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status.online { background: #10b981; }
+        .status.offline { background: #ef4444; }
+        .status.unknown { background: #6b7280; }
+
+        .port {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #8b92a7;
+        }
+
+        .description {
+            color: #a0aec0;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .container-name {
+            font-size: 0.85rem;
+            color: #8b92a7;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #8b92a7;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e6ed;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌌 Spine Ecosystem Dashboard</h1>
+            <p class="subtitle">All services in the py-sec-edgar development environment</p>
+        </header>
+
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search services...">
+            <button class="refresh-btn" onclick="checkAllServices()">🔄 Refresh Status</button>
+        </div>
+
+        <div id="servicesContainer"></div>
+
+        <footer>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Total Services</div>
+                    <div class="stat-value" id="totalServices">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Online</div>
+                    <div class="stat-value" style="color: #10b981;" id="onlineServices">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Offline</div>
+                    <div class="stat-value" style="color: #ef4444;" id="offlineServices">0</div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const services = [
+            // Capture Spine
+            { name: 'Capture Spine', description: 'Main UI & API - Developer workspace with chat, search, and productivity tools', url: 'http://localhost:3000', port: 3000, container: 'capture-spine-frontend', category: 'Capture Spine' },
+            { name: 'Capture Spine API', description: 'Backend API for chat sessions, search, and knowledge management', url: 'http://localhost:8080', port: 8080, container: 'capture-spine-api', category: 'Capture Spine' },
+
+            // EntitySpine
+            { name: 'EntitySpine Web', description: 'Entity resolution web UI - Search entities, visualize knowledge graphs', url: 'http://localhost:5173', port: 5173, container: 'spine-entityspine-web', category: 'EntitySpine' },
+            { name: 'EntitySpine API', description: 'Entity resolution API - Identifier crosswalks, entity matching', url: 'http://localhost:8765', port: 8765, container: 'spine-entityspine-api', category: 'EntitySpine' },
+            { name: 'EntitySpine Docs', description: 'EntitySpine documentation - Guides, API reference, architecture', url: 'http://localhost:8123', port: 8123, container: 'spine-entityspine-docs', category: 'EntitySpine' },
+            { name: 'EntitySpine API Docs', description: 'Interactive API documentation (Swagger/OpenAPI)', url: 'http://localhost:8765/docs', port: 8765, container: 'spine-entityspine-api', category: 'EntitySpine' },
+
+            // GenAI Spine
+            { name: 'GenAI Spine Web', description: 'LLM-powered features - Document analysis, embeddings, RAG', url: 'http://localhost:3030', port: 3030, container: 'genai-spine-frontend', category: 'GenAI Spine' },
+            { name: 'GenAI Spine API', description: 'GenAI backend API - LLM integrations, embeddings service', url: 'http://localhost:8090', port: 8090, container: 'genai-spine-api', category: 'GenAI Spine' },
+            { name: 'Ollama', description: 'Local LLM server - Run models locally (llama3.2, mistral, etc.)', url: 'http://localhost:11434', port: 11434, container: 'ollama', category: 'GenAI Spine' },
+
+            // Monitoring
+            { name: 'Grafana', description: 'Monitoring dashboards - Logs, metrics, alerts', url: 'http://localhost:3100', port: 3100, container: 'spine-grafana', category: 'Monitoring' },
+            { name: 'Uptime Kuma', description: 'Service health monitoring - Uptime tracking, status page', url: 'http://localhost:3001', port: 3001, container: 'spine-uptime', category: 'Monitoring' },
+            { name: 'Dozzle', description: 'Real-time Docker log viewer - Browse container logs', url: 'http://localhost:9999', port: 9999, container: 'spine-dozzle', category: 'Monitoring' },
+            { name: 'Loki API', description: 'Log aggregation API - Query logs from all services', url: 'http://localhost:3101', port: 3101, container: 'spine-loki', category: 'Monitoring' },
+
+            // Search
+            { name: 'Elasticsearch', description: 'Search engine - Index and query documents, logs, entities', url: 'http://localhost:9200', port: 9200, container: 'spine-elasticsearch', category: 'Search' },
+            { name: 'Kibana', description: 'Elasticsearch UI - Explore data, create visualizations', url: 'http://localhost:5601', port: 5601, container: 'spine-kibana', category: 'Search' },
+        ];
+
+        const serviceStatuses = new Map();
+
+        async function checkService(service) {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
+
+                await fetch(service.url, {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeout);
+                serviceStatuses.set(service.port, 'online');
+            } catch (error) {
+                serviceStatuses.set(service.port, 'offline');
+            }
+        }
+
+        async function checkAllServices() {
+            for (const service of services) {
+                await checkService(service);
+            }
+            renderServices();
+        }
+
+        function renderServices(filter = '') {
+            const grouped = services.reduce((acc, service) => {
+                if (filter && !service.name.toLowerCase().includes(filter.toLowerCase()) &&
+                    !service.description.toLowerCase().includes(filter.toLowerCase())) {
+                    return acc;
+                }
+                if (!acc[service.category]) acc[service.category] = [];
+                acc[service.category].push(service);
+                return acc;
+            }, {});
+
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = '';
+
+            for (const [category, categoryServices] of Object.entries(grouped)) {
+                const section = document.createElement('div');
+                section.className = 'category-section';
+
+                const title = document.createElement('h2');
+                title.className = 'category-title';
+                title.textContent = category;
+                section.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = 'services-grid';
+
+                categoryServices.forEach(service => {
+                    const card = document.createElement('div');
+                    card.className = 'service-card';
+
+                    const status = serviceStatuses.get(service.port) || 'unknown';
+
+                    card.innerHTML = `
+                        <div class="service-header">
+                            <div class="service-name">
+                                <span class="status ${status}"></span>
+                                ${service.name}
+                            </div>
+                            <span class="port">:${service.port}</span>
+                        </div>
+                        <p class="description">${service.description}</p>
+                        <div class="container-name">🐳 ${service.container}</div>
+                        <a href="${service.url}" target="_blank" class="btn">Open →</a>
+                    `;
+
+                    grid.appendChild(card);
+                });
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            }
+
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalServices').textContent = services.length;
+            document.getElementById('onlineServices').textContent =
+                Array.from(serviceStatuses.values()).filter(s => s === 'online').length;
+            document.getElementById('offlineServices').textContent =
+                Array.from(serviceStatuses.values()).filter(s => s === 'offline').length;
+        }
+
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            renderServices(e.target.value);
+        });
+
+        // Initial render and check
+        renderServices();
+        checkAllServices();
+
+        // Auto-refresh every 30 seconds
+        setInterval(checkAllServices, 30000);
+    </script>
+</body>
+</html>

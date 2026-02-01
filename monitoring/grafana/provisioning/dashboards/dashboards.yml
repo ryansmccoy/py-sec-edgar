@@ -1,0 +1,18 @@
+# Grafana Dashboard Provisioning
+#
+# This tells Grafana where to find dashboard JSON files
+# and auto-loads them on startup.
+
+apiVersion: 1
+
+providers:
+  - name: 'Spine Dashboards'
+    orgId: 1
+    folder: 'Spine'
+    folderUid: 'spine-dashboards'
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards
