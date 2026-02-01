@@ -1,83 +1,102 @@
 # GenAI Spine Documentation
 
+**Last Updated:** 2026-01-31
+
 > **Auto-generated friendly** — These docs are structured to work with AI coding assistants.
-> Focus on small, feature-oriented files that can be easily referenced and updated.
 
 ---
 
-## 🚀 Quick Links
+## 🚀 Quick Start
 
-| Document | Purpose |
-|----------|---------|
-| **[CAPTURE_SPINE_INTEGRATION.md](./CAPTURE_SPINE_INTEGRATION.md)** | Capture Spine feature requirements |
-| **[ECOSYSTEM_INTEGRATION.md](./ECOSYSTEM_INTEGRATION.md)** | FeedSpine, Spine-Core, EntitySpine opportunities |
-| **[../prompts/PARALLEL_AGENT_PROMPT.md](../prompts/PARALLEL_AGENT_PROMPT.md)** | Agent guidance for parallel development |
-| **[../TODO.md](../TODO.md)** | Implementation status and priorities |
-
----
-
-## Documentation Philosophy
-
-1. **Small, focused files** — Each doc covers one concept
-2. **Machine-readable structure** — Consistent headers, tables, code blocks
-3. **Living documentation** — Update alongside code changes
-4. **Docstring priority** — Code is the source of truth; docs provide context
+| You Want To... | Go Here |
+|----------------|---------|
+| Integrate your app with GenAI Spine | [Consumer Quickstart](integration/CONSUMER_QUICKSTART.md) |
+| See the API specification | [API Contract](api/API_CONTRACT.md) |
+| Understand the architecture | [ADR-0001: Domain-Agnostic](adr/ADR-0001-domain-agnostic.md) |
+| Handle errors correctly | [Error Handling](api/ERRORS.md) |
+| Migrate from local LLM code | [Migration Checklist](integration/MIGRATION_CHECKLIST.md) |
 
 ---
 
-## Documentation Map
+## Status Legend
+
+All documents use consistent status labels:
+
+| Status | Meaning |
+|--------|---------|
+| 📝 Draft | Can change without notice |
+| 📋 Proposal | Stable intent, not yet implemented |
+| 🗓️ Planned | Scheduled for next milestone |
+| ✅ Active | Implemented and in use |
+| ⚠️ Deprecated | Do not use for new integrations |
+
+---
+
+## Documentation Structure
 
 ```
 docs/
-├── README.md                    # This file
-├── CAPTURE_SPINE_INTEGRATION.md # ⭐ Capture Spine integration specs
-├── ECOSYSTEM_INTEGRATION.md     # ⭐ Full ecosystem integration guide
+├── api/                          # API specifications
+│   ├── README.md                 # API quick reference
+│   ├── API_CONTRACT.md           # Full endpoint specification
+│   ├── API_TIERS.md              # Tier A vs Tier B endpoints
+│   ├── AUTH.md                   # Authentication (planned)
+│   └── ERRORS.md                 # Error codes and handling
 │
-├── architecture/
-│   ├── OVERVIEW.md              # High-level architecture
-│   ├── TIERS.md                 # Tier 1-4 deployment options
-│   └── PROVIDERS.md             # LLM provider abstraction
+├── integration/                  # Consumer integration guides
+│   ├── README.md                 # Integration index
+│   ├── CONSUMER_QUICKSTART.md    # Quick start for consumers
+│   ├── CAPTURE_SPINE_INTEGRATION_ANALYSIS.md
+│   └── MIGRATION_CHECKLIST.md
 │
-├── capabilities/
-│   ├── README.md                # Capabilities overview
-│   ├── TIER_1_BASIC.md          # Basic capabilities (must-have)
-│   ├── TIER_2_INTERMEDIATE.md   # Intermediate capabilities
-│   ├── TIER_3_ADVANCED.md       # Advanced capabilities
-│   └── TIER_4_MINDBLOWING.md    # Future vision capabilities
+├── features/                     # Feature specifications
+│   ├── README.md                 # Feature roadmap
+│   ├── GENAI_ADMIN_UI.md         # Admin UI spec
+│   ├── MULTI_MODEL_REVIEW_WORKFLOW.md
+│   └── REVIEW_ANALYSIS_PROMPT.md
 │
-├── core/
-│   ├── PROMPT_MANAGEMENT.md     # Prompt CRUD, versioning, templates
-│   ├── RAG.md                   # Retrieval-Augmented Generation
-│   ├── COST_TRACKING.md         # Token counting, budgets
-│   ├── CACHING.md               # Response caching strategies
-│   └── OBSERVABILITY.md         # Metrics, logging, tracing
-│
-├── domains/
-│   ├── README.md                # Domain extension overview
-│   └── financial-markets/       # Financial market domain
-│       ├── README.md
-│       ├── CAPABILITIES.md
-│       └── INTEGRATION.md
-│
-├── integration/
-│   ├── CAPTURE_SPINE.md         # Integration with Capture Spine
-│   ├── ENTITY_SPINE.md          # Integration with EntitySpine
-│   ├── FEED_SPINE.md            # Integration with FeedSpine
-│   └── CLIENT_SDK.md            # Python client library
-│
-└── guides/
-    ├── DOCUMENTATION_BEST_PRACTICES.md
-    ├── ADDING_CAPABILITIES.md
-    ├── ADDING_PROVIDERS.md
-    └── DEPLOYMENT.md
+└── adr/                          # Architecture Decision Records
+    ├── README.md                 # ADR index
+    └── ADR-0001-domain-agnostic.md
 ```
 
 ---
 
-## Quick Links
+## Core Principle: Domain-Agnostic Design
 
-| Topic | Document |
-|-------|----------|
+GenAI Spine provides **generic LLM building blocks**, not domain-specific endpoints.
+
+```python
+# ✅ GOOD: Generic endpoint, domain context in prompt
+result = await genai.execute_prompt(
+    slug="summarizer",                 # Generic capability
+    variables={"text": filing_text}    # Consumer provides context
+)
+
+# ❌ BAD: Domain-specific endpoint
+result = await genai.summarize_filing(filing_id)
+```
+
+See [ADR-0001](adr/ADR-0001-domain-agnostic.md) for full rationale.
+
+---
+
+## Legacy Documentation
+
+> **Note:** The documents below are from earlier planning phases. They may contain outdated information.
+
+| Document | Purpose |
+|----------|---------|
+| [CAPTURE_SPINE_INTEGRATION.md](CAPTURE_SPINE_INTEGRATION.md) | Earlier capture-spine integration notes |
+| [ECOSYSTEM_INTEGRATION.md](ECOSYSTEM_INTEGRATION.md) | Earlier ecosystem integration notes |
+
+---
+
+## See Also
+
+- [STATUS.md](../STATUS.md) - Current implementation status
+- [CHANGELOG.md](../CHANGELOG.md) - Version history
+- [TODO.md](../TODO.md) - Detailed task breakdown
 | What capabilities exist? | [capabilities/README.md](capabilities/README.md) |
 | How do tiers work? | [architecture/TIERS.md](architecture/TIERS.md) |
 | How to add a capability? | [guides/ADDING_CAPABILITIES.md](guides/ADDING_CAPABILITIES.md) |

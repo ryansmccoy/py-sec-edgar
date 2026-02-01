@@ -1,8 +1,28 @@
-# GenAI Spine - Feature Roadmap
+# GenAI Spine Feature Specifications
 
 **Last Updated:** 2026-01-31
 
-This document provides a high-level view of planned features beyond the core MVP.
+---
+
+## Status Legend
+
+| Status | Meaning |
+|--------|---------|
+| 📝 Draft | Can change without notice |
+| 📋 Proposal | Stable intent, not yet implemented |
+| 🗓️ Planned | Scheduled for next milestone |
+| ✅ Active | Implemented and in use |
+| ⚠️ Deprecated | Do not use for new integrations |
+
+---
+
+## Documents
+
+| Document | Description | Status |
+|----------|-------------|--------|
+| [GENAI_ADMIN_UI.md](GENAI_ADMIN_UI.md) | Web-based management interface | 📋 Proposal |
+| [MULTI_MODEL_REVIEW_WORKFLOW.md](MULTI_MODEL_REVIEW_WORKFLOW.md) | Cross-model validation workflow | 📋 Proposal |
+| [REVIEW_ANALYSIS_PROMPT.md](REVIEW_ANALYSIS_PROMPT.md) | Prompt template for model review | 📋 Proposal |
 
 ---
 
@@ -12,26 +32,26 @@ This document provides a high-level view of planned features beyond the core MVP
 
 | Feature | Priority | Status | Description |
 |---------|----------|--------|-------------|
-| [GenAI Admin UI](GENAI_ADMIN_UI.md) | P1 | 📋 Proposed | Web-based management interface |
-| Chat Sessions | P1 | 📋 Proposed | VS Code Copilot-style chat with persistence |
-| Prompt Playground | P1 | 📋 Proposed | Testing environment for prompts |
-| Model Dashboard | P2 | 📋 Proposed | Model health, costs, usage stats |
+| [GenAI Admin UI](GENAI_ADMIN_UI.md) | P1 | 📋 Proposal | Web-based management interface |
+| Chat Sessions | P1 | 📋 Proposal | VS Code Copilot-style chat with persistence |
+| Prompt Playground | P1 | 📋 Proposal | Testing environment for prompts |
+| Model Dashboard | P2 | 📋 Proposal | Model health, costs, usage stats |
 
 ### 🔄 Workflow Automation
 
 | Feature | Priority | Status | Description |
 |---------|----------|--------|-------------|
-| [Multi-Model Review](MULTI_MODEL_REVIEW_WORKFLOW.md) | P1 | 📋 Proposed | Cross-model review and validation |
-| Pipeline Orchestration | P2 | 📋 Proposed | Chain multiple capabilities |
-| Batch Processing | P2 | 📋 Proposed | Process many items efficiently |
+| [Multi-Model Review](MULTI_MODEL_REVIEW_WORKFLOW.md) | P1 | 📋 Proposal | Cross-model review and validation |
+| Pipeline Orchestration | P2 | 📋 Proposal | Chain multiple capabilities |
+| Batch Processing | P2 | 📋 Proposal | Process many items efficiently |
 
 ### 🔌 Integration
 
 | Feature | Priority | Status | Description |
 |---------|----------|--------|-------------|
-| Capture Spine Integration | P0 | ✅ Ready | Message enrichment, commits |
-| FeedSpine Integration | P1 | 🟡 Planned | Article processing |
-| VS Code Extension | P2 | 📋 Proposed | Direct IDE integration |
+| Capture Spine Integration | P0 | ✅ Active | Message enrichment, commits |
+| FeedSpine Integration | P1 | 🗓️ Planned | Article processing |
+| VS Code Extension | P2 | 📋 Proposal | Direct IDE integration |
 
 ### 🚀 Performance
 

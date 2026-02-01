@@ -1,14 +1,58 @@
 # GenAI Admin UI - Feature Specification
 
-**Status:** Proposed
+**Status:** ✅ Active (v0.2.0 - Partial Implementation)
 **Priority:** P1
 **Created:** 2026-01-31
+**Updated:** 2026-01-31
 
 ---
 
 ## Overview
 
 A standalone web-based admin interface for managing and interacting with the GenAI Spine service, independent of Capture Spine or any other application. This provides a unified control plane for prompt management, model testing, and conversational AI interactions.
+
+**Current Implementation:** React + Vite frontend at `genai-spine/frontend/` with 12 pages demonstrating API capabilities.
+
+---
+
+## Implementation Status
+
+### ✅ Implemented (v0.2.0)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Health Monitoring** | ✅ | Real-time service status, version info |
+| **Chat Interface** | ✅ | Single-shot chat completions with model selector |
+| **Chat Sessions** | ✅ | Multi-turn conversations with persistent history |
+| **Knowledge Explorer** | ✅ | Browse prompts, sessions, usage stats, execution logs |
+| **Summarization** | ✅ | Test summarization with sample text |
+| **Entity Extraction** | ✅ | Extract entities with type selection |
+| **Classification** | ✅ | Content classification with custom categories |
+| **Rewrite** | ✅ | All rewrite modes (clean, format, organize, summarize) |
+| **Title Generation** | ✅ | Generate titles from content |
+| **Commit Messages** | ✅ | Generate git commit messages from diffs |
+| **Prompt Browser** | ✅ | View all prompts with metadata |
+| **Usage Dashboard** | ✅ | Cost tracking, token usage, request stats |
+
+### 🟡 Partial / In Progress
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Prompt Editor** | 🟡 | View-only, CRUD operations pending |
+| **Session Management** | 🟡 | Create/list/delete works, no edit/rename yet |
+| **File Attachments** | 🟡 | Planned for sessions |
+| **Model Comparison** | 🟡 | Planned A/B testing UI |
+
+### ❌ Not Started
+
+| Feature | Priority | Notes |
+|---------|----------|-------|
+| **Prompt Testing Playground** | P1 | Interactive prompt testing with variables |
+| **Version History UI** | P1 | View/rollback prompt versions |
+| **Batch Processing** | P2 | Test prompts with multiple inputs |
+| **Export/Import** | P2 | Bulk prompt export as YAML |
+| **Search** | P2 | Full-text search across chats/prompts |
+| **Session Branching** | P3 | Fork conversations |
 
 ---
 

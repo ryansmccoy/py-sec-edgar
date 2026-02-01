@@ -59,11 +59,17 @@ GenAI Spine is the unified AI service for the Spine ecosystem. This TODO tracks 
 | **Execution tracking** | ✅ | `api/tracking.py` - records every LLM call |
 | **Usage endpoint** | ✅ | `/v1/usage` - stats, pricing, cost estimation |
 | **Anthropic provider** | ✅ | `providers/anthropic.py` - Claude models |
+| **Python client library** | ✅ | `client/genai_spine_client/` - httpx + Pydantic |
+| **Chat Sessions API** | ✅ | `/v1/sessions` - Stateful conversations (Tier A) |
+| **Integration docs restructure** | ✅ | api/, integration/, features/, adr/ folders |
+| **API Tiers documentation** | ✅ | Tier A (stable) vs Tier B (convenience) |
+| **Consumer Quickstart** | ✅ | docs/integration/CONSUMER_QUICKSTART.md |
 
 ### 🟡 In Progress
 
 | Component | Status | Priority | Notes |
 |-----------|--------|----------|-------|
+| Session storage migration | 🟡 | P1 | Move from in-memory to storage layer |
 | Alembic migrations | 🟡 | P1 | For production schema evolution |
 
 ### ❌ Not Started (Core)

@@ -1,8 +1,8 @@
 # GenAI Spine - Current Status
 
 **Last Updated:** 2026-01-31
-**Version:** 0.1.0
-**Status:** ✅ Production-Ready Core (MVP Complete)
+**Version:** 0.2.0
+**Status:** ✅ Production-Ready Core + Chat Sessions
 
 ---
 
@@ -12,10 +12,20 @@ GenAI Spine is the **unified AI service** for the Spine ecosystem. It provides a
 
 | Metric | Status |
 |--------|--------|
-| **API Endpoints** | 25 available |
+| **API Endpoints** | 31 available (↑6 new) |
 | **Providers** | 3 (Ollama, OpenAI, Anthropic) |
-| **Test Coverage** | 80 tests passing |
+| **Test Coverage** | 91 tests passing (↑11) |
 | **Database Backends** | SQLite (dev) + PostgreSQL (prod) |
+| **Client Library** | Python client with types ✅ |
+
+---
+
+## 🆕 What's New in v0.2.0
+
+- **Chat Sessions API** - Stateful conversations with history (Tier A - Stable)
+- **Python Client Library** - Typed HTTP wrapper (`genai_spine_client`)
+- **Integration Docs** - Comprehensive guides for consumer apps
+- **API Tiers** - Clear stability guarantees (Tier A vs Tier B)
 
 ---
 
@@ -39,7 +49,17 @@ GenAI Spine is the **unified AI service** for the Spine ecosystem. It provides a
 | `/v1/completions` | POST | Text completion | ✅ |
 | `/v1/chat/completions` | POST | Chat completion | ✅ |
 
-### Native Capabilities
+### Chat Sessions (Tier A - Stable) 🆕
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
+| `/v1/sessions` | POST | Create chat session | ✅ |
+| `/v1/sessions` | GET | List sessions | ✅ |
+| `/v1/sessions/{id}` | GET | Get session | ✅ |
+| `/v1/sessions/{id}` | DELETE | Delete session | ✅ |
+| `/v1/sessions/{id}/messages` | POST | Send message | ✅ |
+| `/v1/sessions/{id}/messages` | GET | Get messages | ✅ |
+
+### Native Capabilities (Tier B - Convenience)
 | Endpoint | Method | Description | Status |
 |----------|--------|-------------|--------|
 | `/v1/summarize` | POST | Summarize text | ✅ |
@@ -48,6 +68,10 @@ GenAI Spine is the **unified AI service** for the Spine ecosystem. It provides a
 | `/v1/rewrite` | POST | Rewrite content (Message Enrichment) | ✅ |
 | `/v1/infer-title` | POST | Generate titles | ✅ |
 | `/v1/generate-commit` | POST | Generate commit messages | ✅ |
+
+### Prompt Execution (Tier A - Stable)
+| Endpoint | Method | Description | Status |
+|----------|--------|-------------|--------|
 | `/v1/execute-prompt` | POST | Execute any prompt template | ✅ |
 
 ### Prompt Management
@@ -69,6 +93,31 @@ GenAI Spine is the **unified AI service** for the Spine ecosystem. It provides a
 | `/v1/pricing` | GET | List model pricing | ✅ |
 | `/v1/pricing/{model}` | GET | Get model pricing | ✅ |
 | `/v1/estimate-cost` | POST | Estimate cost before execution | ✅ |
+
+---
+
+## 📚 Client Library
+
+**Location:** `genai-spine/client/genai_spine_client/`
+
+```python
+from genai_spine_client import GenAIClient
+
+async with GenAIClient(base_url="http://localhost:8100") as client:
+    # Chat session
+    session = await client.create_session(model="gpt-4o-mini")
+    reply = await client.send_message(session.id, "Hello!")
+
+    # Execute prompt
+    result = await client.execute_prompt(
+        slug="summarizer",
+        variables={"text": content}
+    )
+```
+
+**Installation:**
+- Copy module to your app
+- Or use local path: `pip install -e ../genai-spine/client`
 
 ---
 
