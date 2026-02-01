@@ -10,16 +10,19 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from genai_spine.api.deps import UnitOfWorkDep
 from genai_spine.storage import (
     PromptCategory,
-    PromptCreate as StoragePromptCreate,
-    PromptUpdate as StoragePromptUpdate,
     PromptVariable,
-    UnitOfWork,
+)
+from genai_spine.storage import (
+    PromptCreate as StoragePromptCreate,
+)
+from genai_spine.storage import (
+    PromptUpdate as StoragePromptUpdate,
 )
 
 router = APIRouter()

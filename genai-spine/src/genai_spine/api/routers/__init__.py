@@ -10,6 +10,7 @@ from genai_spine.api.routers import (
     models,
     prompts,
     rewrite,
+    sessions,
     usage,
 )
 
@@ -23,5 +24,6 @@ __all__ = [
     "models",
     "prompts",
     "rewrite",
+    "sessions",
     "usage",
 ]

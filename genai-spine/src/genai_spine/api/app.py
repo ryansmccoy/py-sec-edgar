@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from genai_spine import __version__
+from genai_spine.api.deps import storage_backend_lifespan
 from genai_spine.api.routers import (
     capabilities,
     chat,
@@ -19,9 +20,9 @@ from genai_spine.api.routers import (
     models,
     prompts,
     rewrite,
+    sessions,
     usage,
 )
-from genai_spine.api.deps import storage_backend_lifespan
 from genai_spine.settings import get_settings
 
 
@@ -83,5 +84,8 @@ def create_app() -> FastAPI:
 
     # Usage and cost tracking (P1)
     app.include_router(usage.router, prefix="/v1", tags=["usage"])
+
+    # Chat sessions - Tier A Stable API
+    app.include_router(sessions.router, prefix="/v1", tags=["sessions"])
 
     return app
