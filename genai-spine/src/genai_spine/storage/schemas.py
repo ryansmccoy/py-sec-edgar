@@ -16,10 +16,9 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 from typing import Any
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
-
 
 # =============================================================================
 # Enums (Compatible with Capture Spine)
@@ -312,3 +311,69 @@ class UsageStats(BaseModel):
 
     avg_latency_ms: float
     p95_latency_ms: float | None = None
+
+
+# =============================================================================
+# Session Schemas (Chat Sessions - Tier A)
+# =============================================================================
+
+
+class SessionCreate(BaseModel):
+    """Data for creating a chat session."""
+
+    model: str = Field(..., description="Model to use for this session")
+    system_prompt: str | None = Field(None, description="System prompt for the session")
+    metadata: dict[str, Any] = Field(default_factory=dict, description="Custom metadata")
+    user_id: str | None = Field(None, description="User identifier for tracking")
+
+
+class SessionRecord(BaseModel):
+    """Complete session record from storage."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    model: str
+    system_prompt: str | None
+    metadata: dict[str, Any]
+    user_id: str | None
+
+    # Stats
+    message_count: int
+    total_input_tokens: int
+    total_output_tokens: int
+    total_cost_usd: Decimal
+
+    # Timestamps
+    created_at: datetime
+    updated_at: datetime
+
+
+class SessionMessageCreate(BaseModel):
+    """Data for creating a session message."""
+
+    role: str = Field("user", description="Message role (user or assistant)")
+    content: str = Field(..., description="Message content")
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class SessionMessageRecord(BaseModel):
+    """Complete session message record from storage."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    session_id: UUID
+    role: str  # user, assistant, system
+    content: str
+    metadata: dict[str, Any]
+
+    # For assistant messages
+    model: str | None
+    input_tokens: int
+    output_tokens: int
+    cost_usd: Decimal
+    latency_ms: int | None
+
+    # Timestamp
+    created_at: datetime

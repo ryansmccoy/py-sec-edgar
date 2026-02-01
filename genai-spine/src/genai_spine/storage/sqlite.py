@@ -19,12 +19,6 @@ from uuid import UUID, uuid4
 
 import aiosqlite
 
-from genai_spine.storage.protocols import (
-    ExecutionRepository,
-    PromptRepository,
-    StorageBackend,
-    UnitOfWork,
-)
 from genai_spine.storage.schemas import (
     ExecutionCreate,
     ExecutionRecord,
@@ -34,9 +28,7 @@ from genai_spine.storage.schemas import (
     PromptUpdate,
     PromptVariable,
     PromptVersionRecord,
-    VariableType,
 )
-
 
 # =============================================================================
 # SQLite Schema
@@ -564,7 +556,7 @@ class SQLitePromptRepository:
 
         if tags:
             # SQLite JSON containment is limited, use LIKE for simplicity
-            tag_conditions = [f"tags LIKE ?" for _ in tags]
+            tag_conditions = ["tags LIKE ?" for _ in tags]
             conditions.append(f"({' OR '.join(tag_conditions)})")
             params.extend([f'%"{tag}"%' for tag in tags])
 
@@ -869,7 +861,7 @@ class SQLiteUnitOfWork:
         self.prompts = SQLitePromptRepository(conn)
         self.executions = SQLiteExecutionRepository(conn)
 
-    async def __aenter__(self) -> "SQLiteUnitOfWork":
+    async def __aenter__(self) -> SQLiteUnitOfWork:
         """Begin transaction."""
         await self._conn.execute("BEGIN")
         return self

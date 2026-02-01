@@ -334,7 +334,7 @@ class UnitOfWork(Protocol):
     executions: ExecutionRepository
 
     @abstractmethod
-    async def __aenter__(self) -> "UnitOfWork":
+    async def __aenter__(self) -> UnitOfWork:
         """Enter transaction context."""
         ...
 

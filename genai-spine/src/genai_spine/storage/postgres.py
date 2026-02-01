@@ -25,12 +25,6 @@ except ImportError:
     HAS_ASYNCPG = False
     asyncpg = None  # type: ignore
 
-from genai_spine.storage.protocols import (
-    ExecutionRepository,
-    PromptRepository,
-    StorageBackend,
-    UnitOfWork,
-)
 from genai_spine.storage.schemas import (
     ExecutionCreate,
     ExecutionRecord,
@@ -845,7 +839,7 @@ class PostgresUnitOfWork:
         self.prompts: PostgresPromptRepository
         self.executions: PostgresExecutionRepository
 
-    async def __aenter__(self) -> "PostgresUnitOfWork":
+    async def __aenter__(self) -> PostgresUnitOfWork:
         """Acquire connection and start transaction."""
         self._conn = await self._pool.acquire()
         self._transaction = self._conn.transaction()

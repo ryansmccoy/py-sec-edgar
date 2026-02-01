@@ -67,10 +67,10 @@ class Prompt(Base):
     )
 
     # Relationships
-    versions: Mapped[list["PromptVersion"]] = relationship(
+    versions: Mapped[list[PromptVersion]] = relationship(
         "PromptVersion", back_populates="prompt", cascade="all, delete-orphan"
     )
-    executions: Mapped[list["Execution"]] = relationship("Execution", back_populates="prompt")
+    executions: Mapped[list[Execution]] = relationship("Execution", back_populates="prompt")
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
@@ -126,7 +126,7 @@ class PromptVersion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    prompt: Mapped["Prompt"] = relationship("Prompt", back_populates="versions")
+    prompt: Mapped[Prompt] = relationship("Prompt", back_populates="versions")
 
     __table_args__ = (UniqueConstraint("prompt_id", "version", name="uq_prompt_version"),)
 
@@ -196,7 +196,7 @@ class Execution(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
     # Relationships
-    prompt: Mapped["Prompt | None"] = relationship("Prompt", back_populates="executions")
+    prompt: Mapped[Prompt | None] = relationship("Prompt", back_populates="executions")
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""

@@ -54,6 +54,10 @@ from genai_spine.storage.schemas import (
     PromptUpdate,
     PromptVariable,
     PromptVersionRecord,
+    SessionCreate,
+    SessionMessageCreate,
+    SessionMessageRecord,
+    SessionRecord,
     UsageStats,
 )
 
