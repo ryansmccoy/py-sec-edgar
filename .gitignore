@@ -3350,3 +3350,7 @@ test_fix/filings/TSLA/0001771340-25-000009_extracted/0001-(4)_PRIMARY_DOCUMENT_e
 test_fix/filings/TSLA/0001972928-24-000002_extracted/0001-(4)_PRIMARY_DOCUMENT_edgardoc.xml
 test_fix/filings/TSLA/0001972928-24-000003_extracted/0001-(4)_PRIMARY_DOCUMENT_edgardoc.xml
 test_fix/filings/TSLA/0001972928-25-000003_extracted/0001-(4)_PRIMARY_DOCUMENT_edgardoc.xml
+
+ #   A u d i t   e x p o r t s   ( l a r g e   J S O N   f i l e s ) 
+ e x p o r t s /  
+ 
